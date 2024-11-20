@@ -13,12 +13,19 @@ const Callback: React.FC = () => {
     if (token) {
       setAccessToken(token);
       localStorage.setItem("spotifyAccessToken", token);
-      navigate("/mood-selection");
-    } else {
-      console.error("Ingen access-token hittades");
+
+      const today = new Date();
+      const dateKey = `${today.getFullYear()}-${today.getMonth() + 1}-${today.getDate()}`;
+      const storedSong = localStorage.getItem(`dailySong_${dateKey}`);
+
+      if (storedSong) {
+        navigate("/daily-song"); 
+      } else {
+       navigate("/daily-song"); 
+      }
     }
     window.location.hash = "";
-  }, [navigate,setAccessToken]);
+  }, [navigate, setAccessToken]);
 
   return <span className="loader"></span> 
 };

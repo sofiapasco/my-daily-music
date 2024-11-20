@@ -8,8 +8,10 @@ const MoodSelection: React.FC = () => {
   const navigate = useNavigate();
 
   const handleMoodSelection = (selectedMood: string) => {
+    console.log("Valt humör:", selectedMood);
     setMood(selectedMood);
     localStorage.setItem("selectedMood", selectedMood);
+    console.log("Humör sparat i localStorage:", selectedMood);
     navigate("/daily-song");
   };
 
@@ -20,10 +22,10 @@ const MoodSelection: React.FC = () => {
       </button>
       <h1>HUR MÅR DU IDAG?</h1>
       <div className="mood-buttons">
-        <button onClick={() => handleMoodSelection("Glad")}> 😊</button>
-        <button onClick={() => handleMoodSelection("Ledsen")}>😢</button>
-        <button onClick={() => handleMoodSelection("Avslappnad")}>😌</button>
-        <button onClick={() => handleMoodSelection("Taggad")}>💪</button>
+        <button onClick={() => handleMoodSelection("😊")}> 😊</button>
+        <button onClick={() => handleMoodSelection("😢")}>😢</button>
+        <button onClick={() => handleMoodSelection("😌")}>😌</button>
+        <button onClick={() => handleMoodSelection("💪")}>💪</button>
       </div>
     </div>
   );
