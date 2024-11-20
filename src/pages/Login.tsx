@@ -49,17 +49,19 @@ const Login = () => {
             onClick={handleLogin}
             style={{
               padding: "8px 16px",
-              fontSize: "16px",
-              backgroundColor: "white",
-              color: "#1DB954",
+              fontSize: "12px",
+              fontWeight: "bold",
+              backgroundColor: "#17a74e",
+              color: "#e0e0e0",
               border: "none",
+              letterSpacing: "2px",
               borderRadius: "30px",
               cursor: "pointer",
               marginTop: "20px",
               display: "flex", 
               alignItems: "center",
               gap: "10px", 
-              boxShadow: "0px 4px 6px rgba(0, 0, 0, 1)",
+              boxShadow: "0px 4px 6px rgba(0, 0, 0, 2)",
               transition: "transform 0.3s, box-shadow 0.3s",
             }}
           >

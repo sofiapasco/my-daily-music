@@ -1,9 +1,10 @@
 import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { setAccessToken } from "../service/spotify";
+import { useAuth } from "../context/AuthContext";
 
 const Callback: React.FC = () => {
   const navigate = useNavigate();
+  const { setAccessToken } = useAuth();
 
   useEffect(() => {
     // Hämta token från URL-hashen
@@ -11,18 +12,17 @@ const Callback: React.FC = () => {
     const token = new URLSearchParams(hash.substring(1)).get("access_token");
 
     if (token) {
-      // Spara token lokalt och sätt den i Spotify-klienten
+      console.log("Token sparad:", token);
       setAccessToken(token);
       localStorage.setItem("spotifyAccessToken", token);
-
-      // Navigera till nästa sida (t.ex. "dagens låt")
       navigate("/daily-song");
     } else {
       console.error("Ingen access-token hittades");
     }
-  }, [navigate]);
+    window.location.hash = "";
+  }, [navigate,setAccessToken]);
 
-  return <div>Loggar in...</div>;
+  return <span className="loader"></span> 
 };
 
 export default Callback;
