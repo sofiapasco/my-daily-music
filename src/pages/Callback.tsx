@@ -7,15 +7,13 @@ const Callback: React.FC = () => {
   const { setAccessToken } = useAuth();
 
   useEffect(() => {
-    // Hämta token från URL-hashen
     const hash = window.location.hash;
     const token = new URLSearchParams(hash.substring(1)).get("access_token");
 
     if (token) {
-      console.log("Token sparad:", token);
       setAccessToken(token);
       localStorage.setItem("spotifyAccessToken", token);
-      navigate("/daily-song");
+      navigate("/mood-selection");
     } else {
       console.error("Ingen access-token hittades");
     }

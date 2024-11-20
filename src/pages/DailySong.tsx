@@ -3,10 +3,15 @@ import { useAuth } from "../context/AuthContext";
 import { Song } from "../types/song";
 
 const DailySong = () => {
-  const { accessToken } = useAuth();
+  const { accessToken, logout} = useAuth();
   const [song, setSong] = useState<Song | null>(null);
+  const [mood, setMood] = useState<string | null>(null);
 
   useEffect(() => {
+    // Hämta valt humör från localStorage
+    const storedMood = localStorage.getItem("selectedMood");
+    setMood(storedMood);
+
     if (accessToken) {
       const today = new Date();
       const dayIdentifier = today.getFullYear() + "-" + (today.getMonth() + 1) + "-" + today.getDate();
@@ -30,7 +35,11 @@ const DailySong = () => {
 
   return (
     <div className="daily-song-container">
+    <button className="logout-btn" onClick={logout}>
+        Logga ut
+      </button>
       <h1 className="daily-song-title">DAGENS LÅT</h1>
+      {mood && <p className="mood-text">Du känner dig: {mood}</p>}
       {song ? (
         <div className="song-info">
           <p className="song-name">{song.name}</p>
