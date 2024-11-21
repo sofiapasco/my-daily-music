@@ -15,6 +15,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setAccessToken(null);
     localStorage.removeItem("spotifyAccessToken");
     window.location.href = "/";
+    const spotifyLogoutUrl = "https://www.spotify.com/logout";
+    window.location.href = `${spotifyLogoutUrl}`;
   };
 
   return (

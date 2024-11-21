@@ -1,52 +1,50 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext";
-import { useNavigate } from "react-router-dom";
-import { Song } from "../types/song";
+import { Song } from "../types/Song";
+import LikeSongButton  from "../components/LikeSongButton"; 
 
 const DailySong = () => {
+  const [trackId, setTrackId] = useState<string | null>(null); 
+  const [currentSong, setCurrentSong] = useState<Song | null>(null);
   const { accessToken, logout } = useAuth();
-  const navigate = useNavigate();
-  const [knownSong, setKnownSong] = useState<Song | null>(null); 
-  const [recommendedSong, setRecommendedSong] = useState<Song | null>(null); 
 
   useEffect(() => {
     const today = new Date();
     const dateKey = `${today.getFullYear()}-${today.getMonth() + 1}-${today.getDate()}`;
-    const storedKnownSong = localStorage.getItem(`knownSong_${dateKey}`);
-    const lastAccessedDate = localStorage.getItem("lastAccessedDate");
-  
-    console.log("Dagens nyckel:", dateKey);
-    console.log("Senast besökta datum:", lastAccessedDate);
-  
-    if (storedKnownSong) {
-      console.log("Hämtar låt från localStorage:", storedKnownSong);
-      setKnownSong(JSON.parse(storedKnownSong));
-    } else if (accessToken) {
-      console.log("Hämtar ny låt eftersom dagens låt inte är sparad.");
-  
-      const topTracksEndpoint = `https://api.spotify.com/v1/me/top/tracks?limit=5`;
-      fetch(topTracksEndpoint, {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      })
-        .then((response) => response.json())
-        .then((data) => {
-          if (data.items && data.items.length > 0) {
-            const topTracks = data.items;
-            const randomKnownSong = topTracks[Math.floor(Math.random() * topTracks.length)];
-            console.log("Sparar ny känd låt:", randomKnownSong);
-            setKnownSong(randomKnownSong);
-            localStorage.setItem(`knownSong_${dateKey}`, JSON.stringify(randomKnownSong));
-            localStorage.setItem("lastAccessedDate", dateKey);
-          } else {
-            throw new Error("Inga toppspår hittades för användaren.");
-          }
-        })
-        .catch((error) => {
-          console.error("Kunde inte hämta låtar:", error);
-        });
+    const storedDailySong = localStorage.getItem(`dailySong_${dateKey}`);
+
+    if (storedDailySong) {
+      console.log("Dagens låt hittades i Local Storage:", storedDailySong);
+      const song = JSON.parse(storedDailySong);
+      setCurrentSong(song);
+      setTrackId(song.id); 
+      return;
     }
+
+    if (!accessToken) {
+      console.error("Ingen accessToken tillgänglig, kan inte hämta data.");
+      return;
+    }
+
+    console.log("Hämtar dagens låt...");
+
+    // Hämta dagens låt och rekommendationer
+    fetch(`https://api.spotify.com/v1/recommendations?limit=1`, {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.tracks && data.tracks.length > 0) {
+          const song = data.tracks[0];
+          setCurrentSong(song);
+          setTrackId(song.id); // Sätt trackId från den rekommenderade låten
+          const userId = localStorage.getItem("spotifyUserId");
+          if (userId) {
+            localStorage.setItem(`dailySong_${userId}_${dateKey}`, JSON.stringify(song));
+          }
+        }
+      })
+      .catch((err) => console.error("Ett fel uppstod vid hämtning av dagens låt:", err));
   }, [accessToken]);
 
   const handleLogout = () => {
@@ -60,21 +58,20 @@ const DailySong = () => {
         Logga ut
       </button>
       <h1 className="daily-song-title">DAGENS LÅT</h1>
-
-      {knownSong && (
-        <div className="known-song">
-          <p className="song-name">{knownSong.name}</p>
-          <p className="song-artist">{knownSong.artists[0].name}</p>
-          <a href={knownSong.external_urls.spotify} target="_blank" rel="noopener noreferrer">
-            <img
-              src={knownSong.album.images[0].url}
-              alt="Album art"
-              className="album-art"
-            />
-          </a>
+      {currentSong ? (
+        <div className="song-info">
+          <p className="song-name">{currentSong.name}</p>
+          <p className="song-artist" style={{color: "#17a74e"}}>{currentSong.artists[0].name}</p>
+          <a href={currentSong.external_urls.spotify} target="_blank" rel="noopener noreferrer">
+            <img src={currentSong.album.images[0].url} alt="Album art" className="album-art" />
+          </a>  
+          {accessToken && (
+            <LikeSongButton trackId={currentSong.id} accessToken={accessToken} />
+          )}
         </div>
+      ) : (
+        <span className="loader"></span>
       )}
-      {!knownSong && !recommendedSong && <span className="loader"></span>}
     </div>
   );
 };
