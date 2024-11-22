@@ -1,32 +1,52 @@
-import React, { useState } from "react";
-import { likeSong } from "../service/likeSongService";
+import React from "react";
+import { Song } from "../types/Song";
+import { toast } from "react-toastify";
 
-type LikeSongButtonProps = {
-  trackId: string; // Låtens ID
-  accessToken: string; // Användarens Spotify Access Token
-};
+interface LikeButtonProps {
+  currentSong: Song | null;
+  likedSongs: Song[];
+  setLikedSongs: React.Dispatch<React.SetStateAction<Song[]>>;
+  className?: string;
+}
 
-const LikeSongButton: React.FC<LikeSongButtonProps> = ({ trackId, accessToken }) => {
-  const [liked, setLiked] = useState(false); 
+const LikeButton: React.FC<LikeButtonProps> = ({ currentSong, likedSongs, setLikedSongs, className }) => {
+  const handleClick = () => {
+    if (currentSong) {
+      const isAlreadyLiked = likedSongs.some((song) => song.id === currentSong.id);
 
-  const handleLikeClick = async () => {
-    try {
-      await likeSong(trackId, accessToken); 
-      setLiked(true); 
-    } catch (error) {
-      console.error("Fel vid gillande av låt:", error);
+      if (!isAlreadyLiked) {
+        setLikedSongs((prevSongs) => [...prevSongs, currentSong]);
+        toast.success(`${currentSong.name} har lagts till i dina gillade låtar!`, {
+          position: "top-right",
+          autoClose: 3000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+        });
+      } else {
+        toast.info("Den här låten är redan gillad.", {
+          position: "top-right",
+          autoClose: 3000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+        });
+      }
     }
   };
 
   return (
-    <button
-      className={`like-song-button ${liked ? "liked" : ""}`}
-      onClick={handleLikeClick}
-      disabled={liked} // Inaktivera knappen om låten redan är gillad
-    >
-      {liked ? "Gillad" : "Gilla låten"}
-    </button>
+    <img
+      src="/heart.png"
+      alt="Gilla låten"
+      className={className}
+      onClick={handleClick}
+    />
   );
 };
 
-export default LikeSongButton;
+export default LikeButton;

@@ -17,38 +17,51 @@
     margin-bottom: 20px;
     padding-bottom: 5px;
     font-weight: bold;
-
   }
 
   .song-info {
+    display: flex;
     position: relative;
-    display: inline-block;
-  
+    flex-direction: column;
+    align-items: center;
+
+    .album-and-like {
+      display: flex; /* Gör att elementen ligger på samma rad */
+      align-items: center; /* Centrerar elementen vertikalt */
+      justify-content: center; /* Centrerar hela gruppen horisontellt */
+      gap: 20px;
+   
+    }
+
     .album-art {
       width: 300px;
-      display: block;
-    }
-  
-    .like-heart {
-      position: absolute;
-      top: 50%; 
-      right: -50%; 
-      transform: translateY(-50%); 
-      width: 50px;
-      height: 50px;
-      cursor: pointer;
-      transition: transform 0.3s;
-  
+      border-radius: 8px;
+      block-size: auto;
+      transition: transform 0.3s ease;
+
       &:hover {
-        transform: translateY(-50%) scale(1.2); // Lägg till hover-effekt
+        transform: scale(1.1);
       }
     }
   }
+}
+
+.like-heart {
+  position: relative;
+  width: 40px;
+  height: 40px;
+  cursor: pointer;
+
+  &:hover {
+    transform: translateY(-20%) scale(1.0); 
+  }
+
+}
   
   .loader {
     width: 48px;
     height: 48px;
-    border: 4px solid currentColor; // Färgar kanten med aktuell textfärg
+    border: 4px solid currentColor;
     border-bottom-color: transparent;
     border-radius: 50%;
     display: inline-block;
@@ -56,7 +69,6 @@
     animation: rotation 1s linear infinite;
     color: #1db954;
   }
-}
 
 @keyframes rotation {
   0% {
@@ -125,6 +137,32 @@
         transform: scale(1.1);
         background-color: #17a74e;
       }
+    }
+  }
+}
+
+.likedSong{
+  font-size: 18px;
+  letter-spacing: 3px;
+  font-weight: bold;
+
+}
+
+.liked-songs-section {
+  height: 100vh;
+  background-color: #121212;
+  color: white;
+  font-family: "Arial", sans-serif;
+  padding-left: 30px;
+  padding-bottom: 30px;
+
+  ul {
+    list-style: none;
+    padding: 0;
+
+    li {
+      color: #b3b3b3;
+      margin-bottom: 5px;
     }
   }
 }
