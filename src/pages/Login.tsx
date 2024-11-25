@@ -24,9 +24,7 @@ const Login = () => {
     
   
     const handleLogin = () => {
-        // Här kan du implementera token-hantering om det behövs
-        // När användaren har loggat in, navigera till "Daily Song"
-        navigate("/daily-song");
+        navigate("/mood-selection");
       };
 
     return (
@@ -70,7 +68,7 @@ const Login = () => {
               padding: "8px 16px",
               fontSize: "12px",
               fontWeight: "bold",
-              backgroundColor: "#17a74e",
+              backgroundColor: " #922692",
               color: "#e0e0e0",
               border: "none",
               letterSpacing: "2px",

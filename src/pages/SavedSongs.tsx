@@ -8,7 +8,7 @@ import "react-toastify/dist/ReactToastify.css";
 const SavedSongs: React.FC = () => {
   const [savedSongs, setSavedSongs] = useState<Track[]>([]);
   const [likedSongs, setLikedSongs] = useState<Track[]>([]); 
-  const { accessToken, logout } = useAuth();
+  const {  logout } = useAuth();
 
   useEffect(() => {
     const storedLikedSongs = localStorage.getItem("likedSongs");
