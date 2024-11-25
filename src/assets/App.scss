@@ -32,9 +32,9 @@ body {
     align-items: center;
 
     .album-and-like {
-      display: flex; /* Gör att elementen ligger på samma rad */
-      align-items: center; /* Centrerar elementen vertikalt */
-      justify-content: center; /* Centrerar hela gruppen horisontellt */
+      display: flex; 
+      align-items: center; 
+      justify-content: center; 
       gap: 20px;
    
     }
@@ -88,7 +88,7 @@ body {
     display: inline-block;
     box-sizing: border-box;
     animation: rotation 1s linear infinite;
-    color: #1db954;
+    color: #922692;
   }
 
 @keyframes rotation {
@@ -107,7 +107,7 @@ body {
   padding: 8px 16px;
   font-size: 12px;
   font-weight: bold;
-  background-color: #17a74e;
+  background-color: #922692;
   color: #e0e0e0;
   border: none;
   letter-spacing: 2px;
@@ -156,7 +156,7 @@ body {
 
       &:hover {
         transform: scale(1.1);
-        background-color: #17a74e;
+        background-color: #922692;
       }
     }
   }
@@ -198,7 +198,7 @@ body {
   overflow-x: auto; 
   padding-bottom: 10px;
   scrollbar-width: thin; 
-  scrollbar-color: #17a74e transparent;
+  scrollbar-color: #922692 transparent;
 }
 
 .gallery-scroll {
@@ -239,7 +239,7 @@ body {
 
   .song-artist {
     font-size: 0.8rem;
-    color: #17a74e;
+    color:#922692;
   }
 }
 

@@ -10,26 +10,22 @@ const DailySong: React.FC = () => {
   const [currentSong, setCurrentSong] = useState<Track | null>(null);
   const { accessToken, logout } = useAuth();
   const [likedSongs, setLikedSongs] = useState<Track[]>([]); 
+  const [userId, setUserId] = useState<string>("");
+  const [excludedSongs, setExcludedSongs] = useState<string[]>([]);
 
-
-useEffect(() => {
-  const fetchDailySong = async () => {
+  const fetchDailySong = async (excluded: string[]) => {
+    console.log("fetchDailySong körs med exkluderade låtar:", excluded);
+  
+    // Rensa dubbletter från exkluderingslistan
+    const uniqueExcluded = Array.from(new Set(excluded)); // Rensa dubbletter
+    console.log("Exkluderade låtar utan dubbletter:", uniqueExcluded);
+  
     if (!accessToken) {
       console.error("Ingen access token tillgänglig.");
       return;
     }
-
-    const today = new Date();
-    const dateKey = `${today.getFullYear()}-${today.getMonth() + 1}-${today.getDate()}`;
-    const storedDailySong = localStorage.getItem(`dailySong_${dateKey}`);
-
-    if (storedDailySong) {
-      setCurrentSong(JSON.parse(storedDailySong));
-      return;
-    }
-
+  
     try {
-      // Hämta låtar från olika källor
       const [topTracks, recentlyPlayed, recommendations] = await Promise.all([
         fetch("https://api.spotify.com/v1/me/top/tracks?limit=50", {
           headers: { Authorization: `Bearer ${accessToken}` },
@@ -44,35 +40,93 @@ useEffect(() => {
           }
         ).then((res) => res.json()),
       ]);
-
+  
+      // Kombinera alla spår
       const combinedTracks = [
-        ...topTracks.items.map((item: any) => item), 
-        ...recentlyPlayed.items.map((item: any) => item.track), 
-        ...recommendations.tracks, 
+        ...topTracks.items.map((item: any) => item),
+        ...recentlyPlayed.items.map((item: any) => item.track),
+        ...recommendations.tracks,
       ];
-
-      const uniqueTracks = Array.from(
-        new Map(combinedTracks.map((track) => [track.id, track])).values()
-      );
-      const randomSong = uniqueTracks[Math.floor(Math.random() * uniqueTracks.length)];
-
-      // Spara dagens låt
+      console.log("Alla spår före filtrering:", combinedTracks);
+  
+      // Filtrera bort exkluderade låtar
+      const filteredTracks = combinedTracks.filter((track: any) => !uniqueExcluded.includes(track.id));
+      console.log("Spår efter filtrering:", filteredTracks);
+  
+      if (filteredTracks.length === 0) {
+        console.warn("Alla låtar är exkluderade. Återställ exkluderade låtar för att fortsätta.");
+        return;
+      }
+  
+      // Välj en slumpmässig låt från filtrerade spår
+      const randomSong = filteredTracks[Math.floor(Math.random() * filteredTracks.length)];
+      console.log("Ny slumpad låt:", randomSong);
+  
       setCurrentSong(randomSong);
+  
+      // Spara dagens låt
+      const today = new Date();
+      const dateKey = `${today.getFullYear()}-${today.getMonth() + 1}-${today.getDate()}`;
       localStorage.setItem(`dailySong_${dateKey}`, JSON.stringify(randomSong));
     } catch (error) {
       console.error("Ett fel uppstod vid hämtning av låtar:", error);
     }
   };
+  
 
-  fetchDailySong();
+useEffect(() => {
+  const fetchUserId = async () => {
+    if (!accessToken) return;
+
+    try {
+      const response = await fetch("https://api.spotify.com/v1/me", {
+        headers: { Authorization: `Bearer ${accessToken}` },
+      });
+      const data = await response.json();
+      setUserId(data.id);
+    } catch (error) {
+      console.error("Kunde inte hämta användarens ID:", error);
+    }
+  };
+
+  fetchUserId();
 }, [accessToken]);
 
+useEffect(() => {
+  const storedExcludedSongs = JSON.parse(localStorage.getItem("excludedSongs") || "[]");
+  setExcludedSongs(storedExcludedSongs);
+  fetchDailySong(storedExcludedSongs);
+}, [accessToken]);
+
+const handleExcludeSong = () => {
+  console.log("Nuvarande låt:", currentSong); // Kontrollera låten
+  console.log("Exkluderade låtar före uppdatering:", excludedSongs); // Kontrollera listan
+
+  if (currentSong) {
+    // Kontrollera om låten redan finns i exkluderingslistan
+    if (!excludedSongs.includes(currentSong.id)) {
+      const updatedExcludedSongs = [...excludedSongs, currentSong.id];
+      console.log("Uppdaterad lista över exkluderade låtar:", updatedExcludedSongs);
+
+      setExcludedSongs(updatedExcludedSongs);
+      localStorage.setItem("excludedSongs", JSON.stringify(updatedExcludedSongs));
+
+      setCurrentSong(null); // Töm nuvarande låt innan vi hämtar en ny
+      fetchDailySong(updatedExcludedSongs);
+    } else {
+      console.log("Låten är redan exkluderad:", currentSong.id);
+    }
+  }
+};
+
   useEffect(() => {
+    if (!userId) return;
+
     const storedLikedSongs = localStorage.getItem("likedSongs");
     if (storedLikedSongs) {
       setLikedSongs(JSON.parse(storedLikedSongs));
     }
-  }, []);
+  }, [userId]);
 
   const handleLike = (song: Track) => {
     if (likedSongs.find((likedSong) => likedSong.id === song.id)) {
@@ -108,10 +162,11 @@ useEffect(() => {
         {currentSong ? (
           <div className="song-info">
             <p className="song-name">{currentSong.name}</p>
-            <p className="song-artist" style={{ color: "#17a74e" }}>
+            <p className="song-artist" style={{ color: "#922692" }}>
               {currentSong.artists[0].name}
             </p>
             <div className="album-and-like">
+            <button onClick={handleExcludeSong}>Radera låt</button>
               <a href={currentSong.external_urls.spotify} target="_blank" rel="noopener noreferrer">
                 <img
                   src={currentSong.album?.images?.[0]?.url || "/path/to/default-image.jpg"}

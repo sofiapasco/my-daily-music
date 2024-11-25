@@ -3,14 +3,24 @@ import { useNavigate } from "react-router-dom";
 const Login = () => {
     const navigate = useNavigate();
 
+    const scopes = [
+      "user-read-private",
+      "user-read-email",
+      "user-top-read",
+      "user-read-recently-played",
+      "user-library-modify",
+      "user-library-read",
+      "streaming",
+      "playlist-read-private",
+      "playlist-modify-private",
+      "playlist-modify-public",
+    ];
+    
     const AUTH_URL = `https://accounts.spotify.com/authorize?client_id=${
       import.meta.env.VITE_SPOTIFY_CLIENT_ID
     }&response_type=token&redirect_uri=${
       import.meta.env.VITE_SPOTIFY_REDIRECT_URI
-    }&scope=user-read-private%20user-read-email%20user-top-read%20user-read-recently-played%20user-library-modify`;
-    
-
-    console.log("Auth URL:", AUTH_URL);
+    }&scope=${encodeURIComponent(scopes.join(" "))}`;
     
   
     const handleLogin = () => {
