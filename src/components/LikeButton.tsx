@@ -1,9 +1,9 @@
 import React from 'react';
-import { Song } from '../types/Song';
+import { Track } from '../types/Song';
 
 interface LikeButtonProps {
-  song: Song;
-  onLike: (song: Song) => void;
+  song: Track;
+  onLike: (song: Track) => void;
 }
 
 const LikeButton: React.FC<LikeButtonProps> = ({ song, onLike }) => {

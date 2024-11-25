@@ -1,5 +1,11 @@
 @import "bootstrap/scss/bootstrap";
 
+body {
+  background-color: #121212 !important;
+  color: white !important;
+  font-family: Arial, sans-serif !important;
+}
+
 .daily-song-container {
   display: flex;
   flex-direction: column;
@@ -34,7 +40,7 @@
     }
 
     .album-art {
-      width: 300px;
+      width: 350px;
       border-radius: 8px;
       block-size: auto;
       transition: transform 0.3s ease;
@@ -185,31 +191,28 @@
 
 .gallery-container {
   display: flex;
+  overflow-x: auto;
   gap: 20px; 
+  justify-content: flex-start;
+  align-items: center;
   overflow-x: auto; 
   padding-bottom: 10px;
   scrollbar-width: thin; 
   scrollbar-color: #17a74e transparent;
+}
 
-  &::-webkit-scrollbar {
-    height: 8px; 
-  }
-
-  &::-webkit-scrollbar-thumb {
-    background: #17a74e; 
-    border-radius: 10px;
-  }
-
-  &::-webkit-scrollbar-track {
-    background: transparent;
-  }
+.gallery-scroll {
+  display: flex;
+  gap: 16px; 
+  padding: 10px;
+  width: max-content;
 }
 
 .gallery-item {
   display: flex;
   flex-direction: column;
   align-items: center;
-  width: 200px; 
+  width: 250px; 
   text-align: center;
   color: white;
   background-color: #222; 
@@ -237,5 +240,68 @@
   .song-artist {
     font-size: 0.8rem;
     color: #17a74e;
+  }
+}
+
+.saved-songs-container {
+  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+
+  h1 {
+    margin-bottom: 20px;
+    font-size: 20px;
+    letter-spacing: 3px;
+    padding-bottom: 5px;
+    font-weight: bold;
+  }
+
+  .gallery-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+    justify-items: center;
+  }
+
+  .gallery-item {
+    flex-direction: column;
+    width: 250px;
+    height: 370px;
+    justify-content: space-between;
+    border-radius: 10px;
+    overflow: hidden;
+
+    text-align: center;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+    transition: transform 0.3s, box-shadow 0.3s;
+
+    &:hover {
+      transform: scale(1.05);
+      box-shadow: 0 8px 12px rgba(0, 0, 0, 0.4);
+    }
+
+      img {
+        width: 100%;
+        height: auto;
+        max-height: 200px;
+        object-fit: cover;
+      }
+
+    .song-name {
+      font-size: 1rem;
+      font-weight: bold;
+      margin: 10px 0 5px;
+    }
+
+    .song-artist {
+      font-size: 0.9rem;
+    }
+  }
+
+  // Meddelande om inga sparade låtar
+  .no-songs-message {
+    font-size: 1.5rem;
+    margin-top: 50px;
+
   }
 }

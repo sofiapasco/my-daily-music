@@ -1,51 +1,71 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext";
-import { Song } from "../types/Song";
+import { Track } from "../types/Song"; // Importera Track-typen
 import LikeButton from "../components/LikeButton";
 import DeleteButton from "../components/DeleteButton";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
 const DailySong: React.FC = () => {
-  const [trackId, setTrackId] = useState<string | null>(null);
-  const [currentSong, setCurrentSong] = useState<Song | null>(null);
+  const [currentSong, setCurrentSong] = useState<Track | null>(null);
   const { accessToken, logout } = useAuth();
-  const [likedSongs, setLikedSongs] = useState<Song[]>([]);
+  const [likedSongs, setLikedSongs] = useState<Track[]>([]); 
 
-  useEffect(() => {
+
+useEffect(() => {
+  const fetchDailySong = async () => {
+    if (!accessToken) {
+      console.error("Ingen access token tillgänglig.");
+      return;
+    }
+
     const today = new Date();
     const dateKey = `${today.getFullYear()}-${today.getMonth() + 1}-${today.getDate()}`;
     const storedDailySong = localStorage.getItem(`dailySong_${dateKey}`);
 
     if (storedDailySong) {
-      const song = JSON.parse(storedDailySong);
-      setCurrentSong(song);
-      setTrackId(song.id);
+      setCurrentSong(JSON.parse(storedDailySong));
       return;
     }
 
-    if (!accessToken) {
-      console.error("Ingen accessToken tillgänglig, kan inte hämta data.");
-      return;
+    try {
+      // Hämta låtar från olika källor
+      const [topTracks, recentlyPlayed, recommendations] = await Promise.all([
+        fetch("https://api.spotify.com/v1/me/top/tracks?limit=50", {
+          headers: { Authorization: `Bearer ${accessToken}` },
+        }).then((res) => res.json()),
+        fetch("https://api.spotify.com/v1/me/player/recently-played?limit=50", {
+          headers: { Authorization: `Bearer ${accessToken}` },
+        }).then((res) => res.json()),
+        fetch(
+          "https://api.spotify.com/v1/recommendations?limit=20&seed_tracks=4uLU6hMCjMI75M1A2tKUQC",
+          {
+            headers: { Authorization: `Bearer ${accessToken}` },
+          }
+        ).then((res) => res.json()),
+      ]);
+
+      const combinedTracks = [
+        ...topTracks.items.map((item: any) => item), 
+        ...recentlyPlayed.items.map((item: any) => item.track), 
+        ...recommendations.tracks, 
+      ];
+
+      const uniqueTracks = Array.from(
+        new Map(combinedTracks.map((track) => [track.id, track])).values()
+      );
+      const randomSong = uniqueTracks[Math.floor(Math.random() * uniqueTracks.length)];
+
+      // Spara dagens låt
+      setCurrentSong(randomSong);
+      localStorage.setItem(`dailySong_${dateKey}`, JSON.stringify(randomSong));
+    } catch (error) {
+      console.error("Ett fel uppstod vid hämtning av låtar:", error);
     }
+  };
 
-    console.log("Hämtar dagens låt...");
-
-    const seedTrackId = "4uLU6hMCjMI75M1A2tKUQC"; // Dynamisk eller statisk seed
-    fetch(`https://api.spotify.com/v1/recommendations?limit=1&seed_tracks=${seedTrackId}`, {
-      headers: { Authorization: `Bearer ${accessToken}` },
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.tracks && data.tracks.length > 0) {
-          const song = data.tracks[0];
-          setCurrentSong(song);
-          setTrackId(song.id);
-          localStorage.setItem(`dailySong_${dateKey}`, JSON.stringify(song));
-        }
-      })
-      .catch((err) => console.error("Ett fel uppstod vid hämtning av dagens låt:", err));
-  }, [accessToken]);
+  fetchDailySong();
+}, [accessToken]);
 
   useEffect(() => {
     const storedLikedSongs = localStorage.getItem("likedSongs");
@@ -54,7 +74,7 @@ const DailySong: React.FC = () => {
     }
   }, []);
 
-  const handleLike = (song: Song) => {
+  const handleLike = (song: Track) => {
     if (likedSongs.find((likedSong) => likedSong.id === song.id)) {
       toast.info("Låten är redan sparad i dina gillade låtar!");
       return;
@@ -112,7 +132,8 @@ const DailySong: React.FC = () => {
       <div className="liked-songs-section">
         <h2 className="likedSong">Sparade låtar:</h2>
         <div className="gallery-container">
-          {likedSongs.map((song) => (
+        <div className="gallery-scroll">
+          {likedSongs.slice(0,10).map((song) => (
             <div className="gallery-item" key={song.id}>
               <a href={song.external_urls.spotify} target="_blank" rel="noopener noreferrer">
                 <img
@@ -126,6 +147,7 @@ const DailySong: React.FC = () => {
               <DeleteButton songId={song.id} onDelete={handleDelete} />
             </div>
           ))}
+        </div>
         </div>
       </div>
     </>

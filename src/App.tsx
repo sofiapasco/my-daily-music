@@ -4,6 +4,7 @@ import Login from "./pages/Login";
 import Callback from "./pages/Callback";
 import DailySong from "./pages/DailySong";
 import MoodSelection from "./pages/MoodSelection";
+import SavedSongs from './pages/SavedSongs';
 import ErrorPage from './pages/ErrorPage';
 
 
@@ -17,6 +18,7 @@ function App() {
             <Route path="/callback" element={<Callback />} /> 
             <Route path="/daily-song" element={<DailySong />} /> 
             <Route path="/mood-selection" element={<MoodSelection />} />
+            <Route path="/saved-songs" element={<SavedSongs />} />
             <Route path="/error" element={<ErrorPage />} />
           </Routes>
       </AuthProvider>
