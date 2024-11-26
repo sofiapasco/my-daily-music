@@ -6,6 +6,7 @@ import DeleteButton from "../components/DeleteButton";
 import { useNavigate } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
 import SpotifyPlayer from "../components/SpotifyPlayer";
+import ShareSong from "../components/ShareSong";
 import UserMenu from '../components/UserMenu';
 import "react-toastify/dist/ReactToastify.css";
 
@@ -228,7 +229,17 @@ const handleExcludeSong = () => {
               <LikeButton song={currentSong} onLike={handleLike} />
             </div>
             {/*<SpotifyPlayer accessToken={accessToken} currentSong={currentSong} />*/}
+            <div className="share-section">
+            <ShareSong
+              song={{
+                title: currentSong.name,
+                artist: currentSong.artists[0].name,
+                link: currentSong.external_urls.spotify,
+              }}
+            />
           </div>
+          </div>
+          
         ) : (
           <span className="loader"></span>
         )}
