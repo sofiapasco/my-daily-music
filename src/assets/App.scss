@@ -34,22 +34,21 @@ body {
     .album-and-like {
       display: flex; 
       align-items: center; 
-      justify-content: center; 
       gap: 20px;
-      justify-content: space-between; /* Fördela knapparna till vänster och höger */
-      width: 100%; /* Anpassa om det behövs */
+      justify-content: space-between; 
+      width: 100%; 
       padding: 0 10px;
    
     }
-
+  
     .album-art {
-      width: 350px;
-      border-radius: 8px;
-      block-size: auto;
+      width: 400px;
+      padding: 10px;
+      border-radius: 20px;
       transition: transform 0.3s ease;
 
       &:hover {
-        transform: scale(1.1);
+        transform: scale(1.0);
       }
     }
   }
@@ -264,7 +263,7 @@ body {
 
 .saved-songs-container {
   padding: 20px;
-  max-width: 1200px;
+  max-width: 100vh;
   margin: 0 auto;
 
   h1 {
@@ -353,7 +352,7 @@ body {
   
   right: 100px;
   margin-top: 10px;
-  width: 150px; 
+  width: 120px; 
   background-color: #922692; 
   border-radius: 8px;
   box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2);
@@ -366,8 +365,9 @@ body {
     padding: 10px 15px;
     color: white; 
     text-decoration: none;
-    font-size: 14px;
-
+    font-size: 11px;
+    letter-spacing: 1px;
+  
     &:hover {
       background-color: #7d1f7d; 
     }

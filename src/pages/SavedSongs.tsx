@@ -8,7 +8,6 @@ import "react-toastify/dist/ReactToastify.css";
 
 const SavedSongs: React.FC = () => {
   const [savedSongs, setSavedSongs] = useState<Track[]>([]);
-  const [likedSongs, setLikedSongs] = useState<Track[]>([]); 
   const {  logout } = useAuth();
 
   useEffect(() => {
@@ -19,10 +18,15 @@ const SavedSongs: React.FC = () => {
   }, []);
 
   const handleDelete = (songId: string) => {
-    const updatedLikedSongs = likedSongs.filter((song) => song.id !== songId);
-    setLikedSongs(updatedLikedSongs);
-    localStorage.setItem("likedSongs", JSON.stringify(updatedLikedSongs));
-    toast.error("Låten har tagits bort från dina gillade låtar!");
+    // Filtrera bort den raderade låten från listan
+    const updatedSavedSongs = savedSongs.filter((song) => song.id !== songId);
+    setSavedSongs(updatedSavedSongs);
+
+    // Uppdatera localStorage
+    localStorage.setItem("likedSongs", JSON.stringify(updatedSavedSongs));
+
+    // Visa en bekräftelse-toast
+    toast.error("Låten har tagits bort från dina sparade låtar!");
   };
 
   const handleLogout = () => {
@@ -60,7 +64,7 @@ const SavedSongs: React.FC = () => {
           ))}
         </div>
       ) : (
-        <p className="no-songs-message">Inga sparade låtar hittades.</p>
+        <p className="no-songs-message"style={{color:"black",fontSize:"16px"}}>Inga sparade låtar hittades.</p>
       )}
     </div>
   );
