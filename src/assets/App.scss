@@ -36,6 +36,9 @@ body {
       align-items: center; 
       justify-content: center; 
       gap: 20px;
+      justify-content: space-between; /* Fördela knapparna till vänster och höger */
+      width: 100%; /* Anpassa om det behövs */
+      padding: 0 10px;
    
     }
 
@@ -53,16 +56,32 @@ body {
 }
 
 .like-heart {
-  position: relative;
+  position: absolute;
+  top: 50%; /* Justera vertikalt */
+  right: -50%; /* Flytta till höger */
   background-color: #121212;
-  width: 40px;
-  height: 40px;
+  width: 50px;
+  height: 50px;
   cursor: pointer;
 
   &:hover {
     transform: translateY(-20%) scale(1.0); 
   }
+}
 
+.close{
+  position: relative;
+  background-color: #121212;
+  width: 50px;
+  height: 50px;
+  position: absolute;
+  top: 50%;
+  left: -50%; 
+  cursor: pointer;
+
+  &:hover {
+    transform: translateY(-20%) scale(1.0); 
+  }
 }
 
 .delete{
@@ -174,8 +193,8 @@ body {
   background-color: #121212;
   color: white;
   font-family: "Arial", sans-serif;
-  padding-left: 30px;
-  padding-bottom: 30px;
+  padding-left: 40px;
+  padding-bottom: 40px;
 
   ul {
     list-style: none;
@@ -303,5 +322,56 @@ body {
     font-size: 1.5rem;
     margin-top: 50px;
 
+  }
+}
+
+.user-button {
+  position: absolute;
+  top: 20px;
+  right: 150px;
+  width: 40px;
+  height: 40px;
+  background-color: #922692;
+  border: none;
+  border-radius: 30px;
+  cursor: pointer;
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2);
+  transition: transform 0.3s, box-shadow 0.3s;
+
+  &:hover {
+    transform: scale(1.1);
+    box-shadow: 0px 6px 8px rgba(0, 0, 0, 0.3);
+  }
+}
+
+
+.user-dropdown {
+  position: absolute;
+  top: 60px;
+  
+  right: 100px;
+  margin-top: 10px;
+  width: 150px; 
+  background-color: #922692; 
+  border-radius: 8px;
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2);
+  overflow: hidden;
+  z-index: 10; 
+  transition: transform 0.3s, box-shadow 0.3s;
+
+  a {
+    display: block;
+    padding: 10px 15px;
+    color: #ffffff; 
+    text-decoration: none;
+    font-size: 14px;
+
+    &:hover {
+      background-color: #7d1f7d; 
+    }
+  }
+
+  &.hidden {
+    display: none; /* Dölj dropdown när den inte är aktiv */
   }
 }

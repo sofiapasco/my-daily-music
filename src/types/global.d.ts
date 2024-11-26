@@ -1,7 +1,9 @@
+/// <reference types="spotify-web-playback-sdk" />
+
 declare global {
-    interface Window {
-      Spotify: any;
-    }
+  interface Window {
+    Spotify: {
+      Player: typeof Spotify.Player;
+    };
   }
-  
-  export {};
+}

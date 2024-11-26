@@ -3,7 +3,10 @@ import { useAuth } from "../context/AuthContext";
 import { Track } from "../types/Song"; 
 import LikeButton from "../components/LikeButton";
 import DeleteButton from "../components/DeleteButton";
+import { useNavigate } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
+import SpotifyPlayer from "../components/SpotifyPlayer";
+import UserMenu from '../components/UserMenu';
 import "react-toastify/dist/ReactToastify.css";
 
 const DailySong: React.FC = () => {
@@ -13,6 +16,7 @@ const DailySong: React.FC = () => {
   const [userId, setUserId] = useState<string>("");
   const [excludedSongs, setExcludedSongs] = useState<string[]>([]);
   const [selectedMood, setSelectedMood] = useState<string | null>(null);
+  const navigate = useNavigate();
 
   const moodParams: Record<string, any> = {
     "😊": { valence: 0.8, energy: 0.7 }, // Glad
@@ -22,13 +26,18 @@ const DailySong: React.FC = () => {
     "💪": { valence: 0.6, energy: 0.9 }, // Peppad/träningsmode
     "🥰": { valence: 0.9, energy: 0.5 }, // Kärleksfull
   };
-  
-
+ 
   useEffect(() => {
     const mood = localStorage.getItem("selectedMood");
-    setSelectedMood(mood);
-    console.log("Valt humör från localStorage:", mood);
-  }, []);
+    if (!mood) {
+      console.log("Inget humör valt. Navigera till MoodSelection.");
+      navigate("/mood-selection"); // Navigera till sidan där användaren väljer humör
+    } else {
+      setSelectedMood(mood);
+      console.log("Valt humör från localStorage:", mood);
+    }
+  }, [navigate]);
+  
 
   const fetchDailySong = async (excluded: string[], mood: string | null) => {
     console.log("fetchDailySong körs med exkluderade låtar:", excluded);
@@ -91,7 +100,8 @@ const DailySong: React.FC = () => {
   
       const randomSong = filteredTracks[Math.floor(Math.random() * filteredTracks.length)];
       console.log("Ny slumpad låt:", randomSong);
-  
+      const trackUri = `spotify:track:${randomSong.id}`;
+      randomSong.uri = trackUri;
       setCurrentSong(randomSong);
   
       localStorage.setItem(`dailySong_${dateKey}`, JSON.stringify(randomSong));
@@ -189,6 +199,7 @@ const handleExcludeSong = () => {
   return (
     <>
       <div className="daily-song-container">
+        <UserMenu />
         <button className="logout-btn" onClick={handleLogout}>
           Logga ut
         </button>
@@ -200,7 +211,13 @@ const handleExcludeSong = () => {
               {currentSong.artists[0].name}
             </p>
             <div className="album-and-like">
-            <button onClick={handleExcludeSong}>Radera låt</button>
+            <button onClick={handleExcludeSong} style={{ border: "none", background: "none" }}>
+                <img 
+                  src="/close.png" 
+                  alt="Radera låt"
+                  className="close"
+                />
+              </button>
               <a href={currentSong.external_urls.spotify} target="_blank" rel="noopener noreferrer">
                 <img
                   src={currentSong.album?.images?.[0]?.url || "/path/to/default-image.jpg"}
@@ -210,6 +227,7 @@ const handleExcludeSong = () => {
               </a>
               <LikeButton song={currentSong} onLike={handleLike} />
             </div>
+            {/*<SpotifyPlayer accessToken={accessToken} currentSong={currentSong} />*/}
           </div>
         ) : (
           <span className="loader"></span>

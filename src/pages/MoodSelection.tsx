@@ -12,12 +12,8 @@ const MoodSelection: React.FC = () => {
     setMood(selectedMood);
     localStorage.setItem("selectedMood", selectedMood);
     console.log("Humör sparat i localStorage:", selectedMood);
+    navigate("/daily-song")
 
-  };
-
-  const skipMoodSelection = () => {
-    console.log("Användaren hoppar över humörval.");
-    navigate("/daily-song");
   };
 
   return (
@@ -34,9 +30,8 @@ const MoodSelection: React.FC = () => {
         <button onClick={() => handleMoodSelection("💪")}>💪</button>
         <button onClick={() => handleMoodSelection("🥰")}>🥰</button>
       </div>
-      <button className="skip-btn" onClick={skipMoodSelection}>
-        Hoppa över
-      </button>
+      <button onClick={() => navigate("/daily-song")}>Hoppa över</button>
+
     </div>
   );
 };

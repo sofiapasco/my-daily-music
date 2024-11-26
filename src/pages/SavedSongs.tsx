@@ -3,6 +3,7 @@ import { Track } from "../types/Song";
 import { useAuth } from "../context/AuthContext";
 import DeleteButton from "../components/DeleteButton";
 import { ToastContainer, toast } from "react-toastify";
+import UserMenu from "../components/UserMenu"
 import "react-toastify/dist/ReactToastify.css";
 
 const SavedSongs: React.FC = () => {
@@ -32,6 +33,7 @@ const SavedSongs: React.FC = () => {
   return (
     <div className="saved-songs-container">
       <h1>Alla sparade låtar:</h1>
+      <UserMenu />
       <button className="logout-btn" onClick={handleLogout}>
           Logga ut
         </button>
