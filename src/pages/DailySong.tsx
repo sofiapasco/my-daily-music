@@ -5,7 +5,6 @@ import LikeButton from "../components/LikeButton";
 import DeleteButton from "../components/DeleteButton";
 import { useNavigate } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
-import SpotifyPlayer from "../components/SpotifyPlayer";
 import ShareSong from "../components/ShareSong";
 import UserMenu from '../components/UserMenu';
 import "react-toastify/dist/ReactToastify.css";
@@ -32,7 +31,7 @@ const DailySong: React.FC = () => {
     const mood = localStorage.getItem("selectedMood");
     if (!mood) {
       console.log("Inget humör valt. Navigera till MoodSelection.");
-      navigate("/mood-selection"); // Navigera till sidan där användaren väljer humör
+      navigate("/mood-selection");
     } else {
       setSelectedMood(mood);
       console.log("Valt humör från localStorage:", mood);

@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import '../assets/App.scss'; 
 
 const UserMenu = () => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -15,6 +14,7 @@ const UserMenu = () => {
         <img src="/user.png" alt="User" style={{ width: '100%', borderRadius: '50%' }} />
       </button>
 
+      {/* Dropdown-menyn */}
       <div className={`user-dropdown ${isDropdownOpen ? '' : 'hidden'}`}>
         <a href="/saved-songs">Sparade låtar</a>
         <a href="/statistics">Statistik</a>

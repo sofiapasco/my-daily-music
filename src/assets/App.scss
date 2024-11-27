@@ -1,19 +1,11 @@
 @import "bootstrap/scss/bootstrap";
 
-body {
-  background-color:#f8f3f3 !important;
-  color: white !important;
-  font-family: Arial, sans-serif !important;
-}
-
 .daily-song-container {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   height: 100vh;
-  background-color: #f8f3f3;
-  color: rgb(7, 7, 7);
   font-family: "Arial", sans-serif;
   text-align: center;
 
@@ -146,8 +138,6 @@ body {
   align-items: center;
   justify-content: center;
   height: 100vh;
-  background-color:#f8f3f3;
-  color: black;
   font-family: "Arial", sans-serif;
   text-align: center;
 
@@ -189,8 +179,6 @@ body {
 
 .liked-songs-section {
   height: 100vh;
-  background-color: #f8f3f3;
-  color: black;
   font-family: "Arial", sans-serif;
   padding-left: 40px;
   padding-bottom: 40px;
@@ -210,10 +198,10 @@ body {
 .gallery-container {
   display: flex;
   overflow-x: auto;
-  gap: 20px; 
-  justify-content: flex-start;
+  gap: 30px; 
+  flex-wrap: wrap;
+  justify-content: center;
   align-items: center;
-  overflow-x: auto; 
   padding-bottom: 10px;
   scrollbar-width: thin; 
   scrollbar-color: #922692 transparent;
@@ -228,13 +216,14 @@ body {
 
 .gallery-item {
   display: flex;
+  margin: 20px;
   flex-direction: column;
   align-items: center;
   width: 250px; 
   text-align: center;
   color: black;
   background-color: #ece7e7; 
-  padding: 10px;
+  padding: 30px;
   border-radius: 8px;
   box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.3);
 
@@ -263,7 +252,6 @@ body {
 
 .saved-songs-container {
   padding: 20px;
-  max-width: 100vh;
   margin: 0 auto;
 
   h1 {
@@ -283,6 +271,7 @@ body {
   }
 
   .gallery-item {
+    padding: 20px;
     flex-direction: column;
     width: 250px;
     height: 370px;
@@ -345,8 +334,7 @@ body {
   }
 }
 
-
-.user-dropdown {
+.user-dropdown{
   position: absolute;
   top: 60px;
   
@@ -360,14 +348,18 @@ body {
   z-index: 10; 
   transition: transform 0.3s, box-shadow 0.3s;
 
-  a {
+  a, button {
     display: block;
     padding: 10px 15px;
     color: white; 
     text-decoration: none;
     font-size: 11px;
     letter-spacing: 1px;
-  
+    font-size: 14px;
+    background: none;
+    border: none;
+    cursor: pointer;
+
     &:hover {
       background-color: #7d1f7d; 
     }
@@ -377,6 +369,7 @@ body {
     display: none; 
   }
 }
+
 .share-song {
   text-align: center;
 
@@ -409,3 +402,111 @@ body {
     }
   }
 }
+
+.user-profile {
+  text-align: center;
+  margin: 20px auto;
+  padding: 20px;
+  max-width: 400px;
+  border-radius: 10px;
+  background-color: #ece7e7;
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.user-avatar {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  margin-bottom: 20px;
+}
+
+.user-name {
+  font-size: 1.5rem;
+  font-weight: bold;
+}
+
+.user-email {
+  font-size: 1rem;
+  color: #333;
+}
+
+.edit-button {
+  margin-top: 10px;
+  padding: 8px 12px;
+  background-color: #922692;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.edit-button:hover {
+  background-color: #7d1f7d;
+}
+
+
+#upload-avatar {
+  font-size: 14px;
+  margin: 30px;
+  font-weight: bold;
+  border-radius: 4px;
+  cursor: pointer;
+  padding-left: 70px;
+  max-width: 350px;
+
+}
+
+/* För mörkt tema */
+body.dark {
+  background-color: #1d1c1c; 
+  color: #fff !important; 
+
+  h1, h3, a ,p{
+    color: #fff !important; 
+    transition: color 0.3s ease-in-out; 
+  }
+  .gallery-item{
+    background-color: #343434;
+  }
+  .user-profile{
+    background-color: #343434;
+  }
+
+  .like-heart, .close {
+    background-color: #1d1c1c !important; 
+    color: #fff; 
+  }
+}
+
+/* För ljust tema */
+body.light {
+  background-color: #f8f3f3;
+  color: #000 !important; 
+
+  h1, h3 {
+    color: #000 !important; 
+  }
+
+  .like-heart, .close {
+    background-color: #f8f3f3 !important; 
+    color: #000; 
+  }
+}
+
+.theme-switch-btn {
+  position: absolute;
+  top: 20px;
+  left: 57rem;
+  width: 40px;
+  height: 40px;
+  padding: 7px 10px;
+  border: none;
+  background-color: #922692;
+  color: white;
+  cursor: pointer;
+  border-radius: 15px;
+
+
+}
+

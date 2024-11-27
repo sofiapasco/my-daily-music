@@ -18,6 +18,7 @@ const Callback: React.FC = () => {
         const params = new URLSearchParams(hash.substring(1));
         const token = params.get("access_token");
         const expiresIn = parseInt(params.get("expires_in") || "3600", 10);
+        const userId = "placeholderUserId";
 
         if (token) {
           console.log("Extracted Token:", token);
