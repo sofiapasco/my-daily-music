@@ -17,15 +17,6 @@ const DailySong: React.FC = () => {
   const [excludedSongs, setExcludedSongs] = useState<string[]>([]);
   const [selectedMood, setSelectedMood] = useState<string | null>(null);
   const navigate = useNavigate();
-
-  const moodParams: Record<string, any> = {
-    "😊": { valence: 0.8, energy: 0.7 }, // Glad
-    "😢": { valence: 0.2, energy: 0.3 }, // Ledsen
-    "😌": { valence: 0.5, energy: 0.2 }, // Avslappnad
-    "😴": { valence: 0.3, energy: 0.1 }, // Sömnig
-    "💪": { valence: 0.6, energy: 0.9 }, // Peppad/träningsmode
-    "🥰": { valence: 0.9, energy: 0.5 },
-  };
  
   useEffect(() => {
     const mood = localStorage.getItem("selectedMood");
@@ -50,9 +41,9 @@ const DailySong: React.FC = () => {
     if (storedDailySong) {
       console.log("Dagens låt laddad från localStorage:", JSON.parse(storedDailySong));
       setCurrentSong(JSON.parse(storedDailySong));
-      return; 
+      return;
     }
-
+  
     const uniqueExcluded = Array.from(new Set(excluded));
     console.log("Exkluderade låtar utan dubbletter:", uniqueExcluded);
   
@@ -62,29 +53,59 @@ const DailySong: React.FC = () => {
     }
   
     try {
-      const [topTracks, recentlyPlayed, recommendations] = await Promise.all([
+      const [topTracks, recentlyPlayed /*, recommendations*/] = await Promise.all([
+        // Anrop för Top Tracks
         fetch("https://api.spotify.com/v1/me/top/tracks?limit=50", {
           headers: { Authorization: `Bearer ${accessToken}` },
-        }).then((res) => res.json()),
+        })
+          .then(async (res) => {
+            if (!res.ok) {
+              console.error("Top Tracks API fel:", res.status, await res.text());
+              throw new Error(`Top Tracks API error: ${res.status}`);
+            }
+            return res.json();
+          }),
+  
+        // Anrop för Recently Played
         fetch("https://api.spotify.com/v1/me/player/recently-played?limit=50", {
           headers: { Authorization: `Bearer ${accessToken}` },
-        }).then((res) => res.json()),
+        })
+          .then(async (res) => {
+            if (!res.ok) {
+              console.error("Recently Played API fel:", res.status, await res.text());
+              throw new Error(`Recently Played API error: ${res.status}`);
+            }
+            return res.json();
+          }),
+  
+        /*
+        // Detta anrop är bortkommenterat tillfälligt eftersom seed_tracks inte fungerar
         fetch(
-          "https://api.spotify.com/v1/recommendations?limit=20&seed_tracks=4uLU6hMCjMI75M1A2tKUQC",
+          "https://api.spotify.com/v1/recommendations?limit=20&seed_tracks=06dqEjsPKmurrmu3WL4j9k",
           {
             headers: { Authorization: `Bearer ${accessToken}` },
           }
-        ).then((res) => res.json()),
+        )
+          .then(async (res) => {
+            if (!res.ok) {
+              console.error("Recommendations API fel:", res.status, await res.text());
+              throw new Error(`Recommendations API error: ${res.status}`);
+            }
+            return res.json();
+          }),
+        */
       ]);
   
+      // Kombinera spår från de olika anropen
       const combinedTracks = [
         ...topTracks.items.map((item: any) => item),
         ...recentlyPlayed.items.map((item: any) => item.track),
-        ...recommendations.tracks,
+        // ...recommendations.tracks, // Bortkommenterad tills Recommendations fungerar
       ];
   
       console.log("Alla spår före filtrering:", combinedTracks.map((track) => track.id));
   
+      // Filtrera exkluderade låtar
       const filteredTracks = combinedTracks.filter(
         (track) => track.id && !uniqueExcluded.includes(track.id.trim())
       );

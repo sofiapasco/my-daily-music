@@ -36,7 +36,6 @@ const Login = () => {
           alignItems: "center",
           justifyContent: "center",
           height: "100vh",
-          backgroundColor: "#f8f3f3",
           color: "black",
           fontFamily: "'Arial', sans-serif",
         }}
@@ -52,11 +51,11 @@ const Login = () => {
         >
          MY DAILY MUSIC
           <span
+          className="titleFront"
             style={{
               display: "block",
               width: "60%",
               height: "1px",
-              backgroundColor: "black",
               margin: "10px auto 0",
             }}
           ></span>
@@ -70,7 +69,7 @@ const Login = () => {
               fontSize: "12px",
               fontWeight: "bold",
               backgroundColor: " #922692",
-              color: "#f8f3f3",
+              color: "#e0e0e0",
               border: "none",
               letterSpacing: "2px",
               borderRadius: "30px",

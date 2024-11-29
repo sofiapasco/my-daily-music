@@ -18,7 +18,6 @@ const Callback: React.FC = () => {
         const params = new URLSearchParams(hash.substring(1));
         const token = params.get("access_token");
         const expiresIn = parseInt(params.get("expires_in") || "3600", 10);
-        const userId = "placeholderUserId";
 
         if (token) {
           console.log("Extracted Token:", token);
@@ -43,7 +42,7 @@ const Callback: React.FC = () => {
             setTokenHandled(true);
 
             // Navigera till nästa sida
-            navigate("/daily-song");
+            navigate("/mood-selection");
           } else {
             console.error("Kunde inte hämta användar-ID.");
             navigate("/");

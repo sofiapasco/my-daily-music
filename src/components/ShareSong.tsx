@@ -1,4 +1,5 @@
 import React from 'react';
+import { ToastContainer, toast } from "react-toastify";
 
 interface Song {
   title: string;
@@ -32,11 +33,13 @@ const ShareSong: React.FC<ShareSongProps> = ({ song }) => {
 
   const handleCopyLink = () => {
     navigator.clipboard.writeText(`${shareText} ${shareUrl}`);
-    alert('Länken har kopierats!');
+    toast.success('Länken har kopierats!');
   };
 
-  return (
+  return ( 
     <div className="share-song">
+       <ToastContainer position="top-right" autoClose={3000} hideProgressBar={false} newestOnTop closeOnClick pauseOnFocusLoss draggable pauseOnHover />
+
       <div className="social-buttons">
         {/* Facebook */}
         <a

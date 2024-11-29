@@ -44,16 +44,21 @@ const UserProfile: React.FC = () => {
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files && event.target.files[0]) {
       const file = event.target.files[0];
-      const imageUrl = URL.createObjectURL(file);
-
-      // Sätt ny avatar och spara i localStorage
-      setCustomAvatar(imageUrl);
-      localStorage.setItem("customUserAvatar", imageUrl);
+      const reader = new FileReader();
+  
+      reader.onload = () => {
+        const base64Image = reader.result as string; // Base64-sträng
+        setCustomAvatar(base64Image);
+        localStorage.setItem("customUserAvatar", base64Image); // Spara i localStorage
+      };
+  
+      reader.readAsDataURL(file); // Läser filen som Base64
     }
   };
+  
 
   if (!userInfo) {
-    return <p>Loading user info...</p>;
+    return <span className="loader"></span>;
   }
 
   return (

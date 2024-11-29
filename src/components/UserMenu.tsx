@@ -16,9 +16,10 @@ const UserMenu = () => {
 
       {/* Dropdown-menyn */}
       <div className={`user-dropdown ${isDropdownOpen ? '' : 'hidden'}`}>
+        <a href="/profile">Profil</a>
+        <a href="/daily-song">Dagens låt</a>
         <a href="/saved-songs">Sparade låtar</a>
         <a href="/statistics">Statistik</a>
-        <a href="/profile">Profil</a>
       </div>
     </div>
   );
