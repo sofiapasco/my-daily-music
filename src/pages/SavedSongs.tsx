@@ -2,9 +2,11 @@ import { useEffect, useState } from "react";
 import { Track } from "../types/Song";
 import { useAuth } from "../context/AuthContext";
 import { ToastContainer, toast } from "react-toastify";
+import { useLocation, useNavigate } from "react-router-dom"; 
 import UserMenu from "../components/UserMenu";
 import "react-toastify/dist/ReactToastify.css";
 import SearchBar from "../components/SearchSongs";
+import Pagination from "../components/Pagination";
 
 const SavedSongs: React.FC = () => {
   const [visibleMenu, setVisibleMenu] = useState<number | null>(null);
@@ -17,8 +19,28 @@ const SavedSongs: React.FC = () => {
   const [showModal, setShowModal] = useState(false); // Hanterar modalens synlighet
   const [newPlaylistName, setNewPlaylistName] = useState<string>("");
   const [filteredSongs, setFilteredSongs] = useState<Track[]>([]);
+  const [currentPage, setCurrentPage] = useState<number>(1);
 
   const { logout } = useAuth();
+  const itemsPerPage = 12;
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  useEffect(() => {
+    const queryParams = new URLSearchParams(location.search);
+    const pageFromUrl = queryParams.get("page");
+    if (pageFromUrl) {
+      setCurrentPage(parseInt(pageFromUrl, 20));
+    } else {
+      setCurrentPage(1); 
+    }
+  }, [location]);
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    localStorage.setItem("currentPage", page.toString());
+    navigate(`?page=${page}`);
+  };
 
   useEffect(() => {
     const storedLikedSongs = localStorage.getItem("likedSongs");
@@ -33,17 +55,25 @@ const SavedSongs: React.FC = () => {
   }, []);
 
   const handleSearch = () => {
+    if (!searchQuery.trim()) {
+     
+      setFilteredSongs(savedSongs);
+      return;
+    }
+  
     const filtered = savedSongs.filter(
       (song) =>
         song.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         song.artists[0]?.name.toLowerCase().includes(searchQuery.toLowerCase())
     );
+  
     setFilteredSongs(filtered);
+    setCurrentPage(1);
   };
-
+  
   useEffect(() => {
     handleSearch();
-  }, [searchQuery]);
+  }, [searchQuery, savedSongs]);
 
   const handleRemoveFromSavedSongs = (songId: string) => {
     const updatedSongs = savedSongs.filter((song) => song.id !== songId);
@@ -153,19 +183,27 @@ const handleToggleMenu = (menuId: string): void => {
     // Om menyn redan är öppen, stäng den
     setOpenMenuId(null);
     if (timeoutId !== null) {
-      clearTimeout(timeoutId); // Rensa eventuell tidigare timeout
+      clearTimeout(timeoutId); 
       setTimeoutId(null);
     }
   } else {
-    // Öppna menyn och starta en timeout
     setOpenMenuId(menuId);
-    if (timeoutId !== null) clearTimeout(timeoutId); // Rensa eventuell tidigare timeout
+    if (timeoutId !== null) clearTimeout(timeoutId);
     const id = window.setTimeout(() => {
-      setOpenMenuId(null); // Stäng menyn automatiskt
-    }, 5000); // 5 sekunder
-    setTimeoutId(id); // Spara timeout-id för att kunna rensa senare
+      setOpenMenuId(null); 
+    }, 5000); 
+    setTimeoutId(id); 
   }
 };
+
+const indexOfLastSong = currentPage * itemsPerPage;
+const indexOfFirstSong = indexOfLastSong - itemsPerPage;
+
+const songsToRender = searchQuery
+  ? filteredSongs.slice(indexOfFirstSong, indexOfLastSong)
+  : savedSongs.slice(indexOfFirstSong, indexOfLastSong);
+
+
 
   return (
     <div className="saved-songs-container">
@@ -187,7 +225,7 @@ const handleToggleMenu = (menuId: string): void => {
 
       {/* Visa sparade låtar */}
       <div className="gallery-container">
-      {filteredSongs.map((song, index) => (
+      {songsToRender.map((song, index) => (
      <div className="gallery-item" key={song.id}>
       <a href={song.external_urls.spotify} target="_blank" rel="noopener noreferrer">
         <img
@@ -239,6 +277,12 @@ const handleToggleMenu = (menuId: string): void => {
     </div>
   ))}
   </div>
+  <Pagination
+  totalItems={searchQuery ? filteredSongs.length : savedSongs.length}
+  itemsPerPage={itemsPerPage}
+  currentPage={currentPage}
+  onPageChange={handlePageChange}
+/>
   <div className="playlists-container">
   {playlists.length > 0 ? (
     playlists.map((playlist, index) => (

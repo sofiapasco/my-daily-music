@@ -36,7 +36,7 @@ const SearchBar: React.FC<SearchBarProps> = ({ searchQuery, setSearchQuery, onSe
           marginLeft: "10px",
           borderRadius: "8px",
           border: "none",
-          backgroundColor: "#4caf50",
+          backgroundColor: "#922692",
           color: "white",
           cursor: "pointer",
           fontSize: "16px",

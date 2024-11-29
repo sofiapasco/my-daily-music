@@ -166,8 +166,6 @@ const handleExcludeSong = () => {
       setExcludedSongs(updatedExcludedSongs);
       localStorage.setItem("excludedSongs", JSON.stringify(updatedExcludedSongs));
 
-      // Rensa dagens låt och hämta en ny
-      setCurrentSong(null);
       const today = new Date();
       const dateKey = `${today.getFullYear()}-${today.getMonth() + 1}-${today.getDate()}`;
       localStorage.removeItem(`dailySong_${dateKey}`); 
@@ -196,11 +194,12 @@ const handleExcludeSong = () => {
       toast.info("Låten är redan sparad i dina gillade låtar!");
       return;
     }
-
+  
     const updatedLikedSongs = [...likedSongs, song];
     setLikedSongs(updatedLikedSongs);
     localStorage.setItem("likedSongs", JSON.stringify(updatedLikedSongs));
     toast.success("Låten har lagts till i dina gillade låtar!");
+
   };
 
   const handleDelete = (songId: string) => {
@@ -208,6 +207,8 @@ const handleExcludeSong = () => {
     setLikedSongs(updatedLikedSongs);
     localStorage.setItem("likedSongs", JSON.stringify(updatedLikedSongs));
     toast.error("Låten har tagits bort från dina gillade låtar!");
+
+    setLikedSongs(JSON.parse(localStorage.getItem("likedSongs") || "[]"));
   };
 
   const handleLogout = () => {
@@ -268,7 +269,7 @@ const handleExcludeSong = () => {
       <ToastContainer position="top-right" autoClose={3000} hideProgressBar={false} newestOnTop closeOnClick pauseOnFocusLoss draggable pauseOnHover />
 
       <div className="liked-songs-section">
-        <h2 className="likedSong">Sparade låtar:</h2>
+        <h2 className="likedSong">Senaste sparade låtar:</h2>
         <div className="gallery-container">
         <div className="gallery-scroll">
           {likedSongs.slice(0,10).map((song) => (
