@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { Track } from "../types/Song"; 
 import LikeButton from "../components/LikeButton";
-import DeleteButton from "../components/DeleteButton";
 import { useNavigate } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
 import ShareSong from "../components/ShareSong";
@@ -12,7 +11,12 @@ import "react-toastify/dist/ReactToastify.css";
 const DailySong: React.FC = () => {
   const [currentSong, setCurrentSong] = useState<Track | null>(null);
   const { accessToken, logout } = useAuth();
+  const [savedSongs, setSavedSongs] = useState<Track[]>([]);
+  const [showSelect, setShowSelect] = useState(false);
+  const [timeoutId, setTimeoutId] = useState<number | null>(null);
+  const [openMenuId, setOpenMenuId] = useState<string | null>(null);
   const [likedSongs, setLikedSongs] = useState<Track[]>([]); 
+  const [playlists, setPlaylists] = useState<{ name: string; songs: Track[] }[]>([]);
   const [userId, setUserId] = useState<string>("");
   const [excludedSongs, setExcludedSongs] = useState<string[]>([]);
   const [selectedMood, setSelectedMood] = useState<string | null>(null);
@@ -128,7 +132,6 @@ const DailySong: React.FC = () => {
     }
   };
   
-  
 useEffect(() => {
   const fetchUserId = async () => {
     if (!accessToken) return;
@@ -202,18 +205,65 @@ const handleExcludeSong = () => {
 
   };
 
-  const handleDelete = (songId: string) => {
-    const updatedLikedSongs = likedSongs.filter((song) => song.id !== songId);
-    setLikedSongs(updatedLikedSongs);
-    localStorage.setItem("likedSongs", JSON.stringify(updatedLikedSongs));
-    toast.error("Låten har tagits bort från dina gillade låtar!");
-
-    setLikedSongs(JSON.parse(localStorage.getItem("likedSongs") || "[]"));
-  };
-
   const handleLogout = () => {
     localStorage.removeItem("spotifyAccessToken");
     logout();
+  };
+
+  const handleToggleMenu = (menuId: string): void => {
+    if (openMenuId === menuId) {
+      // Om menyn redan är öppen, stäng den
+      setOpenMenuId(null);
+      if (timeoutId !== null) {
+        clearTimeout(timeoutId); 
+        setTimeoutId(null);
+      }
+    } else {
+      setOpenMenuId(menuId);
+      if (timeoutId !== null) clearTimeout(timeoutId);
+      const id = window.setTimeout(() => {
+        setOpenMenuId(null); 
+      }, 5000); 
+      setTimeoutId(id); 
+    }
+  };
+
+  const handleRemoveFromSavedSongs = (songId: string) => {
+    const updatedSongs = savedSongs.filter((song) => song.id !== songId);
+    setSavedSongs(updatedSongs);
+    localStorage.setItem("likedSongs", JSON.stringify(updatedSongs));
+    toast.success("Låten har tagits bort!");
+  };
+
+  const handleShareSong = (song: Track) => {
+    const shareText = `Lyssna på "${song.name}" av ${song.artists[0].name}: ${song.external_urls.spotify}`;
+    if (navigator.share) {
+      navigator
+        .share({
+          title: song.name,
+          text: shareText,
+          url: song.external_urls.spotify,
+        })
+        .catch((error) => console.error("Delning misslyckades:", error));
+    } else {
+      navigator.clipboard.writeText(shareText);
+      console.log("Länk kopierad till urklipp!");
+    }
+  };
+
+  const handleAddSongToPlaylist = (playlistIndex: number, song: Track) => {
+    console.log(`Lägger till låt "${song.name}" i spellistan "${playlists[playlistIndex].name}"`);
+    const selectedPlaylist = playlists[playlistIndex];
+    const updatedSongs = [...selectedPlaylist.songs, song];
+  
+    const updatedPlaylist = { ...selectedPlaylist, songs: updatedSongs };
+    const updatedPlaylists = playlists.map((playlist, index) =>
+      index === playlistIndex ? updatedPlaylist : playlist
+    );
+  
+    setPlaylists(updatedPlaylists);
+    localStorage.setItem("playlists", JSON.stringify(updatedPlaylists));
+    toast.success(`"${song.name}" har lagts till i spellistan "${selectedPlaylist.name}"`);
   };
 
   return (
@@ -272,7 +322,7 @@ const handleExcludeSong = () => {
         <h2 className="likedSong">Senaste sparade låtar:</h2>
         <div className="gallery-container">
         <div className="gallery-scroll">
-          {likedSongs.slice(0,10).map((song) => (
+        {likedSongs.slice(-10).reverse().map((song,index) => (
             <div className="gallery-item" key={song.id}>
               <a href={song.external_urls.spotify} target="_blank" rel="noopener noreferrer">
                 <img
@@ -283,7 +333,42 @@ const handleExcludeSong = () => {
               </a>
               <p className="song-name">{song.name}</p>
               <p className="song-artist">{song.artists[0].name}</p>
-              <DeleteButton songId={song.id} onDelete={handleDelete} />
+              <div className="menu-container">
+                <button
+                  className="menu-button"
+                  onClick={() => handleToggleMenu(`${index}-${song.id}`)}
+                >
+                  &#x22EE;
+                </button>
+                {openMenuId === `${index}-${song.id}` && (
+          <div className="menu-dropdown">
+          <button onClick={() => handleShareSong(song)}>Dela låt</button>
+          <button onClick={() => setShowSelect(!showSelect)}>Välj album:</button>
+          {showSelect && (
+            <select
+            onChange={(e) => {
+              const playlistIndex = parseInt(e.target.value, 10);
+              if (!isNaN(playlistIndex)) {
+                handleAddSongToPlaylist(playlistIndex, song);
+                setShowSelect(false); 
+              }
+            }}
+            defaultValue=""
+          >
+            <option value="" disabled>
+              Välj spellista
+            </option>
+            {playlists.map((playlist, playlistIndex) => (
+              <option key={playlistIndex} value={playlistIndex}>
+                {playlist.name}
+              </option>
+            ))}
+          </select>
+          )}
+          <button onClick={() => handleRemoveFromSavedSongs(song.id)}>Ta bort</button>
+        </div>
+            )}
+              </div>
             </div>
           ))}
         </div>

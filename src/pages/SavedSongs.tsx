@@ -26,13 +26,11 @@ const SavedSongs: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  useEffect(() => {
+    useEffect(() => {
     const queryParams = new URLSearchParams(location.search);
     const pageFromUrl = queryParams.get("page");
     if (pageFromUrl) {
-      setCurrentPage(parseInt(pageFromUrl, 20));
-    } else {
-      setCurrentPage(1); 
+      setCurrentPage(parseInt(pageFromUrl, 10));
     }
   }, [location]);
 

@@ -23,6 +23,18 @@ const MoodSelection: React.FC = () => {
     navigate("/daily-song");
   };
 
+  const handleSkip = () => {
+    const today = new Date();
+    const dateKey = `${today.getFullYear()}-${today.getMonth() + 1}-${today.getDate()}`;
+
+    console.log("Användaren hoppade över humörval.");
+    localStorage.setItem("selectedMood", "neutral");
+    localStorage.setItem("moodDate", dateKey); // Spara dagens datum
+
+    navigate("/daily-song");
+  };
+
+
   return (
     <div className="mood-selection-container">
       <UserMenu />
@@ -40,7 +52,7 @@ const MoodSelection: React.FC = () => {
       </div>
       <br></br>
 
-      <button onClick={() => navigate("/daily-song")}>Hoppa över</button>
+      <button onClick={handleSkip}>Hoppa över</button>
 
     </div>
   );

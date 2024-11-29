@@ -181,9 +181,10 @@
 
 .liked-songs-section {
   height: 100vh;
+  overflow-y: hidden;
   font-family: "Arial", sans-serif;
   padding-left: 40px;
-  padding-bottom: 40px;
+  
 
   ul {
     list-style: none;
@@ -198,27 +199,38 @@
 
 
 .gallery-container {
+  flex:1;
+  overflow: visible;
   display: flex;
-  width: 100%;
+  flex-wrap: wrap;
   overflow-x: auto;
   gap: 30px; 
+  width: 100%;
+  height: 100vh;
   flex-wrap: wrap;
   justify-content: center;
   align-items: center;
   padding-bottom: 10px;
   scrollbar-width: thin; 
   scrollbar-color: #922692 transparent;
+
+  position: relative;
 }
 
 .gallery-scroll {
   display: flex;
-  gap: 16px; 
+  gap: 20px;
   padding: 10px;
-  width: max-content;
+  overflow-x: auto; 
+  overflow-y: visible;
+  position: relative;
+  flex-wrap: nowrap; 
+  padding-bottom: 30%;
 }
 
 .gallery-item {
   display: flex;
+  flex: 0 0 auto;
   margin: 20px;
   flex-direction: column;
   align-items: center;
@@ -270,10 +282,13 @@
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
     gap: 20px;
+
     justify-items: center;
+    padding-bottom: 10%;
   }
 
   .gallery-item {
+    width: 100%;
     padding: 20px;
     flex-direction: column;
     width: 250px;
