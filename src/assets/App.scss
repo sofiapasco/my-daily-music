@@ -63,6 +63,29 @@
   }
 }
 
+.fly-to-saved {
+  transition: all 0.8s ease-in-out;
+  position: absolute;
+  z-index: 1000;
+  opacity: 0.5;
+}
+
+@keyframes fly-to-saved-list {
+  0% {
+    transform: scale(1) translate(0, 0);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(0.7) translate(-200px, 50px); /* Mellansteg: flyger till vänster (-100px) och ner (+100px) */
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(0.4) translate(-600px, 150px); /* Slutposition: flyger längre till vänster (-300px) och längre ner (+300px) */
+    opacity: 0; /* Försvinner gradvis */
+  }
+}
+
+
 .close{
   position: relative;
   background-color:#f8f3f3;

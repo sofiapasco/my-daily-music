@@ -1,5 +1,5 @@
 import React from 'react';
-import { ToastContainer, toast } from "react-toastify";
+import { toast } from "react-toastify";
 
 interface Song {
   title: string;
@@ -38,7 +38,6 @@ const ShareSong: React.FC<ShareSongProps> = ({ song }) => {
 
   return ( 
     <div className="share-song">
-       <ToastContainer position="top-right" autoClose={3000} hideProgressBar={false} newestOnTop closeOnClick pauseOnFocusLoss draggable pauseOnHover />
 
       <div className="social-buttons">
         {/* Facebook */}
@@ -48,12 +47,12 @@ const ShareSong: React.FC<ShareSongProps> = ({ song }) => {
           rel="noopener noreferrer"
           className="facebook-button"
         >
-          <img src="/facebook.png" alt="Dela på Facebook" className="icon" />
+          <img src="/facebook.png" alt="Dela på Facebook" className="icon"  id="fbicon"/>
         </a>
 
         {/* Kopiera länk */}
         <button onClick={handleCopyLink} className="copy-link-button">
-          <img src="/copy.png" alt="Kopiera länk" className="icon" />
+          <img src="/copy.png" alt="Kopiera länk" className="icon" id="copyicon"/>
         </button>
 
         {/* Instagram */}
@@ -68,7 +67,7 @@ const ShareSong: React.FC<ShareSongProps> = ({ song }) => {
 
         {/* Dela via mobil (Web Share API) */}
         <button onClick={handleWebShare} className="mobile-share-button">
-          <img src="/share.png" alt="Dela via mobil" className="icon" />
+          <img src="/share.png" alt="Dela via mobil" className="icon" id="phoneicon"/>
         </button>
       </div>
     </div>
