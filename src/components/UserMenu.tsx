@@ -11,7 +11,7 @@ const UserMenu = () => {
     <div className="profile-menu">
       {/* Profilknapp */}
       <button className="user-button" onClick={toggleDropdown}>
-        <img src="/user.png" alt="User" style={{ width: '100%', borderRadius: '50%' }} />
+        <img id="usericon" src="/user.png" alt="User" style={{ width: '100%', borderRadius: '50%' }} />
       </button>
 
       {/* Dropdown-menyn */}

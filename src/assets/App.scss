@@ -497,6 +497,9 @@
   max-width: 350px;
 
 }
+.menu-button{
+  color: #fff;
+}
 
 /* För mörkt tema */
 body.dark {
@@ -524,6 +527,9 @@ body.dark {
     background-color:  #1d1c1c !important; 
     color: #fff; 
   }
+  .menu-button{
+    color: #fff;
+  }
 }
 
 /* För ljust tema */
@@ -545,12 +551,17 @@ body.light {
     background-color: #f8f3f3 !important; 
     color: #000; 
   }
+
+  .menu-button{
+    color: #fff;
+  }
+
 }
 
 .theme-switch-btn {
   position: absolute;
   top: 20px;
-  left: 57rem;
+  left: 67rem;
   width: 40px;
   height: 40px;
   padding: 7px 10px;

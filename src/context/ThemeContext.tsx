@@ -24,6 +24,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       const facebookIcon = document.getElementById("fbicon") as HTMLImageElement;
       const copyIcon = document.getElementById("copyicon") as HTMLImageElement;
       const shareIcon = document.getElementById("phoneicon") as HTMLImageElement;
+      const userIcon = document.getElementById("usericon") as HTMLImageElement;
 
       // Uppdatera ikonens källor baserat på tema
       if (facebookIcon) {
@@ -34,11 +35,15 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       }
 
       if (copyIcon) {
-        copyIcon.src = theme === "dark" ? "/koperia.png" : "/copy.png";
+        copyIcon.src = theme === "dark" ? "/kopiera.png" : "/copy.png";
       }
 
       if (shareIcon) {
         shareIcon.src = theme === "dark" ? "/Dela.png" : "/share.png";
+      }
+
+      if (userIcon) {
+        userIcon.src = theme === "dark" ? "/User1.png" : "/user.png";
       }
     };
 

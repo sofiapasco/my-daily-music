@@ -21,7 +21,6 @@ const UserPage: React.FC = () => {
         className="theme-switch-btn"
         onClick={() => {
           toggleTheme(); 
-          console.log("Tema efter växling:", theme === "light" ? "dark" : "light"); // Kontrollera nästa tema
         }}
       >
         {theme === "light" ? "🌙" : "☀️"}

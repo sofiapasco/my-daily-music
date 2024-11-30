@@ -108,7 +108,7 @@ const SavedSongs: React.FC = () => {
   
     setPlaylists(updatedPlaylists);
     localStorage.setItem("playlists", JSON.stringify(updatedPlaylists));
-    alert(`"${song.name}" har lagts till i spellistan "${selectedPlaylist.name}"`);
+    toast.success(`"${song.name}" har lagts till i spellistan "${selectedPlaylist.name}"`);
   };
 
   const handleShareSong = (song: Track) => {
@@ -218,8 +218,6 @@ const songsToRender = searchQuery
         searchQuery={searchQuery} 
         setSearchQuery={setSearchQuery} 
         onSearch={handleSearch} />
-
-      <ToastContainer position="top-right" autoClose={3000} hideProgressBar={false} newestOnTop closeOnClick pauseOnFocusLoss draggable pauseOnHover />
 
       {/* Visa sparade låtar */}
       <div className="gallery-container">
@@ -333,6 +331,27 @@ const songsToRender = searchQuery
                 <div className="menu-dropdown">
                   <button onClick={() => handleShareSong(song)}>Dela låt</button>
                   <button onClick={() => handleAddSongToPlaylist(index,song)}>Flytta spellista</button>
+                      {showSelect && (
+                  <select
+                  onChange={(e) => {
+                    const playlistIndex = parseInt(e.target.value, 10);
+                    if (!isNaN(playlistIndex)) {
+                      handleAddSongToPlaylist(playlistIndex, song);
+                      setShowSelect(false); 
+                    }
+                  }}
+                  defaultValue=""
+                >
+                  <option value="" disabled>
+                    Välj spellista
+                  </option>
+                  {playlists.map((playlist, playlistIndex) => (
+                    <option key={playlistIndex} value={playlistIndex}>
+                      {playlist.name}
+                    </option>
+                  ))}
+                </select>
+                )}
                   <button onClick={() => handleRemoveFromPlaylist(index,song.id)}>Ta bort</button>
                 </div>
               )}
