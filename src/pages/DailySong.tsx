@@ -69,10 +69,8 @@ const DailySong: React.FC = () => {
   };
   
 
-  const fetchDailySong = async (excluded: string[], mood: string | null) => {
-    console.log("### fetchDailySong KÖRS ###");
-    console.log("Exkluderade låtar:", excluded);
-    console.log("Valt humör:", mood);
+  const fetchDailySong = async (excludedSongs: string[], selectedMood: string) => {
+    console.log("Exkluderade låtar:", excludedSongs);
   
     const today = new Date();
     const dateKey = `${today.getFullYear()}-${today.getMonth() + 1}-${today.getDate()}`;
@@ -90,60 +88,48 @@ const DailySong: React.FC = () => {
       return;
     }
   
-    const uniqueExcluded = Array.from(new Set(excluded));
+    // Ta bort duplicerade exkluderingar
+    const uniqueExcluded = Array.from(new Set(excludedSongs));
     console.log("Exkluderade låtar utan dubbletter:", uniqueExcluded);
   
     try {
-      // Hämta låtar från top tracks och recently played
+      // Hämta låtar från Top Tracks och Recently Played
       const [topTracks, recentlyPlayed] = await Promise.all([
         fetch("https://api.spotify.com/v1/me/top/tracks?limit=50", {
           headers: { Authorization: `Bearer ${accessToken}` },
-        })
-          .then(async (res) => {
-            if (!res.ok) {
-              console.error("Top Tracks API fel:", res.status, await res.text());
-              throw new Error(`Top Tracks API error: ${res.status}`);
-            }
-            return res.json();
-          }),
+        }).then(async (res) => {
+          if (!res.ok) throw new Error(`Top Tracks API error: ${res.status}`);
+          return res.json();
+        }),
   
         fetch("https://api.spotify.com/v1/me/player/recently-played?limit=50", {
           headers: { Authorization: `Bearer ${accessToken}` },
-        })
-          .then(async (res) => {
-            if (!res.ok) {
-              console.error("Recently Played API fel:", res.status, await res.text());
-              throw new Error(`Recently Played API error: ${res.status}`);
-            }
-            return res.json();
-          }),
+        }).then(async (res) => {
+          if (!res.ok) throw new Error(`Recently Played API error: ${res.status}`);
+          return res.json();
+        }),
       ]);
   
-      // Kombinera låtar från top tracks och recently played
+      // Kombinera låtar och filtrera bort exkluderade
       const combinedTracks = [
         ...topTracks.items.map((item: any) => item),
         ...recentlyPlayed.items.map((item: any) => item.track),
       ];
-      console.log("Alla spår före filtrering:", combinedTracks.map((track) => track.id));
-  
-      // Filtrera bort exkluderade låtar
       const filteredTracks = combinedTracks.filter(
         (track) => track.id && !uniqueExcluded.includes(track.id.trim())
       );
   
-      console.log("Låtar efter filtrering (från top/recent):", filteredTracks.map((track) => track.id));
+      console.log("Låtar efter filtrering:", filteredTracks.map((track) => track.name));
   
-      // Om humör är valt, hämta låtar baserat på humöret
+      // Hämta låtar baserat på humöret om valt
       let moodTracks = [];
-      if (mood) {
-        moodTracks = await fetchSongsByMood(mood, accessToken);
-        console.log("Låtar från fetchSongsByMood:", moodTracks.map((track: Track) => track.id));
+      if (selectedMood) {
+        moodTracks = await fetchSongsByMood(selectedMood, accessToken);
+        console.log("Låtar från fetchSongsByMood:", moodTracks.map((track: Track) => track.name));
       }
   
-      // Kombinera låtar från humör och filtrerade låtar
+      // Kombinera alla låtar att välja från
       const allTracks = [...filteredTracks, ...moodTracks];
-      console.log("Totalt antal låtar att välja från:", allTracks.length);
-  
       if (allTracks.length === 0) {
         console.warn("Inga låtar kvar efter filtrering. Återställ exkluderingar.");
         setExcludedSongs([]);
@@ -151,7 +137,7 @@ const DailySong: React.FC = () => {
         return;
       }
   
-      // Välj en slumpad låt
+      // Välj en slumpmässig låt
       const randomSong = allTracks[Math.floor(Math.random() * allTracks.length)];
       console.log("Ny slumpad låt:", randomSong);
   
@@ -162,6 +148,7 @@ const DailySong: React.FC = () => {
       console.error("Ett fel uppstod vid hämtning av låtar:", error);
     }
   };
+  
   
 useEffect(() => {
   const fetchUserId = async () => {
@@ -191,22 +178,24 @@ useEffect(() => {
 
 const handleExcludeSong = () => {
   console.log("Nuvarande låt:", currentSong);
-  console.log("Exkluderade låtar före uppdatering:", excludedSongs); 
+  console.log("Exkluderade låtar före uppdatering:", excludedSongs);
 
   if (currentSong) {
     if (!excludedSongs.includes(currentSong.id)) {
-      // Uppdatera exkluderade låtar
+      // Lägg till låten i exkluderade låtar
       const updatedExcludedSongs = [...excludedSongs, currentSong.id];
       console.log("Uppdaterad lista över exkluderade låtar:", updatedExcludedSongs);
 
+      // Uppdatera state och localStorage
       setExcludedSongs(updatedExcludedSongs);
       localStorage.setItem("excludedSongs", JSON.stringify(updatedExcludedSongs));
 
+      // Ta bort dagens låt från localStorage
       const today = new Date();
       const dateKey = `${today.getFullYear()}-${today.getMonth() + 1}-${today.getDate()}`;
-      localStorage.removeItem(`dailySong_${dateKey}`); 
+      localStorage.removeItem(`dailySong_${dateKey}`);
 
-      // Hämta ny låt
+      // Hämta en ny låt
       fetchDailySong(updatedExcludedSongs, selectedMood);
     } else {
       console.log("Låten är redan exkluderad:", currentSong.id);
@@ -215,6 +204,7 @@ const handleExcludeSong = () => {
     console.warn("Ingen låt att exkludera.");
   }
 };
+
 
   useEffect(() => {
     if (!userId) return;
@@ -230,18 +220,14 @@ const handleExcludeSong = () => {
       toast.info("Låten är redan sparad i dina gillade låtar!");
       return;
     }
-  
-    const updatedLikedSongs = [...likedSongs, song];
-    setLikedSongs(updatedLikedSongs);
-  
-    // Uppdatera localStorage
-    localStorage.setItem("likedSongs", JSON.stringify(updatedLikedSongs));
+
+    const updatedLikedSongs = [...likedSongs, { ...song, date: new Date().toISOString() }];
+    updateLocalStorage("likedSongs", updatedLikedSongs, setLikedSongs);
     toast.success("Låten har lagts till i dina gillade låtar!");
   
-    // Flygeffekt för låtbilden
     const imageElement = currentSong
-    ? document.getElementById(`album-art-${currentSong.id}`) as HTMLImageElement
-    : null;
+      ? document.getElementById(`album-art-${currentSong.id}`) as HTMLImageElement
+      : null;
     console.log("Detta är låtbilden:", imageElement);
     const targetElement = document.getElementById("saved-songs-section"); // Målsektionen
   
@@ -274,7 +260,7 @@ const handleExcludeSong = () => {
         document.body.removeChild(animationElement);
       }, 800);
     }
-  };
+  };  
   
   const handleLogout = () => {
     localStorage.removeItem("spotifyAccessToken");
@@ -298,14 +284,17 @@ const handleExcludeSong = () => {
       setTimeoutId(id); 
     }
   };
+  const updateLocalStorage = (key: string, value: any, setState: React.Dispatch<any>) => {
+    localStorage.setItem(key, JSON.stringify(value));
+    setState(value);
+  };
 
   const handleRemoveFromSavedSongs = (songId: string) => {
     const updatedSongs = savedSongs.filter((song) => song.id !== songId);
-    setSavedSongs(updatedSongs);
-
-    localStorage.setItem("likedSongs", JSON.stringify(updatedSongs));
+    updateLocalStorage("likedSongs", updatedSongs, setSavedSongs);
     toast.success("Låten har tagits bort!");
   };
+  
 
   const handleShareSong = (song: Track) => {
     const shareText = `Lyssna på "${song.name}" av ${song.artists[0].name}: ${song.external_urls.spotify}`;
@@ -324,20 +313,33 @@ const handleExcludeSong = () => {
   };
 
   const handleAddSongToPlaylist = (playlistIndex: number, song: Track) => {
-    console.log(`Lägger till låt "${song.name}" i spellistan "${playlists[playlistIndex].name}"`);
-    const selectedPlaylist = playlists[playlistIndex];
-    const updatedSongs = [...selectedPlaylist.songs, song];
+    // Kontrollera om spellistan finns
+    if (playlistIndex < 0 || playlistIndex >= playlists.length) {
+      console.error("Ogiltigt spellisteindex:", playlistIndex);
+      return;
+    }
   
+    const selectedPlaylist = playlists[playlistIndex];
+  
+    // Kontrollera om låten redan finns i spellistan
+    const isSongInPlaylist = selectedPlaylist.songs.some(
+      (playlistSong) => playlistSong.id === song.id
+    );
+    if (isSongInPlaylist) {
+      toast.info(`Låten "${song.name}" finns redan i spellistan "${selectedPlaylist.name}"!`);
+      return;
+    }
+
+    const updatedSongs = [...selectedPlaylist.songs, song];
     const updatedPlaylist = { ...selectedPlaylist, songs: updatedSongs };
     const updatedPlaylists = playlists.map((playlist, index) =>
       index === playlistIndex ? updatedPlaylist : playlist
     );
-  
     setPlaylists(updatedPlaylists);
     localStorage.setItem("playlists", JSON.stringify(updatedPlaylists));
-    toast.success(`"${song.name}" har lagts till i spellistan "${selectedPlaylist.name}"`);
+    toast.success(`"${song.name}" har lagts till i spellistan "${selectedPlaylist.name}"!`);
   };
-
+  
   useEffect(() => {
     const storedPlaylists = JSON.parse(localStorage.getItem("playlists") || "[]");
     setPlaylists(storedPlaylists);
@@ -398,18 +400,18 @@ const handleExcludeSong = () => {
         <h2 className="likedSong">Senaste sparade låtar:</h2>
         <div id="saved-songs-section" className="gallery-container">
         <div className="gallery-scroll">
-        {likedSongs.slice(-10).reverse().map((song,index) => (
-            <div className="gallery-item" key={song.id}>
-              <a href={song.external_urls.spotify} target="_blank" rel="noopener noreferrer">
-                <img
-                  src={song.album?.images?.[0]?.url || "/path/to/default-image.jpg"}
-                  alt="Album art"
-                  className="gallery-image"
-                  onClick={(event) => handleLike(song, event)}
-                />
+        {likedSongs?.slice(-10).reverse().map((song,index) => (
+            <div className="gallery-item" key={song.id || `${index}-${song.name}`}>
+             <a href={song?.external_urls?.spotify || "#"} target="_blank" rel="noopener noreferrer">
+              <img
+                src={song?.album?.images?.[0]?.url || "/path/to/default-image.jpg"}
+                alt={`${song?.name || "Okänd låt"} album art`}
+                className="gallery-image"
+                onClick={(event) => handleLike(song, event)}
+              />
               </a>
-              <p className="song-name">{song.name}</p>
-              <p className="song-artist">{song.artists[0].name}</p>
+              <p className="song-name">{song?.name || "Okänd låt"}</p>
+              <p className="song-artist">{song?.artists?.[0]?.name || "Okänd artist"}</p>
               <div className="menu-container">
                 <button
                   className="menu-button"

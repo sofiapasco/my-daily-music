@@ -29,10 +29,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       // Uppdatera ikonens källor baserat på tema
       if (facebookIcon) {
         facebookIcon.src = theme === "dark" ? "/FB.png" : "/facebook.png";
-        console.log("Facebook-ikon uppdaterad till:", facebookIcon.src);
-      } else {
-        console.warn("Facebook-ikon saknas (id='fbicon').");
-      }
+      } 
 
       if (copyIcon) {
         copyIcon.src = theme === "dark" ? "/kopiera.png" : "/copy.png";

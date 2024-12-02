@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Track } from "../types/Song";
 import { useAuth } from "../context/AuthContext";
-import { ToastContainer, toast } from "react-toastify";
+import { toast } from "react-toastify";
 import { useLocation, useNavigate } from "react-router-dom"; 
 import UserMenu from "../components/UserMenu";
 import "react-toastify/dist/ReactToastify.css";
@@ -223,15 +223,19 @@ const songsToRender = searchQuery
       <div className="gallery-container">
       {songsToRender.map((song, index) => (
      <div className="gallery-item" key={song.id}>
-      <a href={song.external_urls.spotify} target="_blank" rel="noopener noreferrer">
-        <img
-          src={song.album?.images?.[0]?.url || "/path/to/default-image.jpg"}
-          alt={`${song.name} album art`}
-          className="gallery-image"
-        />
+      <a
+          href={song?.external_urls?.spotify || "#"}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+      <img
+        src={song?.album?.images?.[0]?.url || "/path/to/default-image.jpg"}
+        alt={`${song?.name || "Okänd låt"} album art`}
+        className="gallery-image"
+      />
       </a>
       <p className="song-name">{song.name}</p>
-      <p className="song-artist">{song.artists[0].name}</p>
+      <p className="song-artist">{song?.artists?.[0]?.name || "Okänd artist"}</p>
 
       {/* Tre prickar för meny */}
       <div className="menu-container">
@@ -330,28 +334,28 @@ const songsToRender = searchQuery
         {openMenuId === `${index}-${song.id}` && (
                 <div className="menu-dropdown">
                   <button onClick={() => handleShareSong(song)}>Dela låt</button>
-                  <button onClick={() => handleAddSongToPlaylist(index,song)}>Flytta spellista</button>
-                      {showSelect && (
-                  <select
-                  onChange={(e) => {
-                    const playlistIndex = parseInt(e.target.value, 10);
-                    if (!isNaN(playlistIndex)) {
-                      handleAddSongToPlaylist(playlistIndex, song);
-                      setShowSelect(false); 
-                    }
-                  }}
-                  defaultValue=""
-                >
-                  <option value="" disabled>
-                    Välj spellista
-                  </option>
-                  {playlists.map((playlist, playlistIndex) => (
-                    <option key={playlistIndex} value={playlistIndex}>
-                      {playlist.name}
+                  <button onClick={() => setShowSelect(!showSelect)}>Välj album:</button>
+                  {showSelect && (
+                    <select
+                    onChange={(e) => {
+                      const playlistIndex = parseInt(e.target.value, 10);
+                      if (!isNaN(playlistIndex)) {
+                        handleAddSongToPlaylist(playlistIndex, song);
+                        setShowSelect(false); 
+                      }
+                    }}
+                    defaultValue=""
+                  >
+                    <option value="" disabled>
+                      Välj spellista
                     </option>
-                  ))}
-                </select>
-                )}
+                    {playlists.map((playlist, playlistIndex) => (
+                      <option key={playlistIndex} value={playlistIndex}>
+                        {playlist.name}
+                      </option>
+                    ))}
+                  </select>
+                  )}
                   <button onClick={() => handleRemoveFromPlaylist(index,song.id)}>Ta bort</button>
                 </div>
               )}

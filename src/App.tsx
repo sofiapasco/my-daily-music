@@ -9,6 +9,7 @@ import MoodSelection from "./pages/MoodSelection";
 import SavedSongs from './pages/SavedSongs';
 import ErrorPage from './pages/ErrorPage';
 import UserProfilePage from "./pages/UserProfilePage"
+import StatisticsPage from './pages/StatisticsPage';
 
 
 import "../src/assets/App.scss";
@@ -24,6 +25,7 @@ function App() {
             <Route path="/daily-song" element={<DailySong />} /> 
             <Route path="/mood-selection" element={<MoodSelection />} />
             <Route path="/saved-songs" element={<SavedSongs />} />
+            <Route path="/statistics" element={<StatisticsPage />} />
             <Route path="/profile" element={<UserProfilePage />} />
             <Route path="/error" element={<ErrorPage />} />
           </Routes>

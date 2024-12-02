@@ -29,7 +29,7 @@ const MoodSelection: React.FC = () => {
 
     console.log("Användaren hoppade över humörval.");
     localStorage.setItem("selectedMood", "neutral");
-    localStorage.setItem("moodDate", dateKey); // Spara dagens datum
+    localStorage.setItem("moodDate", dateKey); 
 
     navigate("/daily-song");
   };
