@@ -334,7 +334,7 @@ const songsToRender = searchQuery
         {openMenuId === `${index}-${song.id}` && (
                 <div className="menu-dropdown">
                   <button onClick={() => handleShareSong(song)}>Dela låt</button>
-                  <button onClick={() => setShowSelect(!showSelect)}>Välj album:</button>
+                  <button onClick={() => setShowSelect(!showSelect)}>Flytta spellista</button>
                   {showSelect && (
                     <select
                     onChange={(e) => {
@@ -349,7 +349,9 @@ const songsToRender = searchQuery
                     <option value="" disabled>
                       Välj spellista
                     </option>
-                    {playlists.map((playlist, playlistIndex) => (
+                    {playlists
+                          .filter((_, playlistIndex) => playlistIndex !== index) 
+                          .map((playlist, playlistIndex) => (
                       <option key={playlistIndex} value={playlistIndex}>
                         {playlist.name}
                       </option>
