@@ -6,6 +6,7 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import ShareSong from "../components/ShareSong";
 import UserMenu from '../components/UserMenu';
+import ProgressBar from "../components/ProgressBar";
 import "react-toastify/dist/ReactToastify.css";
 
 const DailySong: React.FC = () => {
@@ -20,7 +21,29 @@ const DailySong: React.FC = () => {
   const [userId, setUserId] = useState<string>("");
   const [excludedSongs, setExcludedSongs] = useState<string[]>([]);
   const [selectedMood, setSelectedMood] = useState<string | null>(null);
+  const [currentTime, setCurrentTime] = useState(0);
   const navigate = useNavigate();
+
+  const duration = currentSong ? currentSong.duration_ms / 1000 : 0; 
+
+  useEffect(() => {
+    if (!currentSong) return;
+
+    const interval = setInterval(() => {
+      setCurrentSong((prevSong) => {
+        if (!prevSong || !prevSong.duration_ms) return prevSong;
+        const updatedSong = { ...prevSong };
+        const currentTime = (updatedSong.currentTime || 0) + 1;
+        if (currentTime >= duration) {
+          clearInterval(interval);
+          return updatedSong;
+        }
+        return { ...updatedSong, currentTime };
+      });
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [currentSong, duration]);
  
   useEffect(() => {
     const mood = localStorage.getItem("selectedMood");
@@ -33,41 +56,7 @@ const DailySong: React.FC = () => {
       setSelectedMood(mood); // Sätt det valda humöret
     }
   }, [navigate]);
-  
 
-  const fetchSongsByMood = async (mood: string, accessToken: string) => {
-    const moodAttributes: Record<string, any> = {
-      happy: { valence: [0.7, 1.0], energy: [0.6, 1.0] },
-      sad: { valence: [0.0, 0.3], energy: [0.0, 0.4] },
-      relaxed: { energy: [0.0, 0.5], acousticness: [0.5, 1.0] },
-      energetic: { energy: [0.7, 1.0], tempo: [120, 180] },
-    };
-  
-    const filters = moodAttributes[mood];
-    if (!filters) {
-      console.error("Okänt humör:", mood);
-      return [];
-    }
-  
-    const query = new URLSearchParams({
-      target_valence: filters.valence ? `${(filters.valence[0] + filters.valence[1]) / 2}` : "",
-      target_energy: filters.energy ? `${(filters.energy[0] + filters.energy[1]) / 2}` : "",
-      target_tempo: filters.tempo ? `${(filters.tempo[0] + filters.tempo[1]) / 2}` : "",
-      limit: "20",
-      seed_genres: "pop", // Standardgenre
-    });
-  
-    const response = await fetch(
-      `https://api.spotify.com/v1/recommendations?${query.toString()}`,
-      {
-        headers: { Authorization: `Bearer ${accessToken}` },
-      }
-    );
-  
-    const data = await response.json();
-    return data.tracks;
-  };
-  
 
   const fetchDailySong = async (excludedSongs: string[], selectedMood: string) => {
     console.log("Exkluderade låtar:", excludedSongs);
@@ -88,9 +77,32 @@ const DailySong: React.FC = () => {
       return;
     }
   
-    // Ta bort duplicerade exkluderingar
-    const uniqueExcluded = Array.from(new Set(excludedSongs));
-    console.log("Exkluderade låtar utan dubbletter:", uniqueExcluded);
+    // Emoji till humör-mappning
+    const moodMapping: Record<string, string> = {
+      "😊": "happy",
+      "😢": "low",
+      "💪": "energetic",
+      "😌": "relaxed",
+      "😴": "low",
+      "🥰": "happy",
+    };
+  
+    const mappedMood = moodMapping[selectedMood] || "neutral"; // Standard till "neutral"
+    console.log("Valt humör:", selectedMood, "Mappat humör:", mappedMood);
+  
+    const moodAttributes: Record<string, any> = {
+      happy: { valence: [0.7, 1.0], energy: [0.6, 1.0] }, // Glada låtar
+      low: { valence: [0.0, 0.4], energy: [0.0, 0.4] },   // Ledsna låtar
+      energetic: { energy: [0.8, 1.0], tempo: [120, 180] }, // Energetiska låtar
+      relaxed: { valence: [0.3, 0.7], acousticness: [0.5, 1.0] }, // Lugn musik
+    };
+    
+    // Kontrollera om humöret finns i mappningen
+    const filters = moodAttributes[mappedMood];
+    if (!filters) {
+      console.error("Okänt humör:", mappedMood);
+      return; // Avsluta om humöret inte stöds
+    }
   
     try {
       // Hämta låtar från Top Tracks och Recently Played
@@ -115,22 +127,38 @@ const DailySong: React.FC = () => {
         ...topTracks.items.map((item: any) => item),
         ...recentlyPlayed.items.map((item: any) => item.track),
       ];
-      const filteredTracks = combinedTracks.filter(
-        (track) => track.id && !uniqueExcluded.includes(track.id.trim())
-      );
   
-      console.log("Låtar efter filtrering:", filteredTracks.map((track) => track.name));
+      console.log("Alla låtar innan filtrering:");
+      combinedTracks.forEach((track: any) => {
+        console.log(
+          `Låt: ${track.name}, Popularitet: ${track.popularity}, Längd (ms): ${track.duration_ms}`
+        );
+      });
   
-      // Hämta låtar baserat på humöret om valt
-      let moodTracks = [];
-      if (selectedMood) {
-        moodTracks = await fetchSongsByMood(selectedMood, accessToken);
-        console.log("Låtar från fetchSongsByMood:", moodTracks.map((track: Track) => track.name));
-      }
+      const filteredTracks = combinedTracks.filter((track: any) => {
+        if (filters.valence && (track.valence < filters.valence[0] || track.valence > filters.valence[1])) {
+          console.log(`Utesluten: ${track.name} (Valence utanför gränserna: ${track.valence})`);
+          return false;
+        }
+        if (filters.energy && (track.energy < filters.energy[0] || track.energy > filters.energy[1])) {
+          console.log(`Utesluten: ${track.name} (Energy utanför gränserna: ${track.energy})`);
+          return false;
+        }
+        if (filters.tempo && (track.tempo < filters.tempo[0] || track.tempo > filters.tempo[1])) {
+          console.log(`Utesluten: ${track.name} (Tempo utanför gränserna: ${track.tempo})`);
+          return false;
+        }
+        if (filters.acousticness && (track.acousticness < filters.acousticness[0] || track.acousticness > filters.acousticness[1])) {
+          console.log(`Utesluten: ${track.name} (Acousticness utanför gränserna: ${track.acousticness})`);
+          return false;
+        }
+        console.log(`Inkluderad: ${track.name}, Valence: ${track.valence}, Energy: ${track.energy}, Tempo: ${track.tempo}, Acousticness: ${track.acousticness}`);
+        return true;
+      });      
+
+      console.log("Filtrerade låtar:", filteredTracks);
   
-      // Kombinera alla låtar att välja från
-      const allTracks = [...filteredTracks, ...moodTracks];
-      if (allTracks.length === 0) {
+      if (filteredTracks.length === 0) {
         console.warn("Inga låtar kvar efter filtrering. Återställ exkluderingar.");
         setExcludedSongs([]);
         localStorage.removeItem("excludedSongs");
@@ -138,17 +166,16 @@ const DailySong: React.FC = () => {
       }
   
       // Välj en slumpmässig låt
-      const randomSong = allTracks[Math.floor(Math.random() * allTracks.length)];
-      console.log("Ny slumpad låt:", randomSong);
-  
-      // Spara låten som dagens låt
-      setCurrentSong(randomSong);
+      const randomSong = filteredTracks[Math.floor(Math.random() * filteredTracks.length)];
+      console.log("Slumpad låt:", randomSong);
+
+      // Spara och uppdatera dagens låt
       localStorage.setItem(`dailySong_${dateKey}`, JSON.stringify(randomSong));
+      setCurrentSong(randomSong);
     } catch (error) {
       console.error("Ett fel uppstod vid hämtning av låtar:", error);
     }
   };
-  
   
 useEffect(() => {
   const fetchUserId = async () => {
@@ -179,10 +206,13 @@ useEffect(() => {
 const handleExcludeSong = () => {
   console.log("Nuvarande låt:", currentSong);
   console.log("Exkluderade låtar före uppdatering:", excludedSongs);
+  if (!selectedMood) {
+    console.warn("Inget humör valt. Kan inte hämta en ny låt.");
+    return;
+  }
 
   if (currentSong) {
     if (!excludedSongs.includes(currentSong.id)) {
-      // Lägg till låten i exkluderade låtar
       const updatedExcludedSongs = [...excludedSongs, currentSong.id];
       console.log("Uppdaterad lista över exkluderade låtar:", updatedExcludedSongs);
 
@@ -228,8 +258,7 @@ const handleExcludeSong = () => {
     const imageElement = currentSong
       ? document.getElementById(`album-art-${currentSong.id}`) as HTMLImageElement
       : null;
-    console.log("Detta är låtbilden:", imageElement);
-    const targetElement = document.getElementById("saved-songs-section"); // Målsektionen
+    const targetElement = document.getElementById("saved-songs-section"); 
   
     if (imageElement && targetElement) {
       const startRect = imageElement.getBoundingClientRect();
@@ -356,6 +385,7 @@ const handleExcludeSong = () => {
         {currentSong ? (
           <div className="song-info">
             <p className="song-name">{currentSong.name}</p>
+            <ProgressBar currentTime={currentTime} duration={duration} />
             <p className="song-artist" style={{ color: "#922692" }}>
               {currentSong.artists[0].name}
             </p>

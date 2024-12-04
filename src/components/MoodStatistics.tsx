@@ -20,7 +20,6 @@ const MoodStatistics: React.FC = () => {
   useEffect(() => {
     try {
       const moodHistory = JSON.parse(localStorage.getItem("moodData") || "[]");
-      console.log("Hämtad data från localStorage:", moodHistory); // Kontrollera om data hämtas korrekt
       if (Array.isArray(moodHistory)) {
         setMoodData(moodHistory);
       } else {
@@ -33,8 +32,21 @@ const MoodStatistics: React.FC = () => {
     }
   }, []);
 
-  const dates = moodData.map((entry) => entry.date);
-  const moods = moodData.map((entry) => {
+  // Filtrera data till senaste veckan
+  const now = new Date();
+  const oneWeekAgo = new Date();
+  oneWeekAgo.setDate(now.getDate() - 7);
+
+  const recentMoodData = moodData.filter((entry) => {
+    const entryDate = new Date(entry.date);
+    return entryDate >= oneWeekAgo && entryDate <= now;
+  });
+
+  console.log("Filtrerad data för senaste veckan:", recentMoodData);
+
+  // Data för grafen
+  const dates = recentMoodData.map((entry) => entry.date);
+  const moods = recentMoodData.map((entry) => {
     switch (entry.mood) {
       case "😊": return 5;
       case "🥰": return 4;
@@ -52,18 +64,18 @@ const MoodStatistics: React.FC = () => {
       {
         label: "Humör över tid",
         data: moods,
-        borderColor: "rgba(128, 0, 128, 1)", 
-        backgroundColor: "rgba(128, 0, 128, 0.2)", 
-        pointRadius: 6, 
-        pointBackgroundColor: "rgba(75, 0, 130, 1)", 
-        pointBorderColor: "rgba(255, 255, 255, 1)", 
-        pointBorderWidth: 2, 
-        tension: 0.4, 
+        borderColor: "rgba(128, 0, 128, 1)",
+        backgroundColor: "rgba(128, 0, 128, 0.2)",
+        pointRadius: 6,
+        pointBackgroundColor: "rgba(75, 0, 130, 1)",
+        pointBorderColor: "rgba(255, 255, 255, 1)",
+        pointBorderWidth: 2,
+        tension: 0.4,
       },
     ],
   };
 
-  const options: ChartOptions<'line'> = {
+  const options: ChartOptions<"line"> = {
     responsive: true,
     plugins: {
       legend: { position: "top" },
@@ -96,15 +108,13 @@ const MoodStatistics: React.FC = () => {
 
   return (
     <div style={{ width: "80%", height: "400px", margin: "auto" }}>
-      <h2>Humörstatistik</h2>
-      {moodData.length > 0 ? (
+      {recentMoodData.length > 0 ? (
         <Line data={data} options={options} />
       ) : (
-        <p>Ingen humördata hittades. Börja logga ditt humör!</p>
+        <p>Ingen humördata hittades för den senaste veckan. Börja logga ditt humör!</p>
       )}
     </div>
   );
 };
 
 export default MoodStatistics;
-

@@ -14,27 +14,28 @@ const UserPage: React.FC = () => {
         logout();
       };
     
-  return (
-    <div className="user-page-container">
-      <div className="header">
-      <button
-        className="theme-switch-btn"
-        onClick={() => {
-          toggleTheme(); 
-        }}
-      >
-        {theme === "light" ? "🌙" : "☀️"}
-      </button>
-        <UserMenu />
-        <button className="logout-btn" onClick={handleLogout}>
-          Logga ut
-        </button>
-      </div>
-      <div className="user-page">
-        <UserProfile />
-      </div>
-    </div>
-  );
-};
-
-export default UserPage;
+      return (
+        <div className="user-page-container">
+          <div className="header">
+            <button
+              className="theme-switch-btn"
+              onClick={() => {
+                toggleTheme();
+              }}
+            >
+              {theme === "light" ? "🌙" : "☀️"}
+            </button>
+            <UserMenu />
+            <button className="logout-btn" onClick={handleLogout}>
+              Logga ut
+            </button>
+          </div>
+          <div className="user-page">
+            <UserProfile />
+          </div>
+        </div>
+      );
+      };
+      
+      export default UserPage;
+      

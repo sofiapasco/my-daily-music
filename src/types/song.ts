@@ -28,5 +28,7 @@ export interface Track {
   artists: { name: string }[];
   album: { images: { url: string }[]; name: string };
   external_urls: { spotify: string };
+  duration_ms: number;
+  currentTime?: number; 
 
 }

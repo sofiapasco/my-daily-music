@@ -4,41 +4,47 @@ import { useAuth } from "../context/AuthContext";
 import UserMenu from "../components/UserMenu";
 
 const MoodSelection: React.FC = () => {
-  const { logout} = useAuth();
+  const { logout } = useAuth();
   const [mood, setMood] = useState<string | null>(null);
   const navigate = useNavigate();
 
-
   const handleMoodSelection = (selectedMood: string) => {
-    const today = new Date();
-    const dateKey = `${today.getFullYear()}-${today.getMonth() + 1}-${today.getDate()}`;
+    const today = new Date().toISOString().split("T")[0];
+    const moodHistory = JSON.parse(localStorage.getItem("moodData") || "[]");
 
-    console.log("Valt humör:", selectedMood);
+    // Uppdatera moodData
+    const updatedMoodData = [
+      ...moodHistory.filter((entry: { date: string }) => entry.date !== today),
+      { date: today, mood: selectedMood },
+    ];
+
+    localStorage.setItem("moodData", JSON.stringify(updatedMoodData));
+    console.log("Uppdaterad humördata:", updatedMoodData);
 
     setMood(selectedMood);
     localStorage.setItem("selectedMood", selectedMood);
-    localStorage.setItem("moodDate", dateKey); // Spara dagens datum
-    console.log("Humör och datum sparade i localStorage:", selectedMood, dateKey);
-
     navigate("/daily-song");
   };
 
   const handleSkip = () => {
-    const today = new Date();
-    const dateKey = `${today.getFullYear()}-${today.getMonth() + 1}-${today.getDate()}`;
+    const today = new Date().toISOString().split("T")[0];
+    const moodHistory = JSON.parse(localStorage.getItem("moodData") || "[]");
 
-    console.log("Användaren hoppade över humörval.");
-    localStorage.setItem("selectedMood", "neutral");
-    localStorage.setItem("moodDate", dateKey); 
+    const updatedMoodData = [
+      ...moodHistory.filter((entry: { date: string }) => entry.date !== today),
+      { date: today, mood: "neutral" },
+    ];
+
+    localStorage.setItem("moodData", JSON.stringify(updatedMoodData));
+    console.log("Hoppa över: Standardhumör 'neutral' tillagd");
 
     navigate("/daily-song");
   };
 
-
   return (
     <div className="mood-selection-container">
       <UserMenu />
-       <button className="logout-btn" onClick={logout}>
+      <button className="logout-btn" onClick={logout}>
         Logga ut
       </button>
       <h1>HUR MÅR DU IDAG?</h1>
@@ -50,10 +56,8 @@ const MoodSelection: React.FC = () => {
         <button onClick={() => handleMoodSelection("💪")}>💪</button>
         <button onClick={() => handleMoodSelection("🥰")}>🥰</button>
       </div>
-      <br></br>
-
+      <br />
       <button onClick={handleSkip}>Hoppa över</button>
-
     </div>
   );
 };
