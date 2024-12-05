@@ -127,7 +127,7 @@ const DailySong: React.FC = () => {
   
     const moodAttributes: Record<string, any> = {
       happy: { valence: [0.5, 1.0], energy: [0.3, 1.0] },
-      low: { valence: [0.0, 0.6], energy: [0.0, 0.7] },
+      low: { valence: [0.0, 0.6], energy: [0.0, 0.6] },
       energetic: { valence: [0.3, 1.0], energy: [0.5, 1.0] },
       relaxed: { valence: [0.2, 0.9], energy: [0.1, 0.7], acousticness: [0.3, 1.0] },
       love: { valence: [0.5, 1.0], energy: [0.2, 0.6], acousticness: [0.3, 1.0] },
@@ -413,16 +413,14 @@ const handleExcludeSong = () => {
     const energy = song.energy || 0; 
     const acousticness = song.acousticness || 0; // För "relaxed" och "love"
   
-    console.log("Analyserar låtens humör:", { song, selectedMood, mappedMood, valence, energy, acousticness });
-  
     switch (mappedMood) {
       case "happy":
         if (valence >= 0.5 && energy >= 0.3) return "😊"; // Glad låt
         break;
   
       case "low":
-        if (valence <= 0.3 && energy <= 0.4) return "😢"; // Ledsen låt
-        if (valence <= 0.2 && energy <= 0.3) return "😴"; // Sömnig låt
+        if (valence >= 0.0 && valence <= 0.6 && energy >= 0.0 && energy <= 0.6) return "😢"; // Ledsen låt
+        if (valence >= 0.0 && valence <= 0.6 && energy >= 0.0 && energy <= 0.6) return "😴"; // Sömnig låt
         break;
   
       case "energetic":

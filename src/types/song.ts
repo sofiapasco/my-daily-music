@@ -40,3 +40,6 @@ export interface Song {
     acousticness?: number;
   }
   
+  export interface RecentlyPlayedItem {
+    track: Track;
+  }
