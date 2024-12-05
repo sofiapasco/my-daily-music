@@ -14,7 +14,7 @@ const Login = () => {
       "playlist-read-private",
       "playlist-modify-private",
       "playlist-modify-public",
-      "user-modify-playback-state"
+      "user-modify-playback-state",
     ];
     
     const AUTH_URL = `https://accounts.spotify.com/authorize?client_id=${

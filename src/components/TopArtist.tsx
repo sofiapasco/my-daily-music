@@ -14,21 +14,19 @@ const TopArtists: React.FC = () => {
   useEffect(() => {
     if (likedSongs.length > 0) {
       // Räkna förekomsten av varje artist
-      const artistCount: Record<string, number> = {};
-
-      likedSongs.forEach((song) => {
+      const artistCount = likedSongs.reduce<Record<string, number>>((acc, song) => {
         song.artists.forEach((artist) => {
-          artistCount[artist.name] = (artistCount[artist.name] || 0) + 1;
+          acc[artist.name] = (acc[artist.name] || 0) + 1;
         });
-      });
+        return acc;
+      }, {});
 
       // Hitta artisten med flest förekomster
-      const top = Object.entries(artistCount).reduce(
-        (acc, [artist, count]) => (count > acc.count ? { name: artist, count } : acc),
-        { name: "", count: 0 }
-      );
-
-      setTopArtist(top);
+      const sortedArtists = Object.entries(artistCount).sort((a, b) => b[1] - a[1]);
+      const [topName, topCount] = sortedArtists[0] || ["", 0];
+      setTopArtist({ name: topName, count: topCount });
+    } else {
+      setTopArtist(null);
     }
   }, [likedSongs]);
 

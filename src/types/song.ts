@@ -13,7 +13,12 @@ export interface Song {
   export interface Artist {
     id: string;
     name: string;
-    genres: string[];
+  }
+
+  export interface Album {
+    id: string;
+    name: string;
+    images: { url: string }[]; 
   }
 
   export type LikeSongButtonProps = {
@@ -21,14 +26,17 @@ export interface Song {
     accessToken: string;
   };
 
+  export interface Track {
+    id: string;
+    name: string;
+    artists: { name: string; id: string }[]; // Lägg till 'id' här
+    album: { images: { url: string }[]; name: string };
+    external_urls: { spotify: string };
+    duration_ms: number;
+    currentTime?: number; 
+    valence?: number;
+    energy?: number;
+    tempo?: number;
+    acousticness?: number;
+  }
   
-export interface Track {
-  id: string;
-  name: string;
-  artists: { name: string }[];
-  album: { images: { url: string }[]; name: string };
-  external_urls: { spotify: string };
-  duration_ms: number;
-  currentTime?: number; 
-
-}
