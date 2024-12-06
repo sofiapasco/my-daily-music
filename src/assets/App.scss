@@ -1,5 +1,5 @@
 @import "bootstrap/scss/bootstrap";
-
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap');
 
 
 .daily-song-container {
@@ -13,14 +13,22 @@
   text-align: center;
 
   .daily-song-title {
-    font-size: 20px;
-    letter-spacing: 3px;
+    font-family: 'Roboto', sans-serif;
+    font-size: 23px;
+    letter-spacing: 4px;
     margin-bottom: 20px;
     padding-bottom: 5px;
     font-weight: bold;
   }
-
+  #songartist{
+    color: #922692 !important;
+    font-family: 'Roboto', sans-serif;
+    letter-spacing: 1px;
+    font-weight:500;
+    max-width: 400px;
+  }
   .song-name{
+    font-family: 'Roboto', sans-serif;
     max-width: 400px;
   }
 
@@ -29,6 +37,7 @@
     position: relative;
     flex-direction: column;
     align-items: center;
+    color: #922692 !important;
 
     .album-and-like {
       display: flex; 
@@ -56,18 +65,33 @@
 }
 
 .like-heart {
-  position: absolute;
-  top: 50%; 
-  right: -25%; 
-  background-color: #f8f3f3;
-  width: 50px;
-  height: 50px;
-  cursor: pointer;
 
-  &:hover {
-    transform: translateY(-20%) scale(1.0); 
-  }
+  display: inline-block;
+  position: relative;
+  right: -15%; 
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #1e1e2f, #3e3e5e);
+  backdrop-filter: blur(10px);
+  border: none;
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
+
+.like-heart:hover {
+  transform: scale(1.1);
+  background: rgba(255, 255, 255, 0.3); /* Ljusare bakgrund vid hover */
+  box-shadow: 0px 6px 12px rgba(0, 0, 0, 0.3);
+}
+
+.like-heart svg {
+  fill: #922692;
+  width: 50%;
+  height: 50%;
+  transition: transform 0.3s ease;
+}
+
 
 .fly-to-saved {
   transition: all 0.8s ease-in-out;
@@ -91,22 +115,33 @@
   }
 }
 
-
-.close{
+.close-button {
+  display: inline-block;
   position: relative;
-  background-color:#f8f3f3;
-  width: 40px;
-  height: 40px;
-  position: absolute;
-  top: 50%;
-  left: -25%; 
-  cursor: pointer;
-  transition: all 0.3s ease-in-out;
-
-  &:hover {
-    transform: scale(1.1);
-  }
+  left: -15%; 
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #1e1e2f, #3e3e5e);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
+
+.close-button:hover {
+  transform: scale(1.1);
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.close-button img {
+  width: 50%;
+  height: 50%;
+  object-fit: contain;
+  background: linear-gradient(135deg, #1e1e2f, #3e3e5e);
+  transition: transform 0.3s ease;
+}
+
 
 .delete{
   position: relative;
@@ -210,11 +245,9 @@
 }
 
 .liked-songs-section {
-  height: 100vh;
   overflow-y: hidden;
   font-family: "Arial", sans-serif;
   padding-left: 40px;
-  
 
   ul {
     list-style: none;
@@ -478,6 +511,15 @@
   color: #333;
 }
 
+.theme-switch-btn{
+  width: 40px;
+  height: 40px;
+  background-color: #922692;
+  color: #f8f3f3;
+  border: none;
+  border-radius: 30px;
+}
+
 .edit-button {
   margin-top: 10px;
   padding: 8px 12px;
@@ -514,6 +556,7 @@ body.dark {
   color: #fff !important; 
 
   h1, h3, a ,p{
+    font-family: 'Roboto', sans-serif;
     color: #fff !important; 
     transition: color 0.3s ease-in-out; 
   }
@@ -549,11 +592,13 @@ body.light {
   color: #000 !important; 
 
   h1, h3, p {
+    font-family: 'Roboto', sans-serif;
     color: #000 !important; 
   }
   .titleFront {
     background-color: #000;
   }
+
   .mood-buttons button {
     background: linear-gradient(135deg, #f3d4f3, #e2cdc4);
   }
@@ -753,3 +798,64 @@ p {
   animation: throwEffect 0,5s ease-out forwards;
 }
 
+.spotify-player {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-family: 'Poppins', sans-serif;
+}
+
+.player-controls {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.control-button {
+  background: linear-gradient(135deg, #6a1b9a, #8e24aa);
+  border: none;
+  color: white;
+  font-size: 28px;
+  border-radius: 50%;
+  cursor: pointer;
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+  transition: transform 0.2s ease-in-out;
+}
+
+.control-button:hover {
+  transform: scale(1.2);
+  background: linear-gradient(135deg, #8e24aa, #ab47bc);
+}
+
+.progress-container {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  max-width: 300px;
+  padding-bottom: 20px;
+}
+
+.progress-bar {
+  flex: 1;
+  height: 8px;
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 4px;
+  position: relative;
+}
+
+.progress {
+  height: 100%;
+  background: linear-gradient(135deg, #6a1b9a, #8e24aa);
+  width: 0%;
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
+
+.current-time,
+.duration {
+  font-size: 14px;
+  color: #6a1b9a;
+  font-weight: bold;
+}

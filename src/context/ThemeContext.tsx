@@ -40,7 +40,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       }
 
       if (userIcon) {
-        userIcon.src = theme === "dark" ? "/User1.png" : "/user.png";
+        userIcon.src = theme === "dark" ? "/User1.png" : "/User1.png";
       }
     };
 

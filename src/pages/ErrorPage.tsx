@@ -16,8 +16,6 @@ const ErrorPage: React.FC = () => {
         justifyContent: "center",
         alignItems: "center",
         height: "100vh",
-        backgroundColor: "#121212",
-        color: "#e0e0e0",
         fontFamily: "'Arial', sans-serif",
         textAlign: "center",
       }}
@@ -42,11 +40,11 @@ const ErrorPage: React.FC = () => {
       <button
         onClick={handleRetry}
         style={{
-          padding: "10px 20px",
-          fontSize: "1rem",
-          fontWeight: "bold",
-          color: "#121212",
-          backgroundColor: "#17a74e",
+          padding: "8px 16px",
+          fontSize: "14px",
+          letterSpacing: "1px",
+          color: "#fff",
+          backgroundColor: "#922692",
           border: "none",
           borderRadius: "5px",
           cursor: "pointer",

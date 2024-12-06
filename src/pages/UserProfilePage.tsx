@@ -2,11 +2,9 @@ import React from "react";
 import UserProfile from "../components/UserProfile";
 import UserMenu from "../components/UserMenu";
 import { useAuth } from "../context/AuthContext";
-import { useTheme } from "../context/ThemeContext";
 
 const UserPage: React.FC = () => {
     const { logout } = useAuth();
-    const { theme, toggleTheme } = useTheme();
 
 
     const handleLogout = () => {
@@ -15,16 +13,9 @@ const UserPage: React.FC = () => {
       };
     
       return (
-        <div className="user-page-container">
+        <div className="user-page-container" style={{height: "100vh"}}>
           <div className="header">
-            <button
-              className="theme-switch-btn"
-              onClick={() => {
-                toggleTheme();
-              }}
-            >
-              {theme === "light" ? "🌙" : "☀️"}
-            </button>
+  
             <UserMenu />
             <button className="logout-btn" onClick={handleLogout}>
               Logga ut

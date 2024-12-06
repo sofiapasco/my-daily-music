@@ -251,7 +251,7 @@ const handleExcludeSong = () => {
     }
   }, [userId]);
 
-  const handleLike = (song: Track, event: React.MouseEvent<HTMLImageElement, MouseEvent>) => {
+  const handleLike = (song: Track) => {  
     if (likedSongs.find((likedSong) => likedSong.id === song.id)) {
       toast.info("Låten är redan sparad i dina gillade låtar!");
       return;
@@ -389,8 +389,8 @@ const handleExcludeSong = () => {
         <h1 className="daily-song-title">DAGENS LÅT</h1>
         {currentSong ? (
           <div className="song-info">
-            <p className="song-name">{currentSong.name}</p>
-            <p className="song-artist" style={{ color: "#922692" }}>
+            <p className="song-name" >{currentSong.name}</p>
+            <p className="song-artist" id="songartist"style={{ color: "#922692" }}>
               {currentSong.artists[0].name}
             </p>
             <p>Humör: <span>{selectedMood}</span></p>
@@ -418,10 +418,12 @@ const handleExcludeSong = () => {
               </div>
               <LikeButton song={currentSong} onLike={handleLike} />
             </div>
-            {accessToken ? (
-              <SpotifyPlayer accessToken={accessToken} currentSong={currentSong} />
-            ) : (
-              <p>Inloggning krävs för att spela musik.</p>
+            {accessToken && (
+              <SpotifyPlayer
+                accessToken={accessToken}
+                currentSong={currentSong}
+                onReady={(deviceId) => console.log("Device ID är redo:", deviceId)}
+              />
             )}
             <div className="share-section">
             <ShareSong
@@ -450,7 +452,10 @@ const handleExcludeSong = () => {
                 src={song?.album?.images?.[0]?.url || "/path/to/default-image.jpg"}
                 alt={`${song?.name || "Okänd låt"} album art`}
                 className="gallery-image"
-                onClick={(event) => handleLike(song, event)}
+                onClick={(event) => {
+                  event.preventDefault();
+                  handleLike(song);
+                }}
               />
               </a>
               <p className="song-name">{song?.name || "Okänd låt"}</p>

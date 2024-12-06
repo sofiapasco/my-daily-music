@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useTheme } from "../context/ThemeContext";
 
 interface UserProfileProps {
   name: string;
@@ -9,6 +10,7 @@ interface UserProfileProps {
 
 const UserProfile: React.FC = () => {
   const [userInfo, setUserInfo] = useState<UserProfileProps | null>(null);
+  const { theme, toggleTheme } = useTheme();
   const [customAvatar, setCustomAvatar] = useState<string | null>(
     localStorage.getItem("customUserAvatar") || null
   );
@@ -81,6 +83,14 @@ const UserProfile: React.FC = () => {
         onChange={handleImageUpload}
         style={{color:"black"}}
       />
+      <button
+          className="theme-switch-btn"
+          onClick={() => {
+            toggleTheme();
+          }}
+        >
+          {theme === "light" ? "🌙" : "☀️"}
+        </button>
     </div>
   );
 };
