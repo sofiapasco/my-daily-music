@@ -1,5 +1,7 @@
 @import "bootstrap/scss/bootstrap";
 
+
+
 .daily-song-container {
   display: flex;
   flex-direction: column;
@@ -56,7 +58,7 @@
 .like-heart {
   position: absolute;
   top: 50%; 
-  right: -50%; 
+  right: -25%; 
   background-color: #f8f3f3;
   width: 50px;
   height: 50px;
@@ -93,15 +95,16 @@
 .close{
   position: relative;
   background-color:#f8f3f3;
-  width: 50px;
-  height: 50px;
+  width: 40px;
+  height: 40px;
   position: absolute;
   top: 50%;
-  left: -50%; 
+  left: -25%; 
   cursor: pointer;
+  transition: all 0.3s ease-in-out;
 
   &:hover {
-    transform: translateY(-20%) scale(1.0); 
+    transform: scale(1.1);
   }
 }
 
@@ -264,7 +267,7 @@
   width: 250px; 
   text-align: center;
   color: black;
-  background-color: #ece7e7; 
+  background: linear-gradient(135deg, #f9dcf9, #f1d8ce);
   padding: 30px;
   border-radius: 8px;
   box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.3);
@@ -319,6 +322,7 @@
     flex-direction: column;
     width: 250px;
     height: 370px;
+    background: linear-gradient(135deg, #f9dcf9, #f1d8ce);
     justify-content: space-between;
     border-radius: 10px;
   
@@ -506,7 +510,7 @@
 
 /* För mörkt tema */
 body.dark {
-  background-color: #1d1c1c; 
+  background: linear-gradient(135deg, #1e1e2f, #3e3e5e);
   color: #fff !important; 
 
   h1, h3, a ,p{
@@ -516,9 +520,7 @@ body.dark {
   .gallery-item{
     background-color: #343434;
   }
-  .user-profile{
-    background-color: #343434;
-  }
+
   .mood-buttons button {
     background-color: #1d1c1c;
   }
@@ -533,11 +535,17 @@ body.dark {
   .menu-button{
     color: #fff;
   }
+  .user-profile{
+    background: linear-gradient(135deg, #1e1e2f, #3e3e5e)
+  }
+  .gallery-item{
+    background: linear-gradient(135deg, #1e1e2f, #3e3e5e)
+  }
 }
 
 /* För ljust tema */
 body.light {
-  background-color: #f8f3f3;
+  background: linear-gradient(135deg, #f3d4f3, #e2cdc4);
   color: #000 !important; 
 
   h1, h3, p {
@@ -547,16 +555,20 @@ body.light {
     background-color: #000;
   }
   .mood-buttons button {
-    background-color: #f8f3f3
+    background: linear-gradient(135deg, #f3d4f3, #e2cdc4);
   }
 
   .like-heart, .close {
-    background-color: #f8f3f3 !important; 
+    background: linear-gradient(135deg, #f3d4f3, #e2cdc4);
     color: #000; 
   }
 
   .menu-button{
     color: #000;
+  }
+
+  .user-profile{
+    background: linear-gradient(135deg, #f9dcf9, #f1d8ce);
   }
 
 }
@@ -718,26 +730,26 @@ p {
     opacity: 1;
   }
 }
-
 @keyframes throwEffect {
   0% {
     transform: translateX(0) rotate(0);
     opacity: 1;
   }
   50% {
-    transform: translateX(150px) rotate(45deg);
+    transform: translateX(-150px) rotate(-45deg);
     opacity: 0.5;
   }
   100% {
-    transform: translateX(300px) rotate(90deg);
+    transform: translateX(-300px) rotate(-90deg);
     opacity: 0;
   }
 }
 
 .throwing {
-  animation: throwEffect 1s ease-out forwards;
+  animation: throwEffect 0,5s ease-out forwards;
 }
 
-.close-button.throwing {
-  animation: throwEffect 1s ease-out forwards;
+.album-art.throwing {
+  animation: throwEffect 0,5s ease-out forwards;
 }
+

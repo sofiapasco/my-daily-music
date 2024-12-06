@@ -33,13 +33,26 @@ export interface Song {
     album: { images: { url: string }[]; name: string };
     external_urls: { spotify: string };
     duration_ms: number;
-    currentTime?: number; 
-    valence?: number;
-    energy?: number;
     tempo?: number;
+    popularity: number;
+    currentTime?: number;
+    danceability?: number;
     acousticness?: number;
+    instrumentalness?: number;
   }
   
   export interface RecentlyPlayedItem {
     track: Track;
   }
+
+  export interface MoodFilters {
+    tempo?: [number, number];
+    popularity?: [number, number];
+    duration_ms?: [number, number];
+    valence?: [number, number];
+    danceability?: [number, number];
+    instrumentalness?: [number, number];
+    acousticness?: [number, number];
+    explicit?: boolean;
+  }
+  

@@ -9,16 +9,42 @@ const Callback: React.FC = () => {
 
   useEffect(() => {
     const extractToken = async () => {
+
       if (tokenHandled) return; // Undvik att hantera token flera gånger
 
       const hash = window.location.hash;
-      console.log("URL Hash before extraction:", hash);
+      console.log("Full URL Hash:", hash);
 
       if (hash.includes("access_token")) {
         const params = new URLSearchParams(hash.substring(1));
         const token = params.get("access_token");
         const expiresIn = parseInt(params.get("expires_in") || "3600", 10);
+        const scopes = params.get("scope") || [
+          "user-read-private",
+          "user-read-email",
+          "playlist-read-collaborative",
+          "user-top-read",
+          "user-read-recently-played",
+          "user-library-modify",
+          "user-library-read",
+          "streaming",
+          "playlist-read-private",
+          "playlist-modify-private",
+          "playlist-modify-public",
+          "user-read-playback-state",
+          "user-modify-playback-state",
+        ].join(" ");
+        
+        console.log("Scopes:", scopes);
 
+          if (scopes) {
+            console.log("Scopes:", scopes);
+
+            // Spara scopes i localStorage
+            localStorage.setItem("spotifyScopes", scopes);
+          }
+    
+       
         if (token) {
           console.log("Extracted Token:", token);
 
