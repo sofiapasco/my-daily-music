@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Track } from "../types/Song";
 import { useAuth } from "../context/AuthContext";
 import { toast } from "react-toastify";
-import { useLocation, useNavigate } from "react-router-dom"; 
+import { useLocation, useNavigate, Link } from "react-router-dom"; 
 import UserMenu from "../components/UserMenu";
 import "react-toastify/dist/ReactToastify.css";
 import SearchBar from "../components/SearchSongs";
@@ -205,7 +205,7 @@ const songsToRender = searchQuery
 
   return (
     <div className="saved-songs-container">
-      <h1>Alla sparade låtar:</h1>
+  
       <UserMenu />
       <button className="logout-btn" onClick={handleLogout}>
         Logga ut
@@ -218,6 +218,7 @@ const songsToRender = searchQuery
         searchQuery={searchQuery} 
         setSearchQuery={setSearchQuery} 
         onSearch={handleSearch} />
+        <h1>Alla sparade låtar:</h1>
 
       {/* Visa sparade låtar */}
       <div className="gallery-container">
@@ -288,7 +289,9 @@ const songsToRender = searchQuery
     playlists.map((playlist, index) => (
       <div key={index} className="playlist-item">
         <h2 style={{ fontSize: "18px", letterSpacing: "3px", paddingBottom: "5px", fontWeight: "bold" }}>
+        <Link to={`/playlist/${playlist.name}`} style={{ textDecoration: "none", color: "inherit" }}>
           {playlist.name}
+        </Link>
         </h2>
         <p style={{fontSize:"12px", letterSpacing:"1px"}}>{playlist.songs.length} låtar</p>
         <button 
@@ -364,6 +367,7 @@ const songsToRender = searchQuery
             </div>
             </div>
           ))}
+
         </div>
       </div>
     ))

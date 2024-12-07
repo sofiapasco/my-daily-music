@@ -16,11 +16,9 @@ const UserProfile: React.FC = () => {
   );
 
   useEffect(() => {
-    // Hämta token och användar-ID från localStorage
     const token = localStorage.getItem("spotifyAccessToken_" + localStorage.getItem("currentUserId"));
 
     if (token) {
-      // Anropa Spotify API för att hämta användarinformation
       fetch("https://api.spotify.com/v1/me", {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -49,12 +47,12 @@ const UserProfile: React.FC = () => {
       const reader = new FileReader();
   
       reader.onload = () => {
-        const base64Image = reader.result as string; // Base64-sträng
+        const base64Image = reader.result as string; 
         setCustomAvatar(base64Image);
-        localStorage.setItem("customUserAvatar", base64Image); // Spara i localStorage
+        localStorage.setItem("customUserAvatar", base64Image); 
       };
   
-      reader.readAsDataURL(file); // Läser filen som Base64
+      reader.readAsDataURL(file); 
     }
   };
   
@@ -71,10 +69,10 @@ const UserProfile: React.FC = () => {
         className="user-avatar"
       />
       <h2 className="user-name">{userInfo.name}</h2>
-      <p className="user-email">{userInfo.email}</p>
-      <p className="user-product">
-        {userInfo.product === "premium" ? "Spotify Premium" : "Spotify Free"}
+      <p className="user-product" id="user-product">
+        {userInfo.product === "premium" ? "Spotify Premium ⭐️" : "Spotify Free"}
       </p>
+      <p className="user-email">{userInfo.email}</p>
       <input
         id="upload-avatar"
         type="file"

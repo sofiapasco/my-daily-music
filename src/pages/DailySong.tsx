@@ -231,8 +231,8 @@ const handleExcludeSong = () => {
         // Hämta en ny låt
         fetchDailySong(updatedExcludedSongs, selectedMood);
 
-        setIsThrowing(false); // Återställ kastanimationen
-      }, 1000); // Vänta tills animationen är klar (1 sekund)
+        setIsThrowing(false); 
+      }); 
     } else {
       console.log("Låten är redan exkluderad:", currentSong.id);
     }
@@ -325,11 +325,13 @@ const handleExcludeSong = () => {
   };
 
   const handleRemoveFromSavedSongs = (songId: string) => {
-    const updatedSongs = savedSongs.filter((song) => song.id !== songId);
-    updateLocalStorage("likedSongs", updatedSongs, setSavedSongs);
+    const updatedSongs = likedSongs.filter((song) => song.id !== songId);
+    setLikedSongs(updatedSongs); // Uppdatera state
+    localStorage.setItem("likedSongs", JSON.stringify(updatedSongs)); // Uppdatera localStorage
     toast.success("Låten har tagits bort!");
   };
-  
+  console.log("Gillade låtar:", likedSongs);
+
 
   const handleShareSong = (song: Track) => {
     const shareText = `Lyssna på "${song.name}" av ${song.artists[0].name}: ${song.external_urls.spotify}`;
@@ -378,6 +380,13 @@ const handleExcludeSong = () => {
     const storedPlaylists = JSON.parse(localStorage.getItem("playlists") || "[]");
     setPlaylists(storedPlaylists);
   }, []);
+
+  useEffect(() => {
+    if (currentSong) {
+      console.log("Dagens låt:", currentSong);
+    }
+  }, [currentSong]);
+  
 
   return (
     <>
@@ -452,10 +461,7 @@ const handleExcludeSong = () => {
                 src={song?.album?.images?.[0]?.url || "/path/to/default-image.jpg"}
                 alt={`${song?.name || "Okänd låt"} album art`}
                 className="gallery-image"
-                onClick={(event) => {
-                  event.preventDefault();
-                  handleLike(song);
-                }}
+                
               />
               </a>
               <p className="song-name">{song?.name || "Okänd låt"}</p>

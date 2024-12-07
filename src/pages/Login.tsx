@@ -118,7 +118,7 @@ if (missingScopes.length > 0) {
               padding: "8px 16px",
               fontSize: "12px",
               fontWeight: "bold",
-              backgroundColor: " #922692",
+              background: "linear-gradient(135deg, #922692, #bb4180c6",
               color: "#e0e0e0",
               border: "none",
               letterSpacing: "2px",

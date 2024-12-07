@@ -2,14 +2,14 @@ import { MoodFilters } from "../types/Song";
 
 export const moodAttributes: Record<string, MoodFilters> = {
     happy: {
-      tempo: [80, 150], // Snabbt tempo
+      tempo: [100, 170], // Snabbt tempo
       popularity: [50, 100],
       duration_ms: [100000, 400000],
       valence: [0.6, 1.0], // Glada låtar
     },
     low: {
       instrumentalness: [0.3, 1.0], // Mer instrumentellt
-      tempo: [50, 120], // Långsamt tempo
+      tempo: [50, 110], 
       popularity: [0, 60],
       duration_ms: [180000, 600000],
       valence: [0.0, 0.4], // Melankoliskt
@@ -24,6 +24,7 @@ export const moodAttributes: Record<string, MoodFilters> = {
       instrumentalness: [0.5, 1.0], // Mer instrumentellt
       acousticness: [0.4, 1.0], // Akustiskt fokus
       popularity: [30, 80],
+      tempo: [50, 110], 
       duration_ms: [200000, 500000],
       valence: [0.2, 0.7], // Avslappnat spektrum
     },

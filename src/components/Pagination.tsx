@@ -30,14 +30,7 @@ const Pagination: React.FC<PaginationProps> = ({
         <button
           key={i}
           onClick={() => handleClick(i)}
-          style={{
-            margin: "0 5px",
-            padding: "5px 10px",
-            backgroundColor: i === currentPage ? "#922692" : "#f0f0f0",
-            border: "1px solid #ccc",
-            borderRadius: "5px",
-            cursor: "pointer",
-          }}
+          className={`page-button ${i === currentPage ? "active" : ""}`}
         >
           {i}
         </button>
@@ -47,35 +40,25 @@ const Pagination: React.FC<PaginationProps> = ({
   };
 
   return (
-    <div style={{ marginTop: "20px", textAlign: "center" }}>
+    <div className="pagination-container">
       <button 
         onClick={() => handleClick(currentPage - 1)} 
         disabled={currentPage === 1}
-        style={{
-          padding: "5px 10px",
-          marginRight: "10px",
-          backgroundColor: currentPage === 1 ? "#e0e0e0" : "#f0f0f0",
-          border: "1px solid #ccc",
-          borderRadius: "5px",
-          cursor: currentPage === 1 ? "not-allowed" : "pointer",
-        }}
+        className="pagination-arrow"
       >
-        Föregående
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="white" viewBox="0 0 24 24">
+          <path d="M15.41 7.41 14 6l-6 6 6 6 1.41-1.41L10.83 12z"/>
+        </svg>
       </button>
       {renderPageNumbers()}
       <button 
         onClick={() => handleClick(currentPage + 1)} 
         disabled={currentPage === totalPages}
-        style={{
-          padding: "5px 10px",
-          marginLeft: "10px",
-          backgroundColor: currentPage === totalPages ? "#e0e0e0" : "#f0f0f0",
-          border: "1px solid #ccc",
-          borderRadius: "5px",
-          cursor: currentPage === totalPages ? "not-allowed" : "pointer",
-        }}
+        className="pagination-arrow"
       >
-        Nästa
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="white" viewBox="0 0 24 24">
+          <path d="M8.59 16.59 10 18l6-6-6-6-1.41 1.41L13.17 12z"/>
+        </svg>
       </button>
     </div>
   );

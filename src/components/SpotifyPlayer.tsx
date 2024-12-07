@@ -1,5 +1,6 @@
 /// <reference types="spotify-web-playback-sdk" />
 import { useEffect, useState } from "react";
+import ProgressBar from "../components/ProgressBar";
 
 interface SpotifyPlayerProps {
   accessToken: string;
@@ -168,16 +169,18 @@ const SpotifyPlayer: React.FC<SpotifyPlayerProps> = ({
     const interval = setInterval(() => {
       player.getCurrentState().then((state) => {
         if (!state) return;
-  
-        const position = state.position; // Milliseconds
-        const duration = state.duration; // Milliseconds
-  
+    
+        const position = state.position; // Millisekunder
+        const duration = state.duration; // Millisekunder
+    
         setCurrentTime(formatTime(position));
         setDuration(formatTime(duration));
         setProgress((position / duration) * 100);
+    
+        console.log("Position:", position, "Duration:", duration, "Progress:", (position / duration) * 100);
       });
     }, 1000);
-  
+    
     return () => clearInterval(interval);
   }, [player]);
   
@@ -187,38 +190,52 @@ const SpotifyPlayer: React.FC<SpotifyPlayerProps> = ({
     return `${minutes}:${seconds < 10 ? "0" : ""}${seconds}`;
   };
 
+  const handleSeek = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!player) return;
+  
+    player.getCurrentState().then((state) => {
+      if (!state) return;
+  
+      const rect = e.currentTarget.getBoundingClientRect(); // Get the progress bar's dimensions
+      const clickX = e.clientX - rect.left; // Click position in pixels
+      const newPosition = (clickX / rect.width) * state.duration; // Calculate the new position in milliseconds
+  
+      player.seek(newPosition).then(() => {
+        console.log(`Hoppade till ${formatTime(newPosition)}`);
+      });
+    });
+
+  };
+  
   return (
 <div className="spotify-player">
   {isInitializing ? (
-    <p>Laddar Spotify-spelaren...</p>
+    <p></p>
   ) : (
     <>
       <div className="player-controls">
         <button className="control-button" onClick={togglePlayPause}>
           {isPlaying ? (
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="white" viewBox="0 0 24 24">
+            <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="white" viewBox="0 0 24 24">
               <rect x="6" y="5" width="4" height="14" />
               <rect x="14" y="5" width="4" height="14" />
             </svg>
           ) : (
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="white" viewBox="0 0 24 24">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="white" viewBox="0 0 24 24">
               <polygon points="5,3 19,12 5,21" />
             </svg>
           )}
         </button>
-        <div className="progress-container">
-          <span className="current-time">{currentTime}</span>
-          <div className="progress-bar">
-            <div className="progress" style={{ width: `${progress}%` }}></div>
-          </div>
-          <span className="duration">{duration}</span>
-        </div>
+        <ProgressBar
+          currentTime={currentTime}
+          duration={duration}
+          progress={progress}
+          onSeek={handleSeek}
+        />
       </div>
     </>
   )}
 </div>
-
-
   );
 };
 

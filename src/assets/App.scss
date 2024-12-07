@@ -15,6 +15,7 @@
   .daily-song-title {
     font-family: 'Roboto', sans-serif;
     font-size: 23px;
+    margin-top: 8rem;
     letter-spacing: 4px;
     margin-bottom: 20px;
     padding-bottom: 5px;
@@ -37,7 +38,6 @@
     position: relative;
     flex-direction: column;
     align-items: center;
-    color: #922692 !important;
 
     .album-and-like {
       display: flex; 
@@ -185,7 +185,7 @@
   padding: 8px 16px;
   font-size: 12px;
   font-weight: bold;
-  background-color: #922692;
+  background: linear-gradient(135deg, #922692, #bb4180c6);
   color: #e0e0e0;
   border: none;
   letter-spacing: 2px;
@@ -241,6 +241,8 @@
   font-size: 18px;
   letter-spacing: 3px;
   font-weight: bold;
+  margin: auto;
+  margin-top: 8%;
 
 }
 
@@ -269,7 +271,6 @@
   overflow-x: auto;
   gap: 30px; 
   width: 100%;
-  height: 100vh;
   flex-wrap: wrap;
   justify-content: center;
   align-items: center;
@@ -401,7 +402,7 @@
   right: 150px;
   width: 40px;
   height: 40px;
-  background-color: #922692;
+  background: linear-gradient(135deg, #922692, #bb4180c6);
   color: #f8f3f3;
   border: none;
   border-radius: 30px;
@@ -422,7 +423,7 @@
   right: 100px;
   margin-top: 10px;
   width: 120px; 
-  background-color: #922692; 
+  background: linear-gradient(135deg, #922692, #bb4180c6);
   border-radius: 8px;
   box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2);
   overflow: hidden;
@@ -483,6 +484,10 @@
     }
   }
 }
+#user-product{
+ color: #922692 !important;
+ font-weight: bold;
+}
 
 .user-profile {
   text-align: center;
@@ -514,7 +519,7 @@
 .theme-switch-btn{
   width: 40px;
   height: 40px;
-  background-color: #922692;
+  background: linear-gradient(135deg, #922692, #bb4180c6);
   color: #f8f3f3;
   border: none;
   border-radius: 30px;
@@ -565,7 +570,7 @@ body.dark {
   }
 
   .mood-buttons button {
-    background-color: #1d1c1c;
+    background: linear-gradient(135deg, #1e1e2f, #3e3e5e)
   }
   .titleFront {
     background-color: #fff;
@@ -600,7 +605,7 @@ body.light {
   }
 
   .mood-buttons button {
-    background: linear-gradient(135deg, #f3d4f3, #e2cdc4);
+    background-color: none;
   }
 
   .like-heart, .close {
@@ -798,64 +803,125 @@ p {
   animation: throwEffect 0,5s ease-out forwards;
 }
 
-.spotify-player {
+.progress-container {
   display: flex;
-  flex-direction: column;
+  justify-content: center;
   align-items: center;
-  font-family: 'Poppins', sans-serif;
-}
-
-.player-controls {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 10px;
+  width: 100%; 
+  max-width: 500px; 
+  margin: 10px auto; 
 }
 
 .control-button {
-  background: linear-gradient(135deg, #6a1b9a, #8e24aa);
-  border: none;
-  color: white;
-  font-size: 28px;
-  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  margin-left: 45%;
+  border-radius: 50%; 
+  background: linear-gradient(135deg, #922692, #bb4180c6);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2), 0 1px 4px rgba(0, 0, 0, 0.1); 
+  border: none; 
+  display: flex;
+  justify-content: center;
+  align-items: center;
   cursor: pointer;
-  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
-  transition: transform 0.2s ease-in-out;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .control-button:hover {
-  transform: scale(1.2);
-  background: linear-gradient(135deg, #8e24aa, #ab47bc);
+  transform: scale(1.1); 
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3), 0 2px 6px rgba(0, 0, 0, 0.2);
 }
 
-.progress-container {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  width: 100%;
-  max-width: 300px;
-  padding-bottom: 20px;
+.control-button:active {
+  transform: scale(0.95); 
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); 
 }
 
-.progress-bar {
-  flex: 1;
-  height: 8px;
-  background: rgba(0, 0, 0, 0.1);
-  border-radius: 4px;
-  position: relative;
-}
-
-.progress {
-  height: 100%;
-  background: linear-gradient(135deg, #6a1b9a, #8e24aa);
-  width: 0%;
-  border-radius: 4px;
-  transition: width 0.3s ease;
-}
 
 .current-time,
 .duration {
   font-size: 14px;
-  color: #6a1b9a;
-  font-weight: bold;
+  color: linear-gradient(135deg, #922692, #bb4180c6);
+  min-width: 40px; 
+  text-align: center;
+}
+
+.progress-bar {
+  width: 350px; 
+  height: 8px; 
+  background: linear-gradient(135deg, #922692, #bb4180c6);
+  border-radius: 4px; 
+  margin: 15px; 
+  position: relative;
+  cursor: pointer;
+}
+
+.progress {
+  height: 100%; 
+  background-color:#dec2de; 
+  border-radius: 4px; 
+  transition: width 0.2s ease; 
+}
+
+.progress-knob {
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translate(50%, -50%);
+  width: 12px;
+  height: 12px;
+  background-color: #fff;
+  border: 2px solid #922692;
+  border-radius: 50%;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.pagination-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.pagination-arrow {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #922692, #bb4180c6);
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+
+.pagination-arrow:disabled {
+  background: #e0e0e0;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.page-button {
+  padding: 6px 10px;
+  border-radius: 5px;
+  border: none;
+  background: #f0f0f0;
+  cursor: pointer;
+  transition: transform 0.2s ease, background 0.2s ease;
+}
+
+.page-button:hover {
+  transform: scale(1.1);
+  background: linear-gradient(135deg, #922692, #bb4180c6);
+  color: white;
+}
+
+.page-button.active {
+  background: linear-gradient(135deg, #922692, #bb4180c6);
+  color: white;
+  pointer-events: none;
 }
