@@ -13,7 +13,6 @@ import "react-toastify/dist/ReactToastify.css";
 const DailySong: React.FC = () => {
   const [currentSong, setCurrentSong] = useState<Track | null>(null);
   const { accessToken, logout } = useAuth();
-  const [savedSongs, setSavedSongs] = useState<Track[]>([]);
   const [showSelect, setShowSelect] = useState(false);
   const [timeoutId, setTimeoutId] = useState<number | null>(null);
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
@@ -24,9 +23,16 @@ const DailySong: React.FC = () => {
   const [isThrowing, setIsThrowing] = useState(false);
   const [selectedMood, setSelectedMood] = useState<string | null>(null);
   const navigate = useNavigate();
-
   const duration = currentSong ? currentSong.duration_ms / 1000 : 0; 
 
+  const updateLocalStorage = (key: string, value: any, userId: string, setState: React.Dispatch<any>) => {
+    const storageKey = `${key}_${userId}`; // Lägg till userId i nyckeln
+    const existingData = JSON.parse(localStorage.getItem(storageKey) || "[]");
+    const updatedData = Array.isArray(existingData) ? [...existingData, ...value] : value;
+    localStorage.setItem(storageKey, JSON.stringify(updatedData));
+    setState(updatedData);
+  };  
+  
   useEffect(() => {
     if (!currentSong) return;
 
@@ -74,16 +80,6 @@ const DailySong: React.FC = () => {
           (getOrDefault(track.duration_ms, 180000) < filters.duration_ms[0] || 
            getOrDefault(track.duration_ms, 180000) > filters.duration_ms[1])) {
         logDetails.push(`Längd utanför gränserna: ${track.duration_ms}`);
-      }
-      if (filters.tempo && 
-          (getOrDefault(track.tempo, 120) < filters.tempo[0] || 
-           getOrDefault(track.tempo, 120) > filters.tempo[1])) {
-        logDetails.push(`Tempo utanför gränserna: ${track.tempo}`);
-      }
-      if (filters.acousticness && 
-          (getOrDefault(track.acousticness, 0.5) < filters.acousticness[0] || 
-           getOrDefault(track.acousticness, 0.5) > filters.acousticness[1])) {
-        logDetails.push(`Acousticness utanför gränserna: ${track.acousticness}`);
       }
   
       if (logDetails.length > 0) {
@@ -242,25 +238,41 @@ const handleExcludeSong = () => {
 };
 
 
-  useEffect(() => {
-    if (!userId) return;
+useEffect(() => {
+  if (!userId) return;
+  const storageKey = `likedSongs_${userId}`;
+  const storedLikedSongs = localStorage.getItem(storageKey);
+ 
+  if (storedLikedSongs) {
+    setLikedSongs(JSON.parse(storedLikedSongs));
+  } else {
+    setLikedSongs([]);
+  }
+}, [userId]);
+console.log(`Hämtar sparade låtar för userId: ${userId}`);
+console.log("Lagrade likedSongs:", localStorage.getItem(`likedSongs_${userId}`));
 
-    const storedLikedSongs = localStorage.getItem("likedSongs");
-    if (storedLikedSongs) {
-      setLikedSongs(JSON.parse(storedLikedSongs));
-    }
-  }, [userId]);
 
-  const handleLike = (song: Track) => {  
-    if (likedSongs.find((likedSong) => likedSong.id === song.id)) {
-      toast.info("Låten är redan sparad i dina gillade låtar!");
-      return;
-    }
 
-    const updatedLikedSongs = [...likedSongs, { ...song, date: new Date().toISOString() }];
-    updateLocalStorage("likedSongs", updatedLikedSongs, setLikedSongs);
-    toast.success("Låten har lagts till i dina gillade låtar!");
-  
+const handleLike = (song: Track) => {
+  if (!userId) {
+    toast.error("Ingen användare inloggad.");
+    return;
+  }
+
+  const storageKey = `likedSongs_${userId}`;
+  const storedLikedSongs = JSON.parse(localStorage.getItem(storageKey) || "[]");
+
+  if (storedLikedSongs.find((likedSong: Track) => likedSong.id === song.id)) {
+    toast.info("Låten är redan sparad i dina gillade låtar!");
+    return;
+  }
+
+  const updatedLikedSongs = [...storedLikedSongs, { ...song, date: new Date().toISOString() }];
+  localStorage.setItem(storageKey, JSON.stringify(updatedLikedSongs));
+  setLikedSongs(updatedLikedSongs); // Uppdatera React-state
+  toast.success("Låten har lagts till i dina gillade låtar!");
+
     const imageElement = currentSong
       ? document.getElementById(`album-art-${currentSong.id}`) as HTMLImageElement
       : null;
@@ -297,11 +309,6 @@ const handleExcludeSong = () => {
     }
   };  
   
-  const handleLogout = () => {
-    localStorage.removeItem("spotifyAccessToken");
-    logout();
-  };
-
   const handleToggleMenu = (menuId: string): void => {
     if (openMenuId === menuId) {
       // Om menyn redan är öppen, stäng den
@@ -319,20 +326,21 @@ const handleExcludeSong = () => {
       setTimeoutId(id); 
     }
   };
-  const updateLocalStorage = (key: string, value: any, setState: React.Dispatch<any>) => {
-    localStorage.setItem(key, JSON.stringify(value));
-    setState(value);
-  };
-
+  
   const handleRemoveFromSavedSongs = (songId: string) => {
-    const updatedSongs = likedSongs.filter((song) => song.id !== songId);
-    setLikedSongs(updatedSongs); // Uppdatera state
-    localStorage.setItem("likedSongs", JSON.stringify(updatedSongs)); // Uppdatera localStorage
+    if (!userId) {
+      toast.error("Ingen användare inloggad.");
+      return;
+    }
+  
+    const storageKey = `likedSongs_${userId}`;
+    const storedLikedSongs = JSON.parse(localStorage.getItem(storageKey) || "[]");
+    const updatedSongs = storedLikedSongs.filter((song: Track) => song.id !== songId);
+  
+    updateLocalStorage("likedSongs", updatedSongs, userId, setLikedSongs);
     toast.success("Låten har tagits bort!");
   };
-  console.log("Gillade låtar:", likedSongs);
-
-
+  
   const handleShareSong = (song: Track) => {
     const shareText = `Lyssna på "${song.name}" av ${song.artists[0].name}: ${song.external_urls.spotify}`;
     if (navigator.share) {
@@ -392,7 +400,7 @@ const handleExcludeSong = () => {
     <>
       <div className="daily-song-container">
         <UserMenu />
-        <button className="logout-btn" onClick={handleLogout}>
+        <button className="logout-btn" onClick={logout}>
           Logga ut
         </button>
         <h1 className="daily-song-title">DAGENS LÅT</h1>

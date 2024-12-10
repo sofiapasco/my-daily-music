@@ -2,38 +2,23 @@ import { MoodFilters } from "../types/Song";
 
 export const moodAttributes: Record<string, MoodFilters> = {
     happy: {
-      tempo: [100, 170], // Snabbt tempo
-      popularity: [50, 100],
-      duration_ms: [100000, 400000],
-      valence: [0.6, 1.0], // Glada låtar
+        popularity: [60, 100], // Mer populära låtar
+        duration_ms: [120000, 300000], // Medel till långa låtar
     },
     low: {
-      instrumentalness: [0.3, 1.0], // Mer instrumentellt
-      tempo: [50, 110], 
-      popularity: [0, 60],
-      duration_ms: [180000, 600000],
-      valence: [0.0, 0.4], // Melankoliskt
+        popularity: [0, 50], // Mindre populära låtar
+        duration_ms: [200000, 600000], // Längre låtar
     },
     energetic: {
-      tempo: [110, 220], // Högt tempo
-      popularity: [40, 100],
-      duration_ms: [120000, 300000],
-      danceability: [0.7, 1.0], // Hög dansbarhet
+        popularity: [50, 100], // Populära låtar
+        duration_ms: [100000, 240000], // Kortare låtar för energi
     },
     relaxed: {
-      instrumentalness: [0.5, 1.0], // Mer instrumentellt
-      acousticness: [0.4, 1.0], // Akustiskt fokus
-      popularity: [30, 80],
-      tempo: [50, 110], 
-      duration_ms: [200000, 500000],
-      valence: [0.2, 0.7], // Avslappnat spektrum
+        popularity: [30, 80], // Mindre populära låtar
+        duration_ms: [200000, 450000], // Längre låtar
     },
     love: {
-      tempo: [60, 120], // Medellångt tempo
-      popularity: [40, 90],
-      duration_ms: [150000, 400000],
-      valence: [0.6, 1.0], // Positiv känsla
-      acousticness: [0.3, 1.0], // Akustiskt
+        popularity: [40, 90], // Mellan populära låtar
+        duration_ms: [150000, 400000], // Medellånga låtar
     },
-  };
-  
+};

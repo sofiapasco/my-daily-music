@@ -22,6 +22,7 @@ const SavedSongs: React.FC = () => {
   const [currentPage, setCurrentPage] = useState<number>(1);
 
   const { logout } = useAuth();
+  const { userId } = useAuth();
   const itemsPerPage = 12;
   const navigate = useNavigate();
   const location = useLocation();
@@ -39,18 +40,24 @@ const SavedSongs: React.FC = () => {
     localStorage.setItem("currentPage", page.toString());
     navigate(`?page=${page}`);
   };
-
+  console.log(`Hämtar sparade låtar för userId: ${userId}`);
+  console.log("Lagrade likedSongs:", localStorage.getItem(`likedSongs_${userId}`));
+  
   useEffect(() => {
-    const storedLikedSongs = localStorage.getItem("likedSongs");
+    if (!userId) return; // Om användaren inte är inloggad, gör inget
+    
+    const storageKey = `likedSongs_${userId}`;
+    const storedLikedSongs = localStorage.getItem(storageKey);
     if (storedLikedSongs) {
       setSavedSongs(JSON.parse(storedLikedSongs));
     }
-
-    const storedPlaylists = localStorage.getItem("playlists");
+  
+    const storedPlaylists = localStorage.getItem(`playlists_${userId}`);
     if (storedPlaylists) {
       setPlaylists(JSON.parse(storedPlaylists)); 
     }
-  }, []);
+  }, [userId]);
+  
 
   const handleSearch = () => {
     if (!searchQuery.trim()) {
@@ -74,42 +81,71 @@ const SavedSongs: React.FC = () => {
   }, [searchQuery, savedSongs]);
 
   const handleRemoveFromSavedSongs = (songId: string) => {
+    if (!userId) {
+      toast.error("Ingen användare inloggad.");
+      return;
+    }
+  
+    const storageKey = `likedSongs_${userId}`;
     const updatedSongs = savedSongs.filter((song) => song.id !== songId);
     setSavedSongs(updatedSongs);
-    localStorage.setItem("likedSongs", JSON.stringify(updatedSongs));
+    localStorage.setItem(storageKey, JSON.stringify(updatedSongs));
     toast.success("Låten har tagits bort!");
   };
+  
 
   const handleCreatePlaylist = () => {
+    if (!userId) {
+      toast.error("Ingen användare inloggad.");
+      return;
+    }
+  
     if (!newPlaylistName.trim()) {
       toast.error("Spellistans namn kan inte vara tomt!");
       return;
     }
-
-    const storedPlaylists = JSON.parse(localStorage.getItem("playlists") || "[]");
+  
+    const storageKey = `playlists_${userId}`;
+    const storedPlaylists = JSON.parse(localStorage.getItem(storageKey) || "[]");
     const newPlaylist = { name: newPlaylistName, songs: [] };
     const updatedPlaylists = [...storedPlaylists, newPlaylist];
-
-    localStorage.setItem("playlists", JSON.stringify(updatedPlaylists));
-    setPlaylists(updatedPlaylists); // Uppdatera state
+  
+    localStorage.setItem(storageKey, JSON.stringify(updatedPlaylists));
+    setPlaylists(updatedPlaylists);
     toast.success(`Spellistan "${newPlaylistName}" har skapats!`);
-    setNewPlaylistName(""); // Återställ formuläret
-    setShowModal(false); // Stäng modal
-  };
+    setNewPlaylistName("");
+    setShowModal(false);
+  };  
 
   const handleAddSongToPlaylist = (playlistIndex: number, song: Track) => {
     const selectedPlaylist = playlists[playlistIndex];
-    const updatedSongs = [...selectedPlaylist.songs, song];
   
+    // Kontrollera att spellistan existerar
+    if (!selectedPlaylist) {
+      console.error("Spellistan hittades inte.");
+      return;
+    }
+  
+    const updatedSongs = [...selectedPlaylist.songs, song];
     const updatedPlaylist = { ...selectedPlaylist, songs: updatedSongs };
     const updatedPlaylists = playlists.map((playlist, index) =>
       index === playlistIndex ? updatedPlaylist : playlist
     );
   
     setPlaylists(updatedPlaylists);
-    localStorage.setItem("playlists", JSON.stringify(updatedPlaylists));
+  
+    const storageKey = `playlists_${userId}`;
+    if (!userId) {
+      console.error("UserId saknas, kan inte uppdatera localStorage.");
+      return;
+    }
+  
+    // Uppdatera localStorage
+    localStorage.setItem(storageKey, JSON.stringify(updatedPlaylists));
+    console.log("Uppdaterade spellistor sparade i localStorage:", updatedPlaylists);
+  
     toast.success(`"${song.name}" har lagts till i spellistan "${selectedPlaylist.name}"`);
-  };
+  };  
 
   const handleShareSong = (song: Track) => {
     const shareText = `Lyssna på "${song.name}" av ${song.artists[0].name}: ${song.external_urls.spotify}`;
@@ -157,11 +193,6 @@ const closeMenu = () => {
   setVisibleMenu(null);
 };
 
-const handleLogout = () => {
-  localStorage.removeItem("spotifyAccessToken");
-  logout();
-};
-
 useEffect(() => {
   const handleClickOutside = (event: MouseEvent) => {
     const target = event.target as HTMLElement;
@@ -207,7 +238,7 @@ const songsToRender = searchQuery
     <div className="saved-songs-container">
   
       <UserMenu />
-      <button className="logout-btn" onClick={handleLogout}>
+      <button className="logout-btn" onClick={logout}>
         Logga ut
       </button>
       <div className="create-playlist-container">

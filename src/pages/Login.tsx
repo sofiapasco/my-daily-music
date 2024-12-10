@@ -29,19 +29,25 @@ const Login = () => {
       import.meta.env.VITE_SPOTIFY_CLIENT_ID
     }&response_type=token&redirect_uri=${
       import.meta.env.VITE_SPOTIFY_REDIRECT_URI
-    }&scope=${encodeURIComponent(scopes.join(" "))}`;    
+    }&scope=${encodeURIComponent(scopes.join(" "))}&prompt=login`;
+       
 
     console.log("SPOTIFY_CLIENT_ID:", import.meta.env.VITE_SPOTIFY_CLIENT_ID);
-console.log("SPOTIFY_REDIRECT_URI:", import.meta.env.VITE_SPOTIFY_REDIRECT_URI);
-console.log("AUTH_URL:", AUTH_URL);
+    console.log("SPOTIFY_REDIRECT_URI:", import.meta.env.VITE_SPOTIFY_REDIRECT_URI);
+    console.log("AUTH_URL:", AUTH_URL);
 
   useEffect(() => {
     // Kontrollera om access_token finns i URL:n (hash-fragmentet)
     const hash = window.location.hash;
+    console.log("Hash från URL:", hash);
     const params = new URLSearchParams(hash.replace("#", "?"));
     const accessToken = params.get("access_token");
     const scopes = params.get("scope"); // Hämta scope-parametern
     console.log("Scopes:", scopes);
+
+
+  console.log("Access Token:", accessToken);
+
     
     if (accessToken) {
       const userId = params.get("user_id"); // Om användar-ID finns också i URL:n, annars hämta senare
@@ -55,28 +61,6 @@ console.log("AUTH_URL:", AUTH_URL);
         navigate("/mood-selection");
       };
 
-      const storedScopes = localStorage.getItem("spotifyScopes")?.split(" ") || [];
-const requiredScopes = [
-  "user-read-private",
-  "user-read-email",
-  "playlist-read-private",
-  "playlist-read-collaborative",
-  "playlist-modify-private",
-  "playlist-modify-public",
-  "streaming",
-  "user-modify-playback-state",
-  "user-read-playback-state",
-  "user-read-recently-played",
-  "user-top-read",
-];
-
-const missingScopes = requiredScopes.filter((scope) => !storedScopes.includes(scope));
-
-if (missingScopes.length > 0) {
-  console.error("Följande scopes saknas:", missingScopes);
-} else {
-  console.log("Alla nödvändiga scopes är tillgängliga!");
-}
 
     return (
       <div

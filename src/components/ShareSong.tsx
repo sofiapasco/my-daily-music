@@ -15,7 +15,7 @@ const ShareSong: React.FC<ShareSongProps> = ({ song }) => {
   const { title, artist, link } = song;
 
   const shareText = `Lyssna på "${title}" av ${artist}!`;
-  const shareUrl = link;
+  const shareUrl = link; // Använd det redan existerande `link` från props
 
   const handleWebShare = () => {
     if (navigator.share) {
@@ -31,14 +31,20 @@ const ShareSong: React.FC<ShareSongProps> = ({ song }) => {
     }
   };
 
+  const handleInstagramShare = () => {
+    navigator.clipboard.writeText(shareText);
+    toast.success(
+      "Länken och texten har kopierats! Öppna Instagram och klistra in i din story eller post."
+    );
+  };
+
   const handleCopyLink = () => {
     navigator.clipboard.writeText(`${shareText} ${shareUrl}`);
     toast.success('Länken har kopierats!');
   };
 
-  return ( 
+  return (
     <div className="share-song">
-
       <div className="social-buttons">
         {/* Facebook */}
         <a
@@ -47,27 +53,22 @@ const ShareSong: React.FC<ShareSongProps> = ({ song }) => {
           rel="noopener noreferrer"
           className="facebook-button"
         >
-          <img src="/facebook.png" alt="Dela på Facebook" className="icon"  id="fbicon"/>
+          <img src="/facebook.png" alt="Dela på Facebook" className="icon" id="fbicon" />
         </a>
 
         {/* Kopiera länk */}
         <button onClick={handleCopyLink} className="copy-link-button">
-          <img src="/copy.png" alt="Kopiera länk" className="icon" id="copyicon"/>
+          <img src="/copy.png" alt="Kopiera länk" className="icon" id="copyicon" />
         </button>
 
-        {/* Instagram */}
-        <a
-          href="https://www.instagram.com/"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="instagram-button"
-        >
+        {/* Instagram-delning */}
+        <button onClick={handleInstagramShare} className="instagram-button">
           <img src="/instagram.png" alt="Dela på Instagram" className="icon" />
-        </a>
+        </button>
 
-        {/* Dela via mobil (Web Share API) */}
+        {/* Web Share API */}
         <button onClick={handleWebShare} className="mobile-share-button">
-          <img src="/share.png" alt="Dela via mobil" className="icon" id="phoneicon"/>
+          <img src="/share.png" alt="Dela via mobil" className="icon" id="phoneicon" />
         </button>
       </div>
     </div>

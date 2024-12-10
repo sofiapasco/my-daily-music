@@ -73,6 +73,7 @@ const UserProfile: React.FC = () => {
         {userInfo.product === "premium" ? "Spotify Premium ⭐️" : "Spotify Free"}
       </p>
       <p className="user-email">{userInfo.email}</p>
+      {userInfo.name !== "Anonym" && (
       <input
         id="upload-avatar"
         type="file"
@@ -81,6 +82,7 @@ const UserProfile: React.FC = () => {
         onChange={handleImageUpload}
         style={{color:"black"}}
       />
+    )}
       <button
           className="theme-switch-btn"
           onClick={() => {

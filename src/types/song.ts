@@ -33,12 +33,9 @@ export interface Song {
     album: { images: { url: string }[]; name: string };
     external_urls: { spotify: string };
     duration_ms: number;
-    tempo?: number;
     popularity: number;
     currentTime?: number;
-    danceability?: number;
-    acousticness?: number;
-    instrumentalness?: number;
+    date: number;
   }
   
   export interface RecentlyPlayedItem {

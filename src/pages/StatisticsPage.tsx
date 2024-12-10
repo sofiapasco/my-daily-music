@@ -57,7 +57,11 @@ const StatisticsPage: React.FC = () => {
         </select>
       </div>
       <p>Du har gillat {likesCount} låtar under den här {selectedPeriod === "week" ? "veckan" : "månaden"}.</p>
-      <TopArtists />
+
+      {/* Lägg till TopArtists-komponenten */}
+      <TopArtists selectedPeriod={selectedPeriod} />
+
+      {/* MoodStatistics-komponenten */}
       <MoodStatistics />
     </div>
   );

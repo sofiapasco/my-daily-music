@@ -42,11 +42,16 @@ const MoodStatistics: React.FC = () => {
     return entryDate >= oneWeekAgo && entryDate <= now;
   });
 
+  const sortedRecentMoodData = recentMoodData
+  .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()) // Sortera datan efter datum
+  .slice(-7); // Begränsa till max 7 poster
+
+
   console.log("Filtrerad data för senaste veckan:", recentMoodData);
 
   // Data för grafen
-  const dates = recentMoodData.map((entry) => entry.date);
-  const moods = recentMoodData.map((entry) => {
+  const dates = sortedRecentMoodData.map((entry) => entry.date);
+  const moods = sortedRecentMoodData.map((entry) => {
     switch (entry.mood) {
       case "😊": return 5;
       case "🥰": return 4;
@@ -56,7 +61,7 @@ const MoodStatistics: React.FC = () => {
       case "😢": return 0;
       default: return -1;
     }
-  });
+  });  
 
   const data = {
     labels: dates,

@@ -31,13 +31,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setUserId(id);
       fetchUserInfo(token); // Hämta användarinfo när en ny token sätts
     } else {
-      if (userId) {
-        localStorage.removeItem(`spotifyAccessToken_${userId}`);
-        localStorage.removeItem("currentUserId");
-      }
-      setAccessTokenState(null);
-      setUserId(null);
-      setUserInfo(null);
+      handleLogout();
     }
   };
 
@@ -61,7 +55,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const logout = () => {
+  const handleLogout = () => {
+    // 1. Rensa appens data
     if (userId) {
       localStorage.removeItem(`spotifyAccessToken_${userId}`);
       localStorage.removeItem("currentUserId");
@@ -69,8 +64,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setAccessTokenState(null);
     setUserId(null);
     setUserInfo(null);
-    window.location.href = "/";
-  };
+  
+    // 2. Rensa Spotify-sessionen
+    const spotifyLogoutUrl = "https://accounts.spotify.com/logout";
+    const iframe = document.createElement("iframe");
+    iframe.src = spotifyLogoutUrl;
+    iframe.style.display = "none";
+    document.body.appendChild(iframe);
+  
+    // 3. Efter logout, omdirigera till din inloggningssida
+    setTimeout(() => {
+      document.body.removeChild(iframe);
+      window.location.href = "http://localhost:5173/";
+    }, 2000); // Vänta 2 sekunder för att säkerställa att Spotify-sessionen rensas
+  };  
 
   // Hämta användarinfo om en token redan finns
   useEffect(() => {
@@ -80,7 +87,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, [accessToken]);
 
   return (
-    <AuthContext.Provider value={{ accessToken, userId, userInfo, setAccessToken, logout }}>
+    <AuthContext.Provider value={{ accessToken, userId, userInfo, setAccessToken, logout:handleLogout }}>
       {children}
     </AuthContext.Provider>
   );

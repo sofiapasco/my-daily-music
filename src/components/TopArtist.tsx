@@ -1,9 +1,13 @@
 import React, { useEffect, useState } from "react";
 import { Track } from "../types/Song";
 
-const TopArtists: React.FC = () => {
+interface TopArtistsProps {
+  selectedPeriod: "week" | "month";
+}
+
+const TopArtists: React.FC<TopArtistsProps> = ({ selectedPeriod }) => {
   const [likedSongs, setLikedSongs] = useState<Track[]>([]);
-  const [topArtist, setTopArtist] = useState<{ name: string; count: number } | null>(null);
+  const [topArtists, setTopArtists] = useState<{ name: string; count: number }[]>([]);
 
   useEffect(() => {
     // Hämta gillade låtar från localStorage
@@ -13,31 +17,57 @@ const TopArtists: React.FC = () => {
 
   useEffect(() => {
     if (likedSongs.length > 0) {
+      const today = new Date();
+      let startDate = new Date(today);
+
+      if (selectedPeriod === "week") {
+        startDate.setDate(today.getDate() - 7);
+      } else if (selectedPeriod === "month") {
+        startDate.setMonth(today.getMonth() - 1);
+      }
+
+      // Filtrera låtar baserat på vald period
+      const filteredSongs = likedSongs.filter((song) => {
+        const likeDate = new Date(song.date);
+        return likeDate >= startDate && likeDate <= today;
+      });
+
       // Räkna förekomsten av varje artist
-      const artistCount = likedSongs.reduce<Record<string, number>>((acc, song) => {
+      const artistCount = filteredSongs.reduce<Record<string, number>>((acc, song) => {
         song.artists.forEach((artist) => {
           acc[artist.name] = (acc[artist.name] || 0) + 1;
         });
         return acc;
       }, {});
 
-      // Hitta artisten med flest förekomster
-      const sortedArtists = Object.entries(artistCount).sort((a, b) => b[1] - a[1]);
-      const [topName, topCount] = sortedArtists[0] || ["", 0];
-      setTopArtist({ name: topName, count: topCount });
+      // Sortera artisterna efter antal låtar
+      const sortedArtists = Object.entries(artistCount)
+        .sort((a, b) => b[1] - a[1]) // Sortera i fallande ordning
+        .map(([name, count]) => ({ name, count }));
+
+      // Visa en artist för veckan och topp 3 för månaden
+      if (selectedPeriod === "week") {
+        setTopArtists(sortedArtists.slice(0, 1)); // Bara den främsta artisten
+      } else if (selectedPeriod === "month") {
+        setTopArtists(sortedArtists.slice(0, 3)); // Topp 3 artister
+      }
     } else {
-      setTopArtist(null);
+      setTopArtists([]);
     }
-  }, [likedSongs]);
+  }, [likedSongs, selectedPeriod]);
 
   return (
     <div className="top-artists-container">
-      {topArtist ? (
+      {topArtists.length > 0 ? (
         <p>
-          Din favoritartist är <strong>{topArtist.name}</strong> med {topArtist.count} låtar!
+          {selectedPeriod === "week"
+            ? `Favoritartisten för veckan är ${topArtists[0].name}.`
+            : `Topp 3 artisterna för månaden är: ${topArtists
+                .map((artist) => `${artist.name}`)
+                .join(", ")}.`}
         </p>
       ) : (
-        <p>Du har inte gillat några låtar ännu.</p>
+        <p>Inga gillade låtar under denna period.</p>
       )}
     </div>
   );
