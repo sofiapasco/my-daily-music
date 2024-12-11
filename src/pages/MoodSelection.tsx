@@ -4,43 +4,57 @@ import { useAuth } from "../context/AuthContext";
 import UserMenu from "../components/UserMenu";
 
 const MoodSelection: React.FC = () => {
-  const { logout } = useAuth();
   const [mood, setMood] = useState<string | null>(null);
+  const { logout, userId } = useAuth(); 
   const navigate = useNavigate();
 
   const handleMoodSelection = (selectedMood: string) => {
+    if (!userId) {
+      console.error("Ingen användare inloggad.");
+      return;
+    }
+  
     const today = new Date().toISOString().split("T")[0];
-    const moodHistory = JSON.parse(localStorage.getItem("moodData") || "[]");
-
-    // Uppdatera moodData
+    const moodHistoryKey = `moodData_${userId}`;
+    const selectedMoodKey = `selectedMood_${userId}`; 
+  
+    const moodHistory = JSON.parse(localStorage.getItem(moodHistoryKey) || "[]");
+  
     const updatedMoodData = [
       ...moodHistory.filter((entry: { date: string }) => entry.date !== today),
       { date: today, mood: selectedMood },
     ];
+  
+    localStorage.setItem(moodHistoryKey, JSON.stringify(updatedMoodData));
+  localStorage.setItem(selectedMoodKey, selectedMood);
+  console.log(`Humördata och valt humör uppdaterade för ${userId}:`, updatedMoodData, selectedMood);
 
-    localStorage.setItem("moodData", JSON.stringify(updatedMoodData));
-    console.log("Uppdaterad humördata:", updatedMoodData);
-
-    setMood(selectedMood);
-    localStorage.setItem("selectedMood", selectedMood);
-    navigate("/daily-song");
-  };
+  setMood(selectedMood);
+  navigate("/daily-song");
+};
 
   const handleSkip = () => {
+    if (!userId) {
+      console.error("Ingen användare inloggad.");
+      return;
+    }
+  
     const today = new Date().toISOString().split("T")[0];
-    const moodHistory = JSON.parse(localStorage.getItem("moodData") || "[]");
-
+    const moodHistoryKey = `moodData_${userId}`; // Nyckeln inkluderar userId
+  
+    const moodHistory = JSON.parse(localStorage.getItem(moodHistoryKey) || "[]");
+  
+    // Lägg till neutralt humör
     const updatedMoodData = [
       ...moodHistory.filter((entry: { date: string }) => entry.date !== today),
       { date: today, mood: "neutral" },
     ];
-
-    localStorage.setItem("moodData", JSON.stringify(updatedMoodData));
-    console.log("Hoppa över: Standardhumör 'neutral' tillagd");
-
+  
+    localStorage.setItem(moodHistoryKey, JSON.stringify(updatedMoodData));
+    console.log(`Neutralt humör registrerat för ${userId}`);
     navigate("/daily-song");
   };
-
+  
   return (
     <div className="mood-selection-container">
       <UserMenu />

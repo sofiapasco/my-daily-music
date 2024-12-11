@@ -6,18 +6,13 @@ import { useAuth } from "../context/AuthContext";
 const UserPage: React.FC = () => {
     const { logout } = useAuth();
 
-
-    const handleLogout = () => {
-        localStorage.removeItem("spotifyAccessToken");
-        logout();
-      };
     
       return (
         <div className="user-page-container" style={{height: "100vh"}}>
           <div className="header">
   
             <UserMenu />
-            <button className="logout-btn" onClick={handleLogout}>
+            <button className="logout-btn" onClick={logout}>
               Logga ut
             </button>
           </div>

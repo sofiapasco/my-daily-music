@@ -209,7 +209,7 @@ useEffect(() => {
 
 const handleToggleMenu = (menuId: string): void => {
   if (openMenuId === menuId) {
-    // Om menyn redan är öppen, stäng den
+
     setOpenMenuId(null);
     if (timeoutId !== null) {
       clearTimeout(timeoutId); 
@@ -250,39 +250,36 @@ const songsToRender = searchQuery
         setSearchQuery={setSearchQuery} 
         onSearch={handleSearch} />
         <h1>Alla sparade låtar:</h1>
-
-      {/* Visa sparade låtar */}
-      <div className="gallery-container">
-      {songsToRender.map((song, index) => (
-     <div className="gallery-item" key={song.id}>
-      <a
-          href={song?.external_urls?.spotify || "#"}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
+      <div className="gallery-container">       
+      {songsToRender.map((song) => (
+        <div className="gallery-item" key={song.id}>
+  <div className="image-container">
+    <a
+      href={song?.external_urls?.spotify || "#"}
+      target="_blank"
+      rel="noopener noreferrer"
+    >
       <img
         src={song?.album?.images?.[0]?.url || "/path/to/default-image.jpg"}
         alt={`${song?.name || "Okänd låt"} album art`}
         className="gallery-image"
       />
-      </a>
-      <p className="song-name">{song.name}</p>
-      <p className="song-artist">{song?.artists?.[0]?.name || "Okänd artist"}</p>
+    </a>
 
-      {/* Tre prickar för meny */}
-      <div className="menu-container">
-        <button
-          className="menu-button"
-          onClick={() => handleToggleMenu(`${index}-${song.id}`)}
-        >
-          &#x22EE; {/* Unicode för tre prickar */}
-        </button>
-        {openMenuId === `${index}-${song.id}` && (
-          <div className="menu-dropdown">
-            <button onClick={() => handleShareSong(song)}>Dela låt</button>
-            <button onClick={() => setShowSelect(!showSelect)}>Välj album:</button>
-            {showSelect && (
-              <select
+    {/* Tre prickar för meny */}
+    <div className="menu-container">
+      <button
+        className="menu-button"
+        onClick={() => handleToggleMenu(song.id)}
+      >
+        &#x22EF;
+      </button>
+      {openMenuId === song.id && (
+        <div className="menu-dropdown">
+          <button onClick={() => handleShareSong(song)}>Dela låt</button>
+          <button onClick={() => setShowSelect(!showSelect)}>Välj album:</button>
+          {showSelect && (
+            <select
               onChange={(e) => {
                 const playlistIndex = parseInt(e.target.value, 10);
                 if (!isNaN(playlistIndex)) {
@@ -301,12 +298,16 @@ const songsToRender = searchQuery
                 </option>
               ))}
             </select>
-            )}
-            <button onClick={() => handleRemoveFromSavedSongs(song.id)}>Ta bort</button>
-          </div>
-        )}
-      </div>
+          )}
+          <button onClick={() => handleRemoveFromSavedSongs(song.id)}>Ta bort</button>
+        </div>
+      )}
     </div>
+  </div>
+
+  <p className="song-name">{song.name}</p>
+  <p className="song-artist">{song?.artists?.[0]?.name || "Okänd artist"}</p>
+</div>
   ))}
   </div>
   <Pagination
@@ -348,55 +349,63 @@ const songsToRender = searchQuery
         {/* Visa låtar i spellistan */}
         <div className="gallery-container">
           {playlist.songs.map((song) => (
-            <div className="gallery-item" key={`${index}-${song.id}`}>
-              <a href={song.external_urls.spotify} target="_blank" rel="noopener noreferrer">
-                <img
-                  src={song.album?.images?.[0]?.url || "/path/to/default-image.jpg"}
-                  alt={`${song.name} album art`}
-                  className="gallery-image"
-                />
-              </a>
-              <p className="song-name">{song.name}</p>
-              <p className="song-artist">{song.artists[0].name}</p>
-              <div className="menu-container">
-        <button
-          className="menu-button"
-          onClick={() => handleToggleMenu(`${index}-${song.id}`)}
-        >
-          &#x22EE; {/* Unicode för tre prickar */}
-        </button>
-        {openMenuId === `${index}-${song.id}` && (
+          <div className="gallery-item" key={song.id}>
+          <div className="image-container">
+            <a
+              href={song?.external_urls?.spotify || "#"}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <img
+                src={song?.album?.images?.[0]?.url || "/path/to/default-image.jpg"}
+                alt={`${song?.name || "Okänd låt"} album art`}
+                className="gallery-image"
+              />
+            </a>
+
+            {/* Tre prickar för meny */}
+            <div className="menu-container">
+              <button
+                className="menu-button"
+                onClick={() => handleToggleMenu(song.id)}
+              >
+                &#x22EF;
+              </button>
+              {openMenuId === song.id && (
                 <div className="menu-dropdown">
                   <button onClick={() => handleShareSong(song)}>Dela låt</button>
-                  <button onClick={() => setShowSelect(!showSelect)}>Flytta spellista</button>
+                  <button onClick={() => setShowSelect(!showSelect)}>Välj album:</button>
                   {showSelect && (
                     <select
-                    onChange={(e) => {
-                      const playlistIndex = parseInt(e.target.value, 10);
-                      if (!isNaN(playlistIndex)) {
-                        handleAddSongToPlaylist(playlistIndex, song);
-                        setShowSelect(false); 
-                      }
-                    }}
-                    defaultValue=""
-                  >
-                    <option value="" disabled>
-                      Välj spellista
-                    </option>
-                    {playlists
-                          .filter((_, playlistIndex) => playlistIndex !== index) 
-                          .map((playlist, playlistIndex) => (
-                      <option key={playlistIndex} value={playlistIndex}>
-                        {playlist.name}
+                      onChange={(e) => {
+                        const playlistIndex = parseInt(e.target.value, 10);
+                        if (!isNaN(playlistIndex)) {
+                          handleAddSongToPlaylist(playlistIndex, song);
+                          setShowSelect(false); 
+                        }
+                      }}
+                      defaultValue=""
+                    >
+                      <option value="" disabled>
+                        Välj spellista
                       </option>
-                    ))}
-                  </select>
+                      {playlists.map((playlist, playlistIndex) => (
+                        <option key={playlistIndex} value={playlistIndex}>
+                          {playlist.name}
+                        </option>
+                      ))}
+                    </select>
                   )}
-                  <button onClick={() => handleRemoveFromPlaylist(index,song.id)}>Ta bort</button>
+                  <button onClick={() => handleRemoveFromSavedSongs(song.id)}>Ta bort</button>
                 </div>
               )}
             </div>
-            </div>
+          </div>
+
+          <p className="song-name">{song.name}</p>
+          <p className="song-artist">{song?.artists?.[0]?.name || "Okänd artist"}</p>
+        </div>
+
           ))}
 
         </div>

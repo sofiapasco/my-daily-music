@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useAuth } from "../context/AuthContext";
 import { Line } from "react-chartjs-2";
 import {
   Chart as ChartJS,
@@ -15,22 +16,30 @@ import {
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
 
 const MoodStatistics: React.FC = () => {
+  const { userId } = useAuth();
   const [moodData, setMoodData] = useState<{ date: string; mood: string }[]>([]);
 
   useEffect(() => {
+    if (!userId) {
+      console.warn("Ingen användare inloggad. Kan inte hämta humördata.");
+      return;
+    }
+    
     try {
-      const moodHistory = JSON.parse(localStorage.getItem("moodData") || "[]");
+      const moodHistoryKey = `moodData_${userId}`; // Nyckeln inkluderar userId
+      const moodHistory = JSON.parse(localStorage.getItem(moodHistoryKey) || "[]");
       if (Array.isArray(moodHistory)) {
         setMoodData(moodHistory);
       } else {
         console.warn("Felaktig data i localStorage, återställning av humördata.");
-        localStorage.setItem("moodData", "[]");
+        localStorage.setItem(moodHistoryKey, "[]");
       }
     } catch (e) {
       console.error("Fel vid hämtning av humördata:", e);
-      localStorage.setItem("moodData", "[]");
+      localStorage.setItem(`moodData_${userId}`, "[]");
     }
-  }, []);
+  }, [userId]);
+
 
   // Filtrera data till senaste veckan
   const now = new Date();
@@ -112,7 +121,7 @@ const MoodStatistics: React.FC = () => {
   };
 
   return (
-    <div style={{ width: "80%", height: "400px", margin: "auto" }}>
+    <div style={{ width: "80%", height: "400px", margin: "auto", marginLeft: "16%"}}>
       {recentMoodData.length > 0 ? (
         <Line data={data} options={options} />
       ) : (

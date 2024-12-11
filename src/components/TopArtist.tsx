@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useAuth } from "../context/AuthContext";
 import { Track } from "../types/Song";
 
 interface TopArtistsProps {
@@ -6,14 +7,21 @@ interface TopArtistsProps {
 }
 
 const TopArtists: React.FC<TopArtistsProps> = ({ selectedPeriod }) => {
+  const { userId } = useAuth(); // Hämta userId från AuthContext
   const [likedSongs, setLikedSongs] = useState<Track[]>([]);
   const [topArtists, setTopArtists] = useState<{ name: string; count: number }[]>([]);
 
   useEffect(() => {
-    // Hämta gillade låtar från localStorage
-    const storedLikedSongs = JSON.parse(localStorage.getItem("likedSongs") || "[]");
+    if (!userId) {
+      console.warn("Ingen användare inloggad. Kan inte hämta gillade låtar.");
+      return;
+    }
+
+    // Hämta gillade låtar från localStorage baserat på userId
+    const storageKey = `likedSongs_${userId}`;
+    const storedLikedSongs = JSON.parse(localStorage.getItem(storageKey) || "[]");
     setLikedSongs(storedLikedSongs);
-  }, []);
+  }, [userId]);
 
   useEffect(() => {
     if (likedSongs.length > 0) {
@@ -55,22 +63,32 @@ const TopArtists: React.FC<TopArtistsProps> = ({ selectedPeriod }) => {
       setTopArtists([]);
     }
   }, [likedSongs, selectedPeriod]);
-
   return (
     <div className="top-artists-container">
       {topArtists.length > 0 ? (
         <p>
-          {selectedPeriod === "week"
-            ? `Favoritartisten för veckan är ${topArtists[0].name}.`
-            : `Topp 3 artisterna för månaden är: ${topArtists
-                .map((artist) => `${artist.name}`)
-                .join(", ")}.`}
+          {selectedPeriod === "week" ? (
+            <>
+              Favoritartisten för veckan är <strong>{topArtists[0].name}</strong>.
+            </>
+          ) : (
+            <>
+              Topp 3 artisterna för månaden är:{" "}
+              {topArtists.map((artist, index) => (
+                <span key={index}>
+                  <strong>{artist.name}</strong>
+                  {index < topArtists.length - 1 ? ", " : "."}
+                </span>
+              ))}
+            </>
+          )}
         </p>
       ) : (
         <p>Inga gillade låtar under denna period.</p>
       )}
     </div>
   );
+  
 };
 
 export default TopArtists;

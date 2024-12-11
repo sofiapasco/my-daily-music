@@ -7,10 +7,16 @@ import TopArtists from "../components/TopArtist";
 const StatisticsPage: React.FC = () => {
   const [selectedPeriod, setSelectedPeriod] = useState<"week" | "month">("week");
   const [likesCount, setLikesCount] = useState(0);
-  const { logout } = useAuth();
+  const { logout, userId } = useAuth(); 
 
   const getLikesThisPeriod = () => {
-    const likes = JSON.parse(localStorage.getItem("likedSongs") || "[]");
+    if (!userId) {
+      console.warn("Ingen användare inloggad. Kan inte hämta gillade låtar.");
+      return 0;
+    }
+
+    const storageKey = `likedSongs_${userId}`; 
+    const likes = JSON.parse(localStorage.getItem(storageKey) || "[]");
 
     const today = new Date();
     let startDate = new Date(today);
@@ -21,28 +27,22 @@ const StatisticsPage: React.FC = () => {
       startDate.setMonth(today.getMonth() - 1);
     }
 
-    // Filtrera låtar baserat på datum
     return likes.filter((like: { date: string }) => {
       const likeDate = new Date(like.date);
       return likeDate >= startDate && likeDate <= today;
     }).length;
   };
 
-  // Uppdatera antal gillade låtar baserat på vald period
   useEffect(() => {
     const count = getLikesThisPeriod();
     setLikesCount(count);
-  }, [selectedPeriod]);
+  }, [selectedPeriod, userId]); 
 
-  const handleLogout = () => {
-    localStorage.removeItem("spotifyAccessToken");
-    logout();
-  };
 
   return (
     <div className="statistics-container">
       <UserMenu />
-      <button className="logout-btn" onClick={handleLogout}>
+      <button className="logout-btn" onClick={logout}>
         Logga ut
       </button>
       <h1>Statistik</h1>
@@ -56,12 +56,10 @@ const StatisticsPage: React.FC = () => {
           <option value="month">Senaste månaden</option>
         </select>
       </div>
-      <p>Du har gillat {likesCount} låtar under den här {selectedPeriod === "week" ? "veckan" : "månaden"}.</p>
+      <p>Du har gillat <strong>{likesCount} låtar</strong> under den här {selectedPeriod === "week" ? "veckan" : "månaden"}.</p>
 
       {/* Lägg till TopArtists-komponenten */}
       <TopArtists selectedPeriod={selectedPeriod} />
-
-      {/* MoodStatistics-komponenten */}
       <MoodStatistics />
     </div>
   );

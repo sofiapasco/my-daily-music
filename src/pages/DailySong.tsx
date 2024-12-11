@@ -12,13 +12,12 @@ import "react-toastify/dist/ReactToastify.css";
 
 const DailySong: React.FC = () => {
   const [currentSong, setCurrentSong] = useState<Track | null>(null);
-  const { accessToken, logout } = useAuth();
+  const { accessToken, logout, userId, setAccessToken } = useAuth();
   const [showSelect, setShowSelect] = useState(false);
   const [timeoutId, setTimeoutId] = useState<number | null>(null);
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
   const [likedSongs, setLikedSongs] = useState<Track[]>([]); 
   const [playlists, setPlaylists] = useState<{ name: string; songs: Track[] }[]>([]);
-  const [userId, setUserId] = useState<string>("");
   const [excludedSongs, setExcludedSongs] = useState<string[]>([]);
   const [isThrowing, setIsThrowing] = useState(false);
   const [selectedMood, setSelectedMood] = useState<string | null>(null);
@@ -53,16 +52,26 @@ const DailySong: React.FC = () => {
   }, [currentSong, duration]);
  
   useEffect(() => {
-    const mood = localStorage.getItem("selectedMood");
+    if (!userId || !accessToken) {
+      console.error("Ingen användare inloggad eller ingen access token tillgänglig.");
+      navigate("/"); 
+      return;
+    }
   
-    if (!mood) {
-      console.log("Inget humör valt. Navigera till MoodSelection.");
+    const moodKey = `selectedMood_${userId}`;
+    console.log("Försöker hämta valt humör med nyckel:", moodKey);
+    const storedMood = localStorage.getItem(moodKey);
+  
+    if (!storedMood) {
+      console.log("Inget humör valt för idag. Navigerar till MoodSelection.");
       navigate("/mood-selection");
     } else {
-      console.log("Valt humör från localStorage:", mood);
-      setSelectedMood(mood); // Sätt det valda humöret
+      console.log("Valt humör från localStorage:", storedMood);
+      setSelectedMood(storedMood);
     }
-  }, [navigate]);
+  }, [userId, accessToken, navigate]);
+  
+  
 
   const filterTracksByMood = (tracks: Track[], filters: MoodFilters): Track[] => {
     return tracks.filter((track) => {
@@ -172,31 +181,44 @@ const DailySong: React.FC = () => {
     }
   };
   
+  useEffect(() => {
+    const fetchUserId = async () => {
+      if (!accessToken) return;
+  
+      try {
+        const response = await fetch("https://api.spotify.com/v1/me", {
+          headers: { Authorization: `Bearer ${accessToken}` },
+        });
+        const data = await response.json();
+        console.log("Hämtat användar-ID:", data.id);
+  
+        // Uppdatera userId i AuthContext
+        setAccessToken(accessToken, data.id); // Använder AuthContext-funktionen
+      } catch (error) {
+        console.error("Kunde inte hämta användarens ID:", error);
+      }
+    };
+  
+    fetchUserId();
+  }, [accessToken, setAccessToken]);
+
 useEffect(() => {
-  const fetchUserId = async () => {
-    if (!accessToken) return;
+  if (!accessToken || !selectedMood) {
+    console.warn("Kan inte anropa fetchDailySong eftersom accessToken eller selectedMood saknas.");
+    return;
+  }
 
-    try {
-      const response = await fetch("https://api.spotify.com/v1/me", {
-        headers: { Authorization: `Bearer ${accessToken}` },
-      });
-      const data = await response.json();
-      setUserId(data.id);
-    } catch (error) {
-      console.error("Kunde inte hämta användarens ID:", error);
-    }
-  };
-
-  fetchUserId();
-}, [accessToken]);
-
-useEffect(() => {
-  if (!accessToken || !selectedMood) return;
   const storedExcludedSongs = JSON.parse(localStorage.getItem("excludedSongs") || "[]");
-  console.log("Anropar fetchDailySong med:", storedExcludedSongs, selectedMood);
-  fetchDailySong(storedExcludedSongs, selectedMood);
-}, [accessToken, selectedMood]);
 
+  console.log("Förbereder att hämta dagens låt med följande parametrar:");
+  console.log("Access Token:", accessToken);
+  console.log("Valt Humör:", selectedMood);
+  console.log("Exkluderade Låtar:", storedExcludedSongs);
+
+  fetchDailySong(storedExcludedSongs, selectedMood)
+    .then(() => console.log("fetchDailySong slutförd"))
+    .catch((error) => console.error("Ett fel uppstod i fetchDailySong:", error));
+}, [accessToken, selectedMood]);
 
 const handleExcludeSong = () => {
   console.log("Nuvarande låt:", currentSong);
@@ -237,21 +259,20 @@ const handleExcludeSong = () => {
   }
 };
 
-
 useEffect(() => {
   if (!userId) return;
   const storageKey = `likedSongs_${userId}`;
   const storedLikedSongs = localStorage.getItem(storageKey);
- 
+
   if (storedLikedSongs) {
     setLikedSongs(JSON.parse(storedLikedSongs));
   } else {
     setLikedSongs([]);
   }
 }, [userId]);
+
 console.log(`Hämtar sparade låtar för userId: ${userId}`);
 console.log("Lagrade likedSongs:", localStorage.getItem(`likedSongs_${userId}`));
-
 
 
 const handleLike = (song: Track) => {
@@ -463,54 +484,62 @@ const handleLike = (song: Track) => {
         <div id="saved-songs-section" className="gallery-container">
         <div className="gallery-scroll">
         {likedSongs?.slice(-10).reverse().map((song,index) => (
-            <div className="gallery-item" key={song.id || `${index}-${song.name}`}>
-             <a href={song?.external_urls?.spotify || "#"} target="_blank" rel="noopener noreferrer">
+          <div className="gallery-item" key={song.id}>
+          <div className="image-container">
+            <a
+              href={song?.external_urls?.spotify || "#"}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
               <img
                 src={song?.album?.images?.[0]?.url || "/path/to/default-image.jpg"}
                 alt={`${song?.name || "Okänd låt"} album art`}
                 className="gallery-image"
-                
               />
-              </a>
-              <p className="song-name">{song?.name || "Okänd låt"}</p>
-              <p className="song-artist">{song?.artists?.[0]?.name || "Okänd artist"}</p>
-              <div className="menu-container">
-                <button
-                  className="menu-button"
-                  onClick={() => handleToggleMenu(`${index}-${song.id}`)}
-                >
-                  &#x22EE;
-                </button>
-                {openMenuId === `${index}-${song.id}` && (
-          <div className="menu-dropdown">
-          <button onClick={() => handleShareSong(song)}>Dela låt</button>
-          <button onClick={() => setShowSelect(!showSelect)}>Välj album:</button>
-          {showSelect && (
-            <select
-            onChange={(e) => {
-              const playlistIndex = parseInt(e.target.value, 10);
-              if (!isNaN(playlistIndex)) {
-                handleAddSongToPlaylist(playlistIndex, song);
-                setShowSelect(false); 
-              }
-            }}
-            defaultValue=""
-          >
-            <option value="" disabled>
-              Välj spellista
-            </option>
-            {playlists.map((playlist, playlistIndex) => (
-              <option key={playlistIndex} value={playlistIndex}>
-                {playlist.name}
-              </option>
-            ))}
-          </select>
-          )}
-          <button onClick={() => handleRemoveFromSavedSongs(song.id)}>Ta bort</button>
-        </div>
-            )}
-              </div>
+            </a>
+
+            {/* Tre prickar för meny */}
+            <div className="menu-container">
+              <button
+                className="menu-button"
+                onClick={() => handleToggleMenu(song.id)}
+              >
+                &#x22EF;
+              </button>
+              {openMenuId === song.id && (
+                <div className="menu-dropdown">
+                  <button onClick={() => handleShareSong(song)}>Dela låt</button>
+                  <button onClick={() => setShowSelect(!showSelect)}>Välj album:</button>
+                  {showSelect && (
+                    <select
+                      onChange={(e) => {
+                        const playlistIndex = parseInt(e.target.value, 10);
+                        if (!isNaN(playlistIndex)) {
+                          handleAddSongToPlaylist(playlistIndex, song);
+                          setShowSelect(false); 
+                        }
+                      }}
+                      defaultValue=""
+                    >
+                      <option value="" disabled>
+                        Välj spellista
+                      </option>
+                      {playlists.map((playlist, playlistIndex) => (
+                        <option key={playlistIndex} value={playlistIndex}>
+                          {playlist.name}
+                        </option>
+                      ))}
+                    </select>
+                  )}
+                  <button onClick={() => handleRemoveFromSavedSongs(song.id)}>Ta bort</button>
+                </div>
+              )}
             </div>
+          </div>
+
+          <p className="song-name">{song.name}</p>
+          <p className="song-artist">{song?.artists?.[0]?.name || "Okänd artist"}</p>
+        </div>
           ))}
         </div>
         </div>

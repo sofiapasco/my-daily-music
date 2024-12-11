@@ -277,7 +277,7 @@
   padding-bottom: 10px;
   scrollbar-width: thin; 
   scrollbar-color: #922692 transparent;
-
+  z-index: 1;
   position: relative;
 }
 
@@ -589,6 +589,9 @@ body.dark {
   .gallery-item{
     background: linear-gradient(135deg, #1e1e2f, #3e3e5e)
   }
+  .menu-dropdown{
+    background: linear-gradient(135deg, #1e1e2f, #3e3e5e)
+  }
 }
 
 /* För ljust tema */
@@ -615,6 +618,9 @@ body.light {
 
   .menu-button{
     color: #000;
+  }
+  .menu-dropdown{
+    background: linear-gradient(135deg, #f3d4f3, #e2cdc4);
   }
 
   .user-profile{
