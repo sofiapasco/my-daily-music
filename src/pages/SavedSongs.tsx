@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Track } from "../types/Song";
+import { Track } from "../types/song";
 import { useAuth } from "../context/AuthContext";
 import { toast } from "react-toastify";
 import { useLocation, useNavigate, Link } from "react-router-dom"; 
@@ -21,8 +21,7 @@ const SavedSongs: React.FC = () => {
   const [filteredSongs, setFilteredSongs] = useState<Track[]>([]);
   const [currentPage, setCurrentPage] = useState<number>(1);
 
-  const { logout } = useAuth();
-  const { userId } = useAuth();
+  const { logout,userId } = useAuth();
   const itemsPerPage = 12;
   const navigate = useNavigate();
   const location = useLocation();
@@ -47,7 +46,7 @@ const SavedSongs: React.FC = () => {
     if (!userId) return; // Om användaren inte är inloggad, gör inget
     
     const storageKey = `likedSongs_${userId}`;
-    const storedLikedSongs = localStorage.getItem(storageKey);
+    const storedLikedSongs = JSON.parse(localStorage.getItem(storageKey) || "[]");
     if (storedLikedSongs) {
       setSavedSongs(JSON.parse(storedLikedSongs));
     }
@@ -79,6 +78,10 @@ const SavedSongs: React.FC = () => {
   useEffect(() => {
     handleSearch();
   }, [searchQuery, savedSongs]);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [filteredSongs]);
 
   const handleRemoveFromSavedSongs = (songId: string) => {
     if (!userId) {
@@ -169,25 +172,42 @@ const SavedSongs: React.FC = () => {
   };
 
   const handleDeletePlaylist = (playlistIndex: number) => {
+    if (!userId) {
+      toast.error("Ingen användare inloggad.");
+      return;
+    }
+  
+    const storageKey = `playlists_${userId}`;
     const updatedPlaylists = playlists.filter((_, index) => index !== playlistIndex);
-    setPlaylists(updatedPlaylists); 
-    localStorage.setItem("playlists", JSON.stringify(updatedPlaylists)); 
+    setPlaylists(updatedPlaylists);
+    localStorage.setItem(storageKey, JSON.stringify(updatedPlaylists));
     toast.success("Spellistan har tagits bort!");
   };
 
   const handleRemoveFromPlaylist = (playlistIndex: number, songId: string) => {
-  const selectedPlaylist = playlists[playlistIndex];
-  const updatedSongs = selectedPlaylist.songs.filter((song) => song.id !== songId);
-  const updatedPlaylist = { ...selectedPlaylist, songs: updatedSongs };
-
-  const updatedPlaylists = playlists.map((playlist, index) =>
-    index === playlistIndex ? updatedPlaylist : playlist
-  );
-
-  setPlaylists(updatedPlaylists);
-  localStorage.setItem("playlists", JSON.stringify(updatedPlaylists));
-  toast.success("Låten har tagits bort från spellistan!");
-};
+    if (!userId) {
+      toast.error("Ingen användare inloggad.");
+      return;
+    }
+  
+    const storageKey = `playlists_${userId}`;
+    const selectedPlaylist = playlists[playlistIndex];
+    if (!selectedPlaylist) {
+      toast.error("Spellistan hittades inte.");
+      return;
+    }
+  
+    const updatedSongs = selectedPlaylist.songs.filter((song) => song.id !== songId);
+    const updatedPlaylist = { ...selectedPlaylist, songs: updatedSongs };
+  
+    const updatedPlaylists = playlists.map((playlist, index) =>
+      index === playlistIndex ? updatedPlaylist : playlist
+    );
+  
+    setPlaylists(updatedPlaylists);
+    localStorage.setItem(storageKey, JSON.stringify(updatedPlaylists));
+    toast.success("Låten har tagits bort från spellistan!");
+  };
 
 const closeMenu = () => {
   setVisibleMenu(null);
@@ -209,19 +229,16 @@ useEffect(() => {
 
 const handleToggleMenu = (menuId: string): void => {
   if (openMenuId === menuId) {
-
     setOpenMenuId(null);
     if (timeoutId !== null) {
-      clearTimeout(timeoutId); 
+      clearTimeout(timeoutId);
       setTimeoutId(null);
     }
   } else {
-    setOpenMenuId(menuId);
     if (timeoutId !== null) clearTimeout(timeoutId);
-    const id = window.setTimeout(() => {
-      setOpenMenuId(null); 
-    }, 5000); 
-    setTimeoutId(id); 
+    setOpenMenuId(menuId);
+    const id = window.setTimeout(() => setOpenMenuId(null), 5000);
+    setTimeoutId(id);
   }
 };
 
@@ -251,64 +268,65 @@ const songsToRender = searchQuery
         onSearch={handleSearch} />
         <h1>Alla sparade låtar:</h1>
       <div className="gallery-container">       
-      {songsToRender.map((song) => (
-        <div className="gallery-item" key={song.id}>
-  <div className="image-container">
-    <a
-      href={song?.external_urls?.spotify || "#"}
-      target="_blank"
-      rel="noopener noreferrer"
-    >
-      <img
-        src={song?.album?.images?.[0]?.url || "/path/to/default-image.jpg"}
-        alt={`${song?.name || "Okänd låt"} album art`}
-        className="gallery-image"
-      />
-    </a>
-
-    {/* Tre prickar för meny */}
-    <div className="menu-container">
-      <button
-        className="menu-button"
-        onClick={() => handleToggleMenu(song.id)}
+      {songsToRender.map((song, index) => (
+  <div className="gallery-item" key={`${song.id}-${index}`}>
+    <div className="image-container">
+      <a
+        href={song?.external_urls?.spotify || "#"}
+        target="_blank"
+        rel="noopener noreferrer"
       >
-        &#x22EF;
-      </button>
-      {openMenuId === song.id && (
-        <div className="menu-dropdown">
-          <button onClick={() => handleShareSong(song)}>Dela låt</button>
-          <button onClick={() => setShowSelect(!showSelect)}>Välj album:</button>
-          {showSelect && (
-            <select
-              onChange={(e) => {
-                const playlistIndex = parseInt(e.target.value, 10);
-                if (!isNaN(playlistIndex)) {
-                  handleAddSongToPlaylist(playlistIndex, song);
-                  setShowSelect(false); 
-                }
-              }}
-              defaultValue=""
-            >
-              <option value="" disabled>
-                Välj spellista
-              </option>
-              {playlists.map((playlist, playlistIndex) => (
-                <option key={playlistIndex} value={playlistIndex}>
-                  {playlist.name}
-                </option>
-              ))}
-            </select>
-          )}
-          <button onClick={() => handleRemoveFromSavedSongs(song.id)}>Ta bort</button>
-        </div>
-      )}
-    </div>
-  </div>
+        <img
+          src={song?.album?.images?.[0]?.url || "/path/to/default-image.jpg"}
+          alt={`${song?.name || "Okänd låt"} album art`}
+          className="gallery-image"
+        />
+      </a>
 
-  <p className="song-name">{song.name}</p>
-  <p className="song-artist">{song?.artists?.[0]?.name || "Okänd artist"}</p>
-</div>
-  ))}
+      {/* Tre prickar för meny */}
+      <div className="menu-container">
+        <button
+          className="menu-button"
+          onClick={() => handleToggleMenu(`${song.id}-${index}`)}
+        >
+          &#x22EF;
+        </button>
+        {openMenuId === `${song.id}-${index}` && (
+          <div className="menu-dropdown">
+            <button onClick={() => handleShareSong(song)}>Dela låt</button>
+            <button onClick={() => setShowSelect(!showSelect)}>Välj album:</button>
+            {showSelect && (
+              <select
+                onChange={(e) => {
+                  const playlistIndex = parseInt(e.target.value, 10);
+                  if (!isNaN(playlistIndex)) {
+                    handleAddSongToPlaylist(playlistIndex, song);
+                    setShowSelect(false); 
+                  }
+                }}
+                defaultValue=""
+              >
+                <option value="" disabled>
+                  Välj spellista
+                </option>
+                {playlists.map((playlist, playlistIndex) => (
+                  <option key={playlistIndex} value={playlistIndex}>
+                    {playlist.name}
+                  </option>
+                ))}
+              </select>
+            )}
+            <button onClick={() => handleRemoveFromSavedSongs(song.id)}>Ta bort</button>
+          </div>
+        )}
+      </div>
+    </div>
+
+    <p className="song-name">{song.name}</p>
+    <p className="song-artist">{song?.artists?.[0]?.name || "Okänd artist"}</p>
+  </div>
+))}
+
   </div>
   <Pagination
   totalItems={searchQuery ? filteredSongs.length : savedSongs.length}
@@ -396,7 +414,7 @@ const songsToRender = searchQuery
                       ))}
                     </select>
                   )}
-                  <button onClick={() => handleRemoveFromSavedSongs(song.id)}>Ta bort</button>
+                  <button onClick={() => handleRemoveFromPlaylist(index, song.id)}>Ta bort</button>
                 </div>
               )}
             </div>

@@ -1,24 +1,24 @@
-import { MoodFilters } from "../types/Song";
+import { MoodFilters } from "../types/song";
 
 export const moodAttributes: Record<string, MoodFilters> = {
     happy: {
-        popularity: [60, 100], // Mer populära låtar
-        duration_ms: [120000, 300000], // Medel till långa låtar
+        popularity: [50, 100], 
+        duration_ms: [120000, 300000], 
     },
     low: {
-        popularity: [0, 50], // Mindre populära låtar
-        duration_ms: [200000, 600000], // Längre låtar
+        popularity: [0, 60], 
+        duration_ms: [200000, 600000], 
     },
     energetic: {
-        popularity: [50, 100], // Populära låtar
-        duration_ms: [100000, 240000], // Kortare låtar för energi
+        popularity: [50, 110], 
+        duration_ms: [100000, 240000], 
     },
     relaxed: {
-        popularity: [30, 80], // Mindre populära låtar
-        duration_ms: [200000, 450000], // Längre låtar
+        popularity: [30, 90], 
+        duration_ms: [200000, 450000], 
     },
     love: {
-        popularity: [40, 90], // Mellan populära låtar
-        duration_ms: [150000, 400000], // Medellånga låtar
+        popularity: [40, 100],
+        duration_ms: [150000, 400000], 
     },
 };

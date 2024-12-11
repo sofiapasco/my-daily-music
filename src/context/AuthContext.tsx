@@ -29,7 +29,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       localStorage.setItem("currentUserId", id);
       setAccessTokenState(token);
       setUserId(id);
-      fetchUserInfo(token); 
+      fetchUserInfo(token); // Hämta användarinfo när en ny token sätts
     } else {
       handleLogout();
     }
@@ -58,26 +58,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const handleLogout = () => {
     if (userId) {
       localStorage.removeItem(`spotifyAccessToken_${userId}`);
-      localStorage.removeItem(`likedSongs_${userId}`);
-      localStorage.removeItem(`moodData_${userId}`);
-      localStorage.removeItem(`selectedMood_${userId}`);
       localStorage.removeItem("currentUserId");
     }
     setAccessTokenState(null);
     setUserId(null);
     setUserInfo(null);
   
+    // Omdirigera användaren till Spotify logout-sidan
     const spotifyLogoutUrl = "https://accounts.spotify.com/logout";
-    const iframe = document.createElement("iframe");
-    iframe.src = spotifyLogoutUrl;
-    iframe.style.display = "none";
-    document.body.appendChild(iframe);
+    const redirectUrl = "http://localhost:5173/"; // Din startsida efter logout
   
-    setTimeout(() => {
-      document.body.removeChild(iframe);
-      window.location.href = "http://localhost:5173/";
-    }, 2000); 
-  };  
+    // Försök att logga ut från Spotify och omdirigera användaren tillbaka
+    window.location.href = `${spotifyLogoutUrl}?continue=${encodeURIComponent(redirectUrl)}`;
+  };
+
 
   useEffect(() => {
     if (accessToken) {
