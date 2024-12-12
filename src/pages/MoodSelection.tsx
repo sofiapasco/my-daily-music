@@ -101,9 +101,6 @@ const MoodSelection: React.FC = () => {
       >
         Hoppa över
       </button>
-      <div className="loader-container">
-        <span className="loader"></span>
-      </div>
     </div>
   );
 };
