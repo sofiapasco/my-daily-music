@@ -88,7 +88,9 @@ const Callback: React.FC = () => {
     extractToken();
   }, [navigate, setAccessToken, tokenHandled]);
 
-  return <span className="loader"></span>;
+  return    <div className="loader-container">
+              <span className="loader"></span>
+            </div>;
 };
 
 export default Callback;

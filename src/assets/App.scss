@@ -157,6 +157,13 @@
 
 }
   
+.loader-container {
+  display: flex;
+  justify-content: center; 
+  align-items: center;  
+  height: 100vh;         
+  width: 100%;             
+
   .loader {
     width: 48px;
     height: 48px;
@@ -168,6 +175,7 @@
     animation: rotation 1s linear infinite;
     color: #922692;
   }
+}
 
 @keyframes rotation {
   0% {
@@ -560,49 +568,63 @@ body.dark {
   background: linear-gradient(135deg, #1e1e2f, #3e3e5e);
   color: #fff !important; 
 
-  h1, h3, a ,p{
+  h1, h3, a, p {
     font-family: 'Roboto', sans-serif;
     color: #fff !important; 
     transition: color 0.3s ease-in-out; 
   }
-  .gallery-item{
-    background-color: #343434;
+
+  .gallery-item {
+    background: linear-gradient(135deg, #1e1e2f, #3e3e5e);
   }
 
   .mood-buttons button {
-    background: linear-gradient(135deg, #1e1e2f, #3e3e5e)
+    background: linear-gradient(135deg, #1e1e2f, #3e3e5e);
   }
+
   .titleFront {
     background-color: #fff;
   }
 
   .like-heart, .close {
-    background-color:  #1d1c1c !important; 
+    background-color: #1d1c1c !important; 
     color: #fff; 
   }
-  .menu-button{
+
+  .menu-button {
     color: #fff;
   }
-  .user-profile{
-    background: linear-gradient(135deg, #1e1e2f, #3e3e5e)
+
+  .user-profile {
+    background: linear-gradient(135deg, #1e1e2f, #3e3e5e);
   }
-  .gallery-item{
-    background: linear-gradient(135deg, #1e1e2f, #3e3e5e)
+
+  .gallery-item {
+    background: linear-gradient(135deg, #1e1e2f, #3e3e5e);
   }
-  .menu-dropdown{
-    background: linear-gradient(135deg, #1e1e2f, #3e3e5e)
+
+  .menu-dropdown {
+    background: linear-gradient(135deg, #1e1e2f, #3e3e5e);
+
+    button {
+      color: #fff;
+
+      &:hover {
+        background: linear-gradient(135deg, #151524, #3e3e5e);
+      }
+    }
   }
 }
 
-/* För ljust tema */
 body.light {
   background: linear-gradient(135deg, #f3d4f3, #e2cdc4);
-  color: #000 !important; 
+  color: #000 !important;
 
   h1, h3, p {
     font-family: 'Roboto', sans-serif;
-    color: #000 !important; 
+    color: #000 !important;
   }
+
   .titleFront {
     background-color: #000;
   }
@@ -613,20 +635,28 @@ body.light {
 
   .like-heart, .close {
     background: linear-gradient(135deg, #f3d4f3, #e2cdc4);
-    color: #000; 
-  }
-
-  .menu-button{
     color: #000;
   }
-  .menu-dropdown{
-    background: linear-gradient(135deg, #f3d4f3, #e2cdc4);
+
+  .menu-button {
+    color: #000;
   }
 
-  .user-profile{
+  .menu-dropdown {
+    background: linear-gradient(135deg, #f3d4f3, #e2cdc4);
+
+    button {
+      color: #000;
+
+      &:hover {
+        background: linear-gradient(135deg, #c8a3c8, #f1d8ce);
+      }
+    }
+  }
+
+  .user-profile {
     background: linear-gradient(135deg, #f9dcf9, #f1d8ce);
   }
-
 }
 
 
@@ -708,41 +738,36 @@ body.light {
 
 .menu-container {
   position: relative;
-}
 
-.menu-button {
-  background: none;
-  border: none;
-  font-size: 16px;
-  cursor: pointer;
-}
+  .menu-button {
+    background: none;
+    border: none;
+    font-size: 16px;
+    cursor: pointer;
+  }
 
-.menu-dropdown {
-  position: absolute;
-  top: 100%;
-  right: 0;
-  background: white;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-  z-index: 1000;
-  transform: translateX(40%);
-  min-width: 150px;
-  overflow: visible;
-}
+  .menu-dropdown {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    border-radius: 4px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    z-index: 1000;
+    transform: translateX(40%);
+    min-width: 100px;
+    max-width: 150px;
+    overflow: visible;
 
-.menu-dropdown button {
-  width: 100%;
-  background: none;
-  border: none;
-  padding: 10px;
-  text-align: left;
-  cursor: pointer;
-  font-size: 14px;
-}
-
-.menu-dropdown button:hover {
-  background: #f5f5f5;
+    button {
+      width: 100%;
+      background: none;
+      border: none;
+      padding: 10px;
+      text-align: left;
+      cursor: pointer;
+      font-size: 14px;
+    }
+  }
 }
 
 .statistics-container {

@@ -61,6 +61,10 @@ const StatisticsPage: React.FC = () => {
       {/* Lägg till TopArtists-komponenten */}
       <TopArtists selectedPeriod={selectedPeriod} />
       <MoodStatistics />
+
+      <div className="loader-container">
+            <span className="loader"></span>
+       </div>
     </div>
   );
 };

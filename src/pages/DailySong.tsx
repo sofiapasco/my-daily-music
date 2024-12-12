@@ -78,28 +78,39 @@ const DailySong: React.FC = () => {
   const filterTracksByMood = (tracks: Track[], filters: MoodFilters): Track[] => {
     return tracks.filter((track) => {
       const logDetails: string[] = [];
-  
-      // Hjälpfunktion för att hantera undefined
+      
       const getOrDefault = (value: number | undefined, defaultValue: number): number => value ?? defaultValue;
   
+      // Kontrollera popularitet
       if (filters.popularity && 
           (getOrDefault(track.popularity, 50) < filters.popularity[0] || 
            getOrDefault(track.popularity, 50) > filters.popularity[1])) {
         logDetails.push(`Popularitet utanför gränserna: ${track.popularity}`);
       }
+  
+      // Kontrollera duration
       if (filters.duration_ms && 
           (getOrDefault(track.duration_ms, 180000) < filters.duration_ms[0] || 
            getOrDefault(track.duration_ms, 180000) > filters.duration_ms[1])) {
         logDetails.push(`Längd utanför gränserna: ${track.duration_ms}`);
       }
   
+      // Kontrollera genre (om relevant)
+      if (filters.genres && !filters.genres.some((genre) => track.genres?.includes(genre))) {
+        logDetails.push(`Genre matchar inte: ${track.genres?.join(", ") || "Inga genrer"}`);
+      }
+  
+      // Logga uteslutningar
       if (logDetails.length > 0) {
         console.log(`Utesluten: ${track.name} (${logDetails.join(", ")})`);
         return false;
       }
+  
       return true;
     });
-  };  
+  };
+
+  
   
   const fetchDailySong = async (excludedSongs: string[], selectedMood: string) => {
     console.log("Exkluderade låtar:", excludedSongs);
@@ -108,7 +119,7 @@ const DailySong: React.FC = () => {
     const dateKey = `${today.getFullYear()}-${today.getMonth() + 1}-${today.getDate()}`;
     const dailySongKey = `dailySong_${userId}_${dateKey}`;
   
-    const storedDailySong = localStorage.getItem(`dailySong_${dateKey}`);
+    const storedDailySong = localStorage.getItem(dailySongKey);
     if (storedDailySong) {
       console.log("Dagens låt laddad från localStorage:", JSON.parse(storedDailySong));
       setCurrentSong(JSON.parse(storedDailySong));
@@ -169,8 +180,6 @@ const DailySong: React.FC = () => {
   
       if (!filteredTracks.length) {
         toast.info("Inga fler låtar tillgängliga för det valda humöret.");
-        setExcludedSongs([]);
-        localStorage.removeItem(`excludedSongs_${userId}`);
         return;
       }
   
@@ -212,36 +221,22 @@ useEffect(() => {
 
 
 const handleExcludeSong = () => {
-  console.log("Nuvarande låt:", currentSong);
-  console.log("Exkluderade låtar före uppdatering:", excludedSongs);
-  
-  if (!selectedMood) {
-    console.warn("Inget humör valt. Kan inte hämta en ny låt.");
+  if (!userId) {
+    console.warn("Ingen användare inloggad. Kan inte exkludera låtar.");
     return;
   }
 
   if (currentSong) {
-    if (!excludedSongs.includes(currentSong.id)) {
-      setIsThrowing(true); // Starta kastanimationen
-      
-      setTimeout(() => {
-        const updatedExcludedSongs = [...excludedSongs, currentSong.id];
-        console.log("Uppdaterad lista över exkluderade låtar:", updatedExcludedSongs);
+    const excludedStorageKey = `excludedSongs_${userId}`;
+    const storedExcludedSongs = JSON.parse(localStorage.getItem(excludedStorageKey) || "[]");
 
-        // Uppdatera state och localStorage
-        setExcludedSongs(updatedExcludedSongs);
-        localStorage.setItem("excludedSongs", JSON.stringify(updatedExcludedSongs));
+    if (!storedExcludedSongs.includes(currentSong.id)) {
+      const updatedExcludedSongs = [...storedExcludedSongs, currentSong.id];
 
-        // Ta bort dagens låt från localStorage
-        const today = new Date();
-        const dateKey = `${today.getFullYear()}-${today.getMonth() + 1}-${today.getDate()}`;
-        localStorage.removeItem(`dailySong_${dateKey}`);
+      setExcludedSongs(updatedExcludedSongs);
+      localStorage.setItem(excludedStorageKey, JSON.stringify(updatedExcludedSongs));
 
-        // Hämta en ny låt
-        fetchDailySong(updatedExcludedSongs, selectedMood);
-
-        setIsThrowing(false); 
-      }); 
+      console.log("Låten exkluderades:", currentSong.id);
     } else {
       console.log("Låten är redan exkluderad:", currentSong.id);
     }
@@ -250,21 +245,30 @@ const handleExcludeSong = () => {
   }
 };
 
-
 useEffect(() => {
   if (!userId) return;
-  const storageKey = `likedSongs_${userId}`;
-  const storedLikedSongs = localStorage.getItem(storageKey);
- 
+
+  // Hantera likedSongs
+  const likedStorageKey = `likedSongs_${userId}`;
+  const storedLikedSongs = localStorage.getItem(likedStorageKey);
   if (storedLikedSongs) {
     setLikedSongs(JSON.parse(storedLikedSongs));
   } else {
     setLikedSongs([]);
   }
+
+  // Hantera excludedSongs
+  const excludedStorageKey = `excludedSongs_${userId}`;
+  const storedExcludedSongs = localStorage.getItem(excludedStorageKey);
+  if (storedExcludedSongs) {
+    setExcludedSongs(JSON.parse(storedExcludedSongs));
+  } else {
+    setExcludedSongs([]);
+  }
 }, [userId]);
+
 console.log(`Hämtar sparade låtar för userId: ${userId}`);
 console.log("Lagrade likedSongs:", localStorage.getItem(`likedSongs_${userId}`));
-
 
 
 const handleLike = (song: Track) => {
@@ -467,7 +471,9 @@ const handleLike = (song: Track) => {
           </div>
           
         ) : (
-          <span className="loader"></span>
+          <div className="loader-container">
+            <span className="loader"></span>
+          </div>
         )}
       </div>
 

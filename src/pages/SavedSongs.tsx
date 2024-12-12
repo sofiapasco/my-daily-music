@@ -46,17 +46,35 @@ const SavedSongs: React.FC = () => {
     if (!userId) return; // Om användaren inte är inloggad, gör inget
     
     const storageKey = `likedSongs_${userId}`;
-    const storedLikedSongs = JSON.parse(localStorage.getItem(storageKey) || "[]");
+    const storedLikedSongs = localStorage.getItem(storageKey);
+
+    // Kontrollera om datan är en sträng innan JSON.parse
     if (storedLikedSongs) {
-      setSavedSongs(JSON.parse(storedLikedSongs));
+        try {
+            const parsedSongs = JSON.parse(storedLikedSongs);
+            setSavedSongs(parsedSongs); // Sätt bara om parsing lyckas
+        } catch (error) {
+            console.error("Fel vid parsing av sparade låtar:", error);
+        }
     }
+}, [userId]);
+
+useEffect(() => {
+  if (!userId) return; // Säkerställ att användaren är inloggad
   
-    const storedPlaylists = localStorage.getItem(`playlists_${userId}`);
-    if (storedPlaylists) {
-      setPlaylists(JSON.parse(storedPlaylists)); 
+  const storageKey = `playlists_${userId}`;
+  const storedPlaylists = localStorage.getItem(storageKey);
+
+  if (storedPlaylists) {
+    try {
+      const parsedPlaylists = JSON.parse(storedPlaylists); 
+      setPlaylists(parsedPlaylists); 
+    } catch (error) {
+      console.error("Fel vid laddning av spellistor:", error);
     }
-  }, [userId]);
-  
+  }
+}, [userId]); 
+
 
   const handleSearch = () => {
     if (!searchQuery.trim()) {

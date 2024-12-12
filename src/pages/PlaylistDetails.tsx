@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
-import { Track } from "../types/Song";
+import { Track } from "../types/song";
 import Pagination from "../components/Pagination";
 import { toast } from "react-toastify";
 
@@ -149,6 +149,9 @@ const PlaylistDetails: React.FC = () => {
         currentPage={currentPage}
         onPageChange={handlePageChange}
       />
+      <div className="loader-container">
+          <span className="loader"></span>
+      </div>
     </div>
   );
 };

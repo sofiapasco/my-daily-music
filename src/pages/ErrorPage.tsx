@@ -59,6 +59,9 @@ const ErrorPage: React.FC = () => {
       >
         Försök igen
       </button>
+      <div className="loader-container">
+            <span className="loader"></span>
+          </div>
     </div>
   );
 };

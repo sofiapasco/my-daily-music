@@ -36,6 +36,7 @@ export interface Song {
     popularity: number;
     currentTime?: number;
     date: number;
+    genres?: string[];
   }
   
   export interface RecentlyPlayedItem {
@@ -51,5 +52,6 @@ export interface Song {
     instrumentalness?: [number, number];
     acousticness?: [number, number];
     explicit?: boolean;
+    genres?: string[];
   }
   

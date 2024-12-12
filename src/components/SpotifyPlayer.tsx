@@ -52,9 +52,19 @@ const SpotifyPlayer: React.FC<SpotifyPlayerProps> = ({
       newPlayer.addListener("player_state_changed", (state) => {
         if (state) {
           console.log("Player state changed:", state);
+          const currentTrackUri = state.track_window.current_track.uri;
+          const expectedTrackUri = currentSong?.uri || `spotify:track:${currentSong?.id}`;
+      
+          if (currentTrackUri !== expectedTrackUri) {
+            console.warn("En annan låt spelas. Förväntad URI:", expectedTrackUri);
+          } else {
+            console.log("Dagens låt spelar korrekt:", currentTrackUri);
+          }
+      
           setIsPlaying(!state.paused);
         }
       });
+      
   
       newPlayer.connect().then((success) => {
         if (success) {
@@ -88,10 +98,10 @@ const SpotifyPlayer: React.FC<SpotifyPlayerProps> = ({
     }
   
     const trackUri = currentSong.uri || `spotify:track:${currentSong.id}`;
-    console.log("Playing track URI:", trackUri);
+    console.log("Försöker spela dagens låt med URI:", trackUri);
   
     try {
-      // Välj spelaren som aktiv enhet
+      // Sätt din app som den aktiva enheten och börja spela
       const transferResponse = await fetch("https://api.spotify.com/v1/me/player", {
         method: "PUT",
         headers: {
@@ -99,8 +109,8 @@ const SpotifyPlayer: React.FC<SpotifyPlayerProps> = ({
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          device_ids: [deviceId],
-          play: true,
+          device_ids: [deviceId], // Byt till din spelare
+          play: true, // Börja spela direkt
         }),
       });
   
@@ -110,58 +120,63 @@ const SpotifyPlayer: React.FC<SpotifyPlayerProps> = ({
         return;
       }
   
-      // Starta låten
-      const response = await fetch("https://api.spotify.com/v1/me/player/play", {
+      // Starta uppspelning av dagens låt
+      const playResponse = await fetch("https://api.spotify.com/v1/me/player/play", {
         method: "PUT",
         headers: {
           Authorization: `Bearer ${accessToken}`,
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          uris: [trackUri],
+          uris: [trackUri], // Spela den specifika låten
         }),
       });
   
-      if (!response.ok) {
-        const errorDetails = await response.json();
-        console.error("Misslyckades att spela låt:", errorDetails);
+      if (!playResponse.ok) {
+        const errorDetails = await playResponse.json();
+        console.error("Misslyckades att spela dagens låt:", errorDetails);
         return;
       }
   
-      console.log("Spår spelar nu.");
+      console.log("Dagens låt spelar nu.");
       setIsPlaying(true);
     } catch (error) {
-      console.error("Fel vid uppspelning av spår:", error);
+      console.error("Fel vid uppspelning av dagens låt:", error);
     }
-  };
+  };  
   
   const togglePlayPause = async () => {
     if (!player) {
       console.error("Spelaren är inte initierad. Kontrollera att den är redo.");
       return;
     }
-
+  
     const state = await player.getCurrentState();
     if (!state) {
-      console.error("Kunde inte hämta uppspelningsstatus. Försöker initiera uppspelning...");
+      console.error("Ingen aktiv uppspelningsstatus hittades. Initierar uppspelning av dagens låt...");
       if (currentSong) {
-        await playTrack();
+        await playTrack(); // Tvinga över till din app och spela dagens låt
       }
       return;
     }
-
+  
     if (state.paused) {
-      player.resume().then(() => {
-        console.log("Uppspelning återupptagen.");
-        setIsPlaying(true);
-      });
+      if (state.track_window.current_track.uri !== currentSong?.uri) {
+        console.log("En annan låt spelas. Växlar till dagens låt...");
+        await playTrack(); // Starta dagens låt
+      } else {
+        player.resume().then(() => {
+          console.log("Uppspelning återupptagen.");
+          setIsPlaying(true);
+        });
+      }
     } else {
       player.pause().then(() => {
         console.log("Uppspelning pausad.");
         setIsPlaying(false);
       });
     }
-  };
+  };  
 
   useEffect(() => {
     if (!player) return;

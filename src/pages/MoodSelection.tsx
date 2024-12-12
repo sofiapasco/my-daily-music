@@ -90,17 +90,20 @@ const MoodSelection: React.FC = () => {
       <button 
         onClick={handleSkip} 
         style={{
-          backgroundColor: "#4CAF50", 
+          backgroundColor: "#922692", 
           color: "white", 
-          padding: "10px 20px", 
+          padding: "8px 10px", 
           border: "none", 
-          borderRadius: "5px", 
+          borderRadius: "6px", 
           cursor: "pointer",
           fontSize: "16px"
         }}
       >
         Hoppa över
       </button>
+      <div className="loader-container">
+        <span className="loader"></span>
+      </div>
     </div>
   );
 };
