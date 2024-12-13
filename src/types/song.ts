@@ -29,7 +29,7 @@ export interface Song {
   export interface Track {
     id: string;
     name: string;
-    artists: { name: string; id: string }[]; // Lägg till 'id' här
+    artists: { name: string; id: string }[]; 
     album: { images: { url: string }[]; name: string };
     external_urls: { spotify: string };
     duration_ms: number;

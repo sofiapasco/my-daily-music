@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext";
-import { Track, MoodFilters } from "../types/song"; 
+import { Track } from "../types/song"; 
 import LikeButton from "../components/LikeButton";
 import SpotifyPlayer from "../components/SpotifyPlayer";
 import { useNavigate } from "react-router-dom";
@@ -9,6 +9,7 @@ import ShareSong from "../components/ShareSong";
 import { moodAttributes } from "../components/MoodAttributes";
 import UserMenu from '../components/UserMenu';
 import "react-toastify/dist/ReactToastify.css";
+import pLimit from "p-limit";
 
 const DailySong: React.FC = () => {
   const [currentSong, setCurrentSong] = useState<Track | null>(null);
@@ -24,6 +25,8 @@ const DailySong: React.FC = () => {
   const [selectedMood, setSelectedMood] = useState<string | null>(null);
   const navigate = useNavigate();
   const duration = currentSong ? currentSong.duration_ms / 1000 : 0; 
+  const artistGenreCache: Record<string, string[]> = {};
+  const limit = pLimit(5);
 
   const updateLocalStorage = (key: string, value: any, userId: string, setState: React.Dispatch<any>) => {
     const storageKey = `${key}_${userId}`; // Lägg till userId i nyckeln
@@ -75,125 +78,197 @@ const DailySong: React.FC = () => {
   }, [userId, navigate]);
   
   
-  const filterTracksByMood = (tracks: Track[], filters: MoodFilters): Track[] => {
-    return tracks.filter((track) => {
-      const logDetails: string[] = [];
-      
-      const getOrDefault = (value: number | undefined, defaultValue: number): number => value ?? defaultValue;
+  const filterTracksByMood = (tracks: Track[], mood: string): Track[] => {
+    console.log("Tillgängliga humör i moodAttributes:", Object.keys(moodAttributes));
+    console.log("Inkommande humör:", mood);
   
-      // Kontrollera popularitet
-      if (filters.popularity && 
-          (getOrDefault(track.popularity, 50) < filters.popularity[0] || 
-           getOrDefault(track.popularity, 50) > filters.popularity[1])) {
-        logDetails.push(`Popularitet utanför gränserna: ${track.popularity}`);
-      }
-  
-      // Kontrollera duration
-      if (filters.duration_ms && 
-          (getOrDefault(track.duration_ms, 180000) < filters.duration_ms[0] || 
-           getOrDefault(track.duration_ms, 180000) > filters.duration_ms[1])) {
-        logDetails.push(`Längd utanför gränserna: ${track.duration_ms}`);
-      }
-  
-      // Kontrollera genre (om relevant)
-      if (filters.genres && !filters.genres.some((genre) => track.genres?.includes(genre))) {
-        logDetails.push(`Genre matchar inte: ${track.genres?.join(", ") || "Inga genrer"}`);
-      }
-  
-      // Logga uteslutningar
-      if (logDetails.length > 0) {
-        console.log(`Utesluten: ${track.name} (${logDetails.join(", ")})`);
-        return false;
-      }
-  
-      return true;
-    });
-  };
-
-  
-  
-  const fetchDailySong = async (excludedSongs: string[], selectedMood: string) => {
-    console.log("Exkluderade låtar:", excludedSongs);
-  
-    const today = new Date();
-    const dateKey = `${today.getFullYear()}-${today.getMonth() + 1}-${today.getDate()}`;
-    const dailySongKey = `dailySong_${userId}_${dateKey}`;
-  
-    const storedDailySong = localStorage.getItem(dailySongKey);
-    if (storedDailySong) {
-      console.log("Dagens låt laddad från localStorage:", JSON.parse(storedDailySong));
-      setCurrentSong(JSON.parse(storedDailySong));
-      return;
-    }
-  
-    if (!accessToken) {
-      console.error("Ingen access token tillgänglig.");
-      return;
-    }
-  
-    type MoodEmoji = "😊" | "😢" | "💪" | "😌" | "😴" | "🥰";
-    type Mood = "happy" | "low" | "energetic" | "relaxed" | "love";
-    
-    const moodMapping: Record<MoodEmoji, Mood> = {
+    const moodMapping: Record<string, string> = {
       "😊": "happy",
       "😢": "low",
       "💪": "energetic",
-      "😌": "relaxed",
       "😴": "low",
+      "😌": "relaxed",
       "🥰": "love",
     };
-    
-    const mappedMood = moodMapping[selectedMood as MoodEmoji] || "neutral";
-    console.log("Valt humör:", selectedMood, "Mappat humör:", mappedMood);
-    
+  
+    const mappedMood = moodMapping[mood.trim()] || "neutral"; // Fallback till "neutral"
+    console.log("Mappat humör:", mappedMood);
   
     const filters = moodAttributes[mappedMood];
-    if (!filters || Object.keys(filters).length === 0) {
-      console.error("Inga filtreringskriterier hittades för valt humör.");
-      return;
+    if (!filters) {
+      console.error(`Humöret "${mappedMood}" hittades inte i moodAttributes`);
+      return [];
     }
   
-    try {
-      const [topTracks, recentlyPlayed] = await Promise.all([
-        fetch("https://api.spotify.com/v1/me/top/tracks?limit=50", {
-          headers: { Authorization: `Bearer ${accessToken}` },
-        }).then((res) => res.json()),
-        fetch("https://api.spotify.com/v1/me/player/recently-played?limit=50", {
-          headers: { Authorization: `Bearer ${accessToken}` },
-        }).then((res) => res.json()),
-      ]);
-  
-      const combinedTracks = [
-        ...topTracks.items.map((item:Track) => item),
-        ...recentlyPlayed.items.map((item: { track: Track }) => item.track),
-      ];
-  
-      if (!combinedTracks.length) {
-        console.error("Inga låtar hämtades från Top Tracks eller Recently Played.");
-        return;
-      }
-      const tracksToFilter = combinedTracks.filter((track) => !excludedSongs.includes(track.id));
-      console.log("Låtar att filtrera:", tracksToFilter);
-  
-      const filteredTracks = filterTracksByMood(tracksToFilter, filters);
-      console.log("Filtrerade låtar:", filteredTracks);
-  
-      if (!filteredTracks.length) {
-        toast.info("Inga fler låtar tillgängliga för det valda humöret.");
-        return;
-      }
-  
-      const randomSong = filteredTracks[Math.floor(Math.random() * filteredTracks.length)];
-      console.log("Slumpad låt:", randomSong);
-  
-      localStorage.setItem(dailySongKey, JSON.stringify(randomSong));
-      setCurrentSong(randomSong);
+    return tracks.filter((track) => {
+      // Kontrollera om track.genres är definierad och har en längd större än 0
+      const hasGenres = track.genres && track.genres.length > 0;
       
+      const matchesGenre =
+        hasGenres
+          ? filters.genres?.some((genre) =>
+              track.genres!.map((g) => g.toLowerCase()).includes(genre.toLowerCase())
+            ) ?? false
+          : true; // Om inga genrer finns, filtrera inte på genrer
+  
+      console.log(`Låt: ${track.name}, Genrer: ${track.genres?.join(", ") || "Inga genrer"}, Matchar genrer: ${matchesGenre}`);
+      if (!matchesGenre && hasGenres) {
+        console.log(`Utesluten p.g.a. genrer: ${track.name}`);
+      }
+  
+      const popularityInRange =
+        !filters.popularity ||
+        (track.popularity >= filters.popularity[0] && track.popularity <= filters.popularity[1]);
+  
+      if (!popularityInRange) {
+        console.log(`Utesluten p.g.a. popularitet: ${track.name}`);
+      }
+  
+      const durationInRange =
+        !filters.duration_ms ||
+        (track.duration_ms >= filters.duration_ms[0] && track.duration_ms <= filters.duration_ms[1]);
+  
+      if (!durationInRange) {
+        console.log(`Utesluten p.g.a. längd: ${track.name}`);
+      }
+  
+      // Om genrer saknas, filtrera endast baserat på popularitet och duration
+      if (!hasGenres) {
+        return popularityInRange && durationInRange;
+      }
+  
+      // Annars använd alla filter
+      return matchesGenre && popularityInRange && durationInRange;
+    });
+  };
+
+  const enrichTrackWithGenres = async (track: Track, accessToken: string): Promise<Track> => {
+    try {
+      const artistId = track.artists[0]?.id;
+      if (!artistId) {
+        return { ...track, genres: [] }; // Fallback till tom genre
+      }
+  
+      if (artistGenreCache[artistId]) {
+        return { ...track, genres: artistGenreCache[artistId] }; // Använd cache
+      }
+  
+      const response = await fetch(`https://api.spotify.com/v1/artists/${artistId}`, {
+        headers: { Authorization: `Bearer ${accessToken}` },
+      });
+  
+      if (!response.ok) {
+        console.error("Kunde inte hämta artistdata:", await response.text());
+        return { ...track, genres: [] }; // Fallback till tom genre vid fel
+      }
+  
+      const data = await response.json();
+      artistGenreCache[artistId] = data.genres;
+      return { ...track, genres: data.genres }; // Koppla genrer till låten
     } catch (error) {
-      console.error("Ett fel uppstod vid hämtning av låtar:", error);
+      console.error("Fel vid enrichTrackWithGenres:", error);
+      return { ...track, genres: [] }; // Fallback till tom genre vid fel
     }
   };
   
+
+const fetchDailySong = async (excludedSongs: string[], selectedMood: string) => {
+  console.log("Exkluderade låtar:", excludedSongs);
+
+  const today = new Date();
+  const dateKey = `${today.getFullYear()}-${today.getMonth() + 1}-${today.getDate()}`;
+  const dailySongKey = `dailySong_${userId}_${dateKey}`;
+
+  const storedDailySong = localStorage.getItem(dailySongKey);
+  if (storedDailySong) {
+    console.log("Dagens låt laddad från localStorage:", JSON.parse(storedDailySong));
+    setCurrentSong(JSON.parse(storedDailySong));
+    return;
+  }
+
+  if (!accessToken) {
+    console.error("Ingen access token tillgänglig.");
+    return;
+  }
+
+  const moodMapping: Record<string, string> = {
+    "😊": "happy",      
+    "😢": "low",         
+    "😌": "relaxed",    
+    "😴": "low",         
+    "💪": "energetic", 
+    "🥰": "love",        
+  };
+  
+  const sanitizedMood = selectedMood.trim();
+  console.log("Valt humör (selectedMood):", selectedMood);
+  
+  if (!moodMapping[sanitizedMood]) {
+    console.error(`Okänd emoji: ${sanitizedMood}`);
+    console.log("Tillgängliga emojier i moodMapping:", Object.keys(moodMapping));
+    toast.error(`Humöret ${sanitizedMood} stöds inte.`);
+    return;
+  }
+  
+  const mappedMood = moodMapping[sanitizedMood];
+  console.log("Mappat humör:", mappedMood);
+  console.log("Valt humör (selectedMood):", selectedMood);
+  
+
+  try {
+    console.log("Hämtar låtar från Spotify API...");
+    const [topTracks, recentlyPlayed] = await Promise.all([
+      fetch("https://api.spotify.com/v1/me/top/tracks?limit=50", {
+        headers: { Authorization: `Bearer ${accessToken}` },
+      }).then((res) => res.json()),
+      fetch("https://api.spotify.com/v1/me/player/recently-played?limit=50", {
+        headers: { Authorization: `Bearer ${accessToken}` },
+      }).then((res) => res.json()),
+    ]);
+
+    const combinedTracks = [
+      ...topTracks.items.map((item: Track) => item),
+      ...recentlyPlayed.items.map((item: { track: Track }) => item.track),
+    ];
+
+    console.log("Hämtade låtar:", combinedTracks);
+
+    const filters = moodAttributes[mappedMood];
+    if (!filters) {
+      console.error(`Inga filter definierade för humör: ${mappedMood}`);
+      console.log("Tillgängliga humör i moodAttributes:", Object.keys(moodAttributes));
+      return;
+    }
+
+    const tracksWithGenres = await Promise.all(
+      combinedTracks.map((track) =>
+        limit(() => enrichTrackWithGenres(track, accessToken))
+      )
+    );
+    const tracksToFilter = tracksWithGenres.filter((track) => !excludedSongs.includes(track.id));
+    console.log("Låtar att filtrera:", tracksToFilter);
+
+    const filteredTracks = filterTracksByMood(tracksToFilter, selectedMood);
+    console.log("Filtrerade låtar:", filteredTracks);
+
+    if (!filteredTracks.length) {
+      toast.info("Inga låtar tillgängliga för det valda humöret.");
+      return;
+    }
+    const randomSong = filteredTracks[Math.floor(Math.random() * filteredTracks.length)];
+    console.log("Slumpad låt:", randomSong);
+
+    console.log(`Dagens låt: ${randomSong.name}`);
+    console.log(`Dagens låt genrer: ${randomSong.genres?.join(", ") || "Ingen genre tillgänglig"}`);
+
+
+    localStorage.setItem(dailySongKey, JSON.stringify(randomSong));
+    setCurrentSong(randomSong);
+  } catch (error) {
+    console.error("Ett fel uppstod vid hämtning av låtar:", error);
+  }
+};
+
 useEffect(() => {
   const fetchUserId = async () => {
     if (!accessToken) return;
@@ -266,10 +341,6 @@ useEffect(() => {
     setExcludedSongs([]);
   }
 }, [userId]);
-
-console.log(`Hämtar sparade låtar för userId: ${userId}`);
-console.log("Lagrade likedSongs:", localStorage.getItem(`likedSongs_${userId}`));
-
 
 const handleLike = (song: Track) => {
   if (!userId) {
@@ -405,13 +476,6 @@ const handleLike = (song: Track) => {
     const storedPlaylists = JSON.parse(localStorage.getItem("playlists") || "[]");
     setPlaylists(storedPlaylists);
   }, []);
-
-  useEffect(() => {
-    if (currentSong) {
-      console.log("Dagens låt:", currentSong);
-    }
-  }, [currentSong]);
-  
 
   return (
     <>
