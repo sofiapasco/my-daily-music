@@ -37,6 +37,7 @@ export interface Song {
     currentTime?: number;
     date: number;
     genres?: string[];
+    comment?: string;
   }
   
   export interface RecentlyPlayedItem {

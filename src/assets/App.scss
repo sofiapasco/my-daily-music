@@ -1,7 +1,6 @@
 @import "bootstrap/scss/bootstrap";
 @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap');
 
-
 .daily-song-container {
   display: flex;
   flex-direction: column;
@@ -11,6 +10,7 @@
   width: 100%;
   font-family: "Arial", sans-serif;
   text-align: center;
+  position: relative;
 
   .daily-song-title {
     font-family: 'Roboto', sans-serif;
@@ -64,8 +64,8 @@
   }
 }
 
-.like-heart {
 
+.like-heart {
   display: inline-block;
   position: relative;
   right: -15%; 
@@ -81,7 +81,7 @@
 
 .like-heart:hover {
   transform: scale(1.1);
-  background: rgba(255, 255, 255, 0.3); /* Ljusare bakgrund vid hover */
+  background: rgba(255, 255, 255, 0.3); 
   box-shadow: 0px 6px 12px rgba(0, 0, 0, 0.3);
 }
 
@@ -190,7 +190,7 @@
   position: absolute;
   top: 20px;
   right: 20px;
-  padding: 8px 16px;
+  padding: 12px 16px;
   font-size: 12px;
   font-weight: bold;
   background: linear-gradient(135deg, #922692, #bb4180c6);
@@ -228,6 +228,7 @@
   .mood-buttons {
     display: flex;
     gap: 10px;
+    margin: 4rem;
 
     button {
       padding: 10px 20px;
@@ -404,64 +405,77 @@
   }
 }
 
-.user-button {
-  position: absolute;
-  top: 20px;
-  right: 150px;
-  width: 40px;
-  height: 40px;
-  background: linear-gradient(135deg, #922692, #bb4180c6);
-  color: #f8f3f3;
-  border: none;
-  border-radius: 30px;
-  cursor: pointer;
-  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2);
-  transition: transform 0.3s, box-shadow 0.3s;
-
-  &:hover {
-    transform: scale(1.1);
-    box-shadow: 0px 6px 8px rgba(0, 0, 0, 0.3);
-  }
+.header {
+  display: flex; 
+  align-items: center; 
+  gap: 10px;
+  justify-content: flex-end;
+  padding: 10px 20px; 
+  position: absolute; 
+  width: 100%; 
+  top: 0;
+  left: 0;
+  z-index: 999;
 }
 
-.user-dropdown{
-  position: absolute;
-  top: 60px;
-  
-  right: 100px;
-  margin-top: 10px;
-  width: 120px; 
-  background: linear-gradient(135deg, #922692, #bb4180c6);
-  border-radius: 8px;
-  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2);
-  overflow: hidden;
-  z-index: 10; 
-  transition: transform 0.3s, box-shadow 0.3s;
+.profile-menu {
+  position: relative;
 
-  a, button {
-    display: block;
-    padding: 10px 15px;
-    color: white; 
-    text-decoration: none;
-    font-size: 11px;
-    letter-spacing: 1px;
-    font-size: 14px;
+  .user-button {
+    margin-top: 5px;
+    margin-right: 7rem;
     background: none;
     border: none;
+    padding: 0;
     cursor: pointer;
+    outline: none;
+    box-shadow: none;
 
     &:hover {
-      background-color: #7d1f7d; 
+      transform: scale(1.1);
+      box-shadow: 0px 6px 8px rgba(0, 0, 0, 0.3);
     }
   }
 
-  &.hidden {
-    display: none; 
+  .user-dropdown {
+    position: absolute;
+    top: 100%; 
+    left: 6; 
+    margin-top: 5px;
+    width: 120px;
+    background: linear-gradient(135deg, #922692, #bb4180c6);
+    border-radius: 8px;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2);
+    overflow: hidden;
+    z-index: 1000;
+    transition: transform 0.3s, box-shadow 0.3s;
+
+    a, button {
+      font-family: 'Roboto', sans-serif;
+      letter-spacing: 1px;
+      display: block;
+      padding: 10px 15px;
+      color: white;
+      text-decoration: none;
+      font-size: 14px;
+      background: none;
+      border: none;
+      cursor: pointer;
+
+      &:hover {
+        background-color: #7d1f7d;
+      }
+    }
+
+    &.hidden {
+      display: none;
+    }
   }
 }
 
 .share-song {
   text-align: center;
+  width: 300px;
 
   h3 {
     margin-bottom: 10px;
@@ -492,6 +506,7 @@
     }
   }
 }
+
 #user-product{
  color: #922692 !important;
  font-weight: bold;
@@ -559,9 +574,7 @@
   max-width: 350px;
 
 }
-.menu-button{
-  color: #fff;
-}
+
 
 /* För mörkt tema */
 body.dark {
@@ -578,9 +591,6 @@ body.dark {
     background: linear-gradient(135deg, #1e1e2f, #3e3e5e);
   }
 
-  .mood-buttons button {
-    background: linear-gradient(135deg, #1e1e2f, #3e3e5e);
-  }
 
   .titleFront {
     background-color: #fff;
@@ -960,4 +970,176 @@ p {
   background: linear-gradient(135deg, #922692, #bb4180c6);
   color: white;
   pointer-events: none;
+}
+
+.comment-section {
+  margin-top: 15px;
+}
+
+.comment-input {
+  width: 100%;
+  height: 80px;
+  padding: 10px;
+  font-size: 14px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  margin-bottom: 20px;
+}
+
+.save-comment-btn {
+  background: linear-gradient(135deg, #922692, #bb4180c6);
+  color: white;
+  border: none;
+  padding: 8px 15px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.save-comment-btn:hover {
+  background: linear-gradient(135deg, #922692, #bb4180c6);
+}
+
+.add-comment-btn {
+  border: none;
+
+  text-decoration: underline;
+  cursor: pointer;
+  margin-top: 15px;
+}
+
+.music-diary-container {
+  font-family: 'Roboto', sans-serif;
+  color: #fff;
+  background: linear-gradient(135deg, #1e1e2d, #2d2d44);
+  min-height: 100vh;
+  padding: 2rem;
+  box-sizing: border-box;
+
+  header {
+    text-align: center;
+    margin-bottom: 2rem;
+
+    h1 {
+      margin-bottom: 20px;
+      font-size: 20px;
+      letter-spacing: 3px;
+      padding-bottom: 5px;
+      font-weight: bold;
+    }
+
+    p {
+      margin-bottom: 15px;
+      font-size: 15px;
+      letter-spacing: 2px;
+      padding-bottom: 5px;
+
+    }
+  }
+
+  .diary-entry {
+    background: #33334d;
+    border-radius: 8px;
+    padding: 1.5rem;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.3);
+    margin-bottom: 2rem;
+
+    h2 {
+      margin-bottom: 16px;
+      font-size: 16px;
+      letter-spacing: 3px;
+      padding-bottom: 5px;
+      font-weight: bold;
+      font-family: 'Roboto', sans-serif;
+    }
+
+    textarea {
+      width: 100%;
+      height: 100px;
+      padding: 10px;
+      margin-bottom: 1rem;
+      border: 1px solid #555;
+      border-radius: 5px;
+      font-size: 1rem;
+      resize: none;
+    }
+
+    button {
+      background: linear-gradient(135deg, #922692, #bb4180c6);
+      color: #fff;
+      border: none;
+      font-family: 'Roboto', sans-serif;
+      padding: 0.5rem 1rem;
+      font-size: 1rem;
+      border-radius: 5px;
+      cursor: pointer;
+    
+      transition: background-color 0.3s;
+
+      &:hover {
+        background-color: #7b68ee;
+      }
+    }
+  }
+
+  .diary-history {
+    h2 {
+      margin-bottom: 16px;
+      font-size: 16px;
+      letter-spacing: 3px;
+      padding-bottom: 5px;
+      font-weight: bold;
+    }
+
+    .diary-item {
+      background: linear-gradient(135deg, #8a8a8a, #b993d6);
+      border-radius: 5px;
+      margin-bottom: 1rem;
+      padding: 1rem;
+      box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.2);
+
+      strong {
+        color: #ffd700;
+      }
+
+      p {
+        margin: 0.5rem 0 0;
+        font-family: 'Roboto', sans-serif;
+      }
+    }
+  }
+}
+.diary-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px;
+  margin-bottom: 10px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.diary-item-content {
+  flex-grow: 1; 
+}
+
+.diary-buttons {
+  display: flex;
+  gap: 8px; 
+}
+
+.diary-buttons button {
+  color: white;
+  border: none;
+  background: none;
+  border-radius: 4px;
+  padding: 5px;
+  cursor: pointer;
+  font-size: large;
+  transition: background-color 0.3s;
+}
+
+
+textarea {
+  width: 100%;
+  margin-bottom: 8px;
 }

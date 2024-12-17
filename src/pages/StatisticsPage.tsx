@@ -40,11 +40,13 @@ const StatisticsPage: React.FC = () => {
 
 
   return (
-    <div className="statistics-container">
-      <UserMenu />
-      <button className="logout-btn" onClick={logout}>
-        Logga ut
-      </button>
+  <div className="statistics-container" >
+      <div className="header">
+        <UserMenu />
+        <button className="logout-btn" onClick={logout}>
+          Logga ut
+        </button>
+      </div>
       <h1>Statistik</h1>
       <div className="statistics-period">
         <select

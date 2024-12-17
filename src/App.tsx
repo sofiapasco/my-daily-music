@@ -11,7 +11,7 @@ import ErrorPage from './pages/ErrorPage';
 import UserProfilePage from "./pages/UserProfilePage"
 import PlaylistDetails from './pages/PlaylistDetails';
 import StatisticsPage from './pages/StatisticsPage';
-
+import MusicDiary from './components/MusicDairy';
 
 import "../src/assets/App.scss";
 
@@ -29,6 +29,7 @@ function App() {
             <Route path="/saved-songs" element={<SavedSongs />} />
             <Route path="/statistics" element={<StatisticsPage />} />
             <Route path="/profile" element={<UserProfilePage />} />
+            <Route path="/music-diary" element={<MusicDiary />} />
             <Route path="/error" element={<ErrorPage />} />
           </Routes>
       </AuthProvider>

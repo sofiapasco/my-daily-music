@@ -3,7 +3,8 @@ import React, { createContext, useState, useContext, useEffect } from "react";
 type UserProfileProps = {
   name: string;
   email: string;
-  avatarUrl: string;
+  avatarUrl?: string;
+  product?: string;
 };
 
 type AuthContextType = {
@@ -29,13 +30,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       localStorage.setItem("currentUserId", id);
       setAccessTokenState(token);
       setUserId(id);
-      fetchUserInfo(token); // Hämta användarinfo när en ny token sätts
+      fetchUserInfo(token, id); 
     } else {
       handleLogout();
     }
   };
 
-  const fetchUserInfo = async (token: string) => {
+  const generateColorFromText = (text: string): string => {
+    let hash = 0;
+    for (let i = 0; i < text.length; i++) {
+      hash = text.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    const color = `hsl(${hash % 360}, 70%, 50%)`; 
+    return color.replace("#", ""); 
+  };
+  
+  const fetchUserInfo = async (token: string, id: string) => {
     try {
       const response = await fetch("https://api.spotify.com/v1/me", {
         headers: { Authorization: `Bearer ${token}` },
@@ -43,15 +53,34 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (response.ok) {
         const data = await response.json();
         setUserInfo({
-          name: data.display_name || "Anonym",
+          name: data.display_name || id || "Anonym",
           email: data.email || "example@example.com",
-          avatarUrl: data.images?.[0]?.url || "/default-avatar.png",
+          avatarUrl:
+            data.images?.[0]?.url ||
+            `https://via.placeholder.com/150/${generateColorFromText(id)}/FFFFFF?text=${id
+              .charAt(0)
+              .toUpperCase()}`, // Dynamisk färg baserat på id
+          product: data.product || "Free",
         });
       } else {
         console.error("Kunde inte hämta användarinformation.");
+        setUserInfo({
+          name: id,
+          email: "example@example.com",
+          avatarUrl: `https://via.placeholder.com/150/${generateColorFromText(id)}/FFFFFF?text=${id
+            .charAt(0)
+            .toUpperCase()}`,
+        });
       }
     } catch (error) {
       console.error("Ett fel uppstod vid hämtning av användarinformation:", error);
+      setUserInfo({
+        name: id,
+        email: "example@example.com",
+        avatarUrl: `https://via.placeholder.com/150/${generateColorFromText(id)}/FFFFFF?text=${id
+          .charAt(0)
+          .toUpperCase()}`,
+      });
     }
   };
 
@@ -74,10 +103,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
 
   useEffect(() => {
-    if (accessToken) {
-      fetchUserInfo(accessToken);
+    if (accessToken && userId) { 
+      fetchUserInfo(accessToken, userId);
     }
-  }, [accessToken]);
+  }, [accessToken, userId]);
 
   return (
     <AuthContext.Provider value={{ accessToken, userId, userInfo, setAccessToken, logout:handleLogout }}>

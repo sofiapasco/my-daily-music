@@ -1,5 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faPencil } from '@fortawesome/free-solid-svg-icons';
 import { toast } from "react-toastify";
+import { useAuth } from '../context/AuthContext';
 
 interface Song {
   title: string;
@@ -13,10 +16,12 @@ interface ShareSongProps {
 
 const ShareSong: React.FC<ShareSongProps> = ({ song }) => {
   const { title, artist, link } = song;
+  const {userId} = useAuth();
+  const [comment, setComment] = useState<string>("");
+  const [showCommentBox, setShowCommentBox] = useState<boolean>(false);
 
   const shareText = `Lyssna på "${title}" av ${artist}!`;
-  const shareUrl = link; // Använd det redan existerande `link` från props
-
+  const shareUrl = link; 
   const handleWebShare = () => {
     if (navigator.share) {
       navigator.share({
@@ -43,6 +48,39 @@ const ShareSong: React.FC<ShareSongProps> = ({ song }) => {
     toast.success('Länken har kopierats!');
   };
 
+  const handleCommentChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setComment(e.target.value); // Uppdatera kommentaren i state
+  };
+  
+  const handleSaveComment = () => {
+    if (!comment.trim()) {
+      toast.error("Kommentaren kan inte vara tom."); // Felmeddelande om kommentaren är tom
+      return;
+    }
+  
+    const today = new Date().toISOString().split("T")[0]; 
+    const songTitle = title || "Okänd låt"; 
+    const newComment = {
+      date: today,
+      songTitle,
+      comment,
+    };
+  
+    const storedComments = JSON.parse(localStorage.getItem(`musicDiary_${userId}`) || "[]");
+    const updatedComments = [...storedComments, newComment];
+  
+    localStorage.setItem(`musicDiary_${userId}`, JSON.stringify(updatedComments));
+  
+    toast.success("Kommentaren har sparats! 🎉");
+    setShowCommentBox(false); 
+    setComment(""); 
+  };  
+
+  const toggleCommentBox = () => {
+    setShowCommentBox((prev) => !prev);
+  };
+
+
   return (
     <div className="share-song">
       <div className="social-buttons">
@@ -52,6 +90,7 @@ const ShareSong: React.FC<ShareSongProps> = ({ song }) => {
           target="_blank"
           rel="noopener noreferrer"
           className="facebook-button"
+          style={{marginTop: "10px"}}
         >
           <img src="/facebook.png" alt="Dela på Facebook" className="icon" id="fbicon" />
         </a>
@@ -70,6 +109,69 @@ const ShareSong: React.FC<ShareSongProps> = ({ song }) => {
         <button onClick={handleWebShare} className="mobile-share-button">
           <img src="/share.png" alt="Dela via mobil" className="icon" id="phoneicon" />
         </button>
+        <button
+          onClick={toggleCommentBox}
+          className="add-comment-btn"
+          style={{
+            marginBottom: "10px",
+            cursor: "pointer",
+            background: "none",
+            border: "none",
+          }}
+        >
+          <FontAwesomeIcon icon={faPencil} style={{ fontSize: "24px", color: "#333" }} />
+        </button>
+
+        {showCommentBox && (
+          <div
+            className="comment-section"
+            style={{
+              position: "absolute",
+              top: "0",
+              left: "40",
+              width: "200px",
+              marginTop: "630px",
+              marginLeft: "200px",
+
+              borderRadius: "5px",
+              padding: "10px",
+              boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
+              zIndex: 1000,
+              transition: "all 0.3s ease",
+            }}
+          >
+            <textarea
+              placeholder="Skriv en kommentar om låten..."
+              value={comment}
+              onChange={handleCommentChange}
+              className="comment-input"
+              style={{       
+                left: "5",  
+                margin: "0",
+                width: "100%",
+                height: "80px",
+                padding: "5px",
+                borderRadius: "5px",
+
+              }}
+            ></textarea>
+            <button
+              onClick={handleSaveComment}
+              className="save-comment-btn"
+              style={{
+                marginTop: "5px",
+                border: "none",
+                background: "linear-gradient(135deg, #922692, #bb4180c6)",
+                borderRadius: "5px",
+                padding: "5px 10px",
+                cursor: "pointer",
+                width: "100%",
+              }}
+            >
+              Spara kommentar
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

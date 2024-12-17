@@ -10,7 +10,6 @@ const UserPage: React.FC = () => {
       return (
         <div className="user-page-container" style={{height: "100vh"}}>
           <div className="header">
-  
             <UserMenu />
             <button className="logout-btn" onClick={logout}>
               Logga ut

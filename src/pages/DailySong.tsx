@@ -13,13 +13,12 @@ import pLimit from "p-limit";
 
 const DailySong: React.FC = () => {
   const [currentSong, setCurrentSong] = useState<Track | null>(null);
-  const { accessToken, logout } = useAuth();
+  const { accessToken, logout, userId } = useAuth();
   const [showSelect, setShowSelect] = useState(false);
   const [timeoutId, setTimeoutId] = useState<number | null>(null);
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
   const [likedSongs, setLikedSongs] = useState<Track[]>([]); 
   const [playlists, setPlaylists] = useState<{ name: string; songs: Track[] }[]>([]);
-  const [userId, setUserId] = useState<string>("");
   const [excludedSongs, setExcludedSongs] = useState<string[]>([]);
   const [isThrowing, setIsThrowing] = useState(false);
   const [selectedMood, setSelectedMood] = useState<string | null>(null);
@@ -89,9 +88,10 @@ const DailySong: React.FC = () => {
       "😴": "low",
       "😌": "relaxed",
       "🥰": "love",
+      "neutral": "neutral",
     };
   
-    const mappedMood = moodMapping[mood.trim()] || "neutral"; // Fallback till "neutral"
+    const mappedMood = mood.trim() === "neutral" ? "neutral" : moodMapping[mood.trim()] || "neutral";
     console.log("Mappat humör:", mappedMood);
   
     const filters = moodAttributes[mappedMood];
@@ -101,7 +101,6 @@ const DailySong: React.FC = () => {
     }
   
     return tracks.filter((track) => {
-      // Kontrollera om track.genres är definierad och har en längd större än 0
       const hasGenres = track.genres && track.genres.length > 0;
       
       const matchesGenre =
@@ -109,7 +108,7 @@ const DailySong: React.FC = () => {
           ? filters.genres?.some((genre) =>
               track.genres!.map((g) => g.toLowerCase()).includes(genre.toLowerCase())
             ) ?? false
-          : true; // Om inga genrer finns, filtrera inte på genrer
+          : true; 
   
       console.log(`Låt: ${track.name}, Genrer: ${track.genres?.join(", ") || "Inga genrer"}, Matchar genrer: ${matchesGenre}`);
       if (!matchesGenre && hasGenres) {
@@ -164,7 +163,7 @@ const DailySong: React.FC = () => {
   
       const data = await response.json();
       artistGenreCache[artistId] = data.genres;
-      return { ...track, genres: data.genres }; // Koppla genrer till låten
+      return { ...track, genres: data.genres }; 
     } catch (error) {
       console.error("Fel vid enrichTrackWithGenres:", error);
       return { ...track, genres: [] }; // Fallback till tom genre vid fel
@@ -197,7 +196,8 @@ const fetchDailySong = async (excludedSongs: string[], selectedMood: string) => 
     "😌": "relaxed",    
     "😴": "low",         
     "💪": "energetic", 
-    "🥰": "love",        
+    "🥰": "love",  
+    "neutral": "neutral",      
   };
   
   const sanitizedMood = selectedMood.trim();
@@ -268,24 +268,6 @@ const fetchDailySong = async (excludedSongs: string[], selectedMood: string) => 
     console.error("Ett fel uppstod vid hämtning av låtar:", error);
   }
 };
-
-useEffect(() => {
-  const fetchUserId = async () => {
-    if (!accessToken) return;
-
-    try {
-      const response = await fetch("https://api.spotify.com/v1/me", {
-        headers: { Authorization: `Bearer ${accessToken}` },
-      });
-      const data = await response.json();
-      setUserId(data.id);
-    } catch (error) {
-      console.error("Kunde inte hämta användarens ID:", error);
-    }
-  };
-
-  fetchUserId();
-}, [accessToken]);
 
 useEffect(() => {
   if (!accessToken || !selectedMood) return;
@@ -479,11 +461,13 @@ const handleLike = (song: Track) => {
 
   return (
     <>
-      <div className="daily-song-container">
+    <div className="daily-song-container" style={{height: "100vh"}}>
+      <div className="header">
         <UserMenu />
         <button className="logout-btn" onClick={logout}>
           Logga ut
         </button>
+      </div>
         <h1 className="daily-song-title">DAGENS LÅT</h1>
         {currentSong ? (
           <div className="song-info">

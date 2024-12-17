@@ -5,8 +5,31 @@ import UserMenu from "../components/UserMenu";
 
 const MoodSelection: React.FC = () => {
   const [mood, setMood] = useState<string | null>(null);
+  const [greeting, setGreeting] = useState<string>(""); 
   const { logout, userId } = useAuth();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const currentTime = new Date();
+    const hours = currentTime.getHours();
+
+    let greetingMessage = "Hej";
+    if (hours >= 5 && hours < 12) {
+      greetingMessage = "God morgon";
+    } else if (hours >= 12 && hours < 18) {
+      greetingMessage = "God eftermiddag";
+    } else if (hours >= 18 && hours < 22) {
+      greetingMessage = "God kväll";
+    } else {
+      greetingMessage = "God natt";
+    }
+
+    if (userId) {
+      setGreeting(`${greetingMessage}, ${userId}!\n\nHur mår du idag?`);
+    } else {
+      setGreeting("Hej!\n\nHur mår du idag?");
+    }    
+  }, [userId]);
 
   useEffect(() => {
     if (!userId) {
@@ -24,7 +47,7 @@ const MoodSelection: React.FC = () => {
 
       if (parsedMood.date === today) {
         console.log("Humör redan valt idag:", parsedMood.mood);
-        navigate("/daily-song"); // Om humör redan är valt för idag, navigera bort
+        navigate("/daily-song"); 
       }
     }
   }, [userId, navigate]);
@@ -77,7 +100,7 @@ const MoodSelection: React.FC = () => {
       <button className="logout-btn" onClick={logout}>
         Logga ut
       </button>
-      <h1>HUR MÅR DU IDAG?</h1>
+      <h1>{greeting}</h1> {/* Visa hälsning här */}
       <div className="mood-buttons">
         <button onClick={() => handleMoodSelection("😊")}> 😊</button>
         <button onClick={() => handleMoodSelection("😢")}>😢</button>
@@ -92,11 +115,11 @@ const MoodSelection: React.FC = () => {
         style={{
           backgroundColor: "#922692", 
           color: "white", 
-          padding: "8px 10px", 
+          padding: "6px 9px", 
           border: "none", 
           borderRadius: "6px", 
           cursor: "pointer",
-          fontSize: "16px"
+          fontSize: "14px"
         }}
       >
         Hoppa över

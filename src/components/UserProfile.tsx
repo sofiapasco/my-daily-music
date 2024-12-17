@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useTheme } from "../context/ThemeContext";
+import { useAuth } from "../context/AuthContext";
 
 interface UserProfileProps {
   name: string;
@@ -9,14 +10,17 @@ interface UserProfileProps {
 }
 
 const UserProfile: React.FC = () => {
+  const { userId } = useAuth(); // Hämta userId från AuthContext
   const [userInfo, setUserInfo] = useState<UserProfileProps | null>(null);
   const { theme, toggleTheme } = useTheme();
   const [customAvatar, setCustomAvatar] = useState<string | null>(
     localStorage.getItem("customUserAvatar") || null
   );
 
-  // Fallback avatar
-  const fallbackAvatar = "https://t.scdn.co/images/default-avatar.png";
+  // Dynamisk fallback-avatar med första bokstaven i userId
+  const fallbackAvatar = userId
+    ? `https://via.placeholder.com/150/922692/FFFFFF?text=${userId.charAt(0).toUpperCase()}`
+    : "https://via.placeholder.com/150/922692/FFFFFF?text=A";
 
   useEffect(() => {
     const token = localStorage.getItem(
@@ -44,7 +48,7 @@ const UserProfile: React.FC = () => {
     } else {
       console.error("Ingen token hittades.");
     }
-  }, []);
+  }, [fallbackAvatar]); // Lägg fallbackAvatar som beroende
 
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files && event.target.files[0]) {
@@ -61,7 +65,6 @@ const UserProfile: React.FC = () => {
     }
   };
 
-  // Visa fallbackbild och generiska detaljer om användaren är utloggad
   if (!userInfo) {
     return (
       <div className="user-profile">
@@ -77,9 +80,8 @@ const UserProfile: React.FC = () => {
     );
   }
 
-  // Visa fullständiga användaruppgifter om någon är inloggad
   return (
-    <div className="user-profile">
+    <div className="user-profile" style={{ position: "relative" }}>
       <img
         src={customAvatar || userInfo.avatarUrl || fallbackAvatar}
         alt="Profile"

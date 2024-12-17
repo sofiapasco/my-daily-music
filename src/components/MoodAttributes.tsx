@@ -100,8 +100,11 @@ const baseMoodGenres: Record<string, string[]> = {
       duration_ms: [150000, 400000],
       genres: baseMoodGenres.love,
     },
+    neutral: {
+      popularity: [0, 100], 
+      duration_ms: [0, 600000],
+    },
   };
   
-  // Exportera basgenrer separat om du vill använda dem direkt
   export const moodGenreMap = baseMoodGenres;
   

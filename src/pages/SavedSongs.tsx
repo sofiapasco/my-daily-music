@@ -270,12 +270,13 @@ const songsToRender = searchQuery
 
 
   return (
-    <div className="saved-songs-container">
-  
-      <UserMenu />
-      <button className="logout-btn" onClick={logout}>
-        Logga ut
-      </button>
+  <div className="saved-songs-container" style={{height: "100vh"}}>
+      <div className="header">
+        <UserMenu />
+        <button className="logout-btn" onClick={logout}>
+          Logga ut
+        </button>
+      </div>
       <div className="create-playlist-container">
         <button title="Skapa ny spellista" onClick={() => setShowModal(true)}>+</button>
       </div>
