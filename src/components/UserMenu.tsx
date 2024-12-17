@@ -9,7 +9,7 @@ const UserMenu: React.FC = () => {
     setIsDropdownOpen(!isDropdownOpen);
   };
 
-  const fallbackAvatar = `https://via.placeholder.com/150/922692/FFFFFF?text=${userInfo?.name?.charAt(0).toUpperCase()}`;
+  const fallbackAvatar =  "/User1.png";
 
   return (
     <div className="profile-menu" style={{ position: "relative", display: "inline-block" }}>

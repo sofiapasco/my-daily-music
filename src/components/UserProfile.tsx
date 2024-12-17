@@ -19,8 +19,8 @@ const UserProfile: React.FC = () => {
 
   // Dynamisk fallback-avatar med första bokstaven i userId
   const fallbackAvatar = userId
-    ? `https://via.placeholder.com/150/922692/FFFFFF?text=${userId.charAt(0).toUpperCase()}`
-    : "https://via.placeholder.com/150/922692/FFFFFF?text=A";
+    ?  "/User1.png"
+    :  "/User1.png";
 
   useEffect(() => {
     const token = localStorage.getItem(
