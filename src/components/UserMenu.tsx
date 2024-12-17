@@ -73,7 +73,7 @@ const UserMenu: React.FC = () => {
             Statistik
           </a>
           <a href="/music-diary" style={{ display: "block", padding: "10px" }}>
-            Min musikdagbok
+            Musikdagbok
           </a>
         </div>
       )}

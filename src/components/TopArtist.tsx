@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext";
-import { Track } from "../types/Song";
+import { Track } from "../types/song";
 
 interface TopArtistsProps {
   selectedPeriod: "week" | "month";

@@ -95,12 +95,14 @@ const MoodSelection: React.FC = () => {
   };
 
   return (
-    <div className="mood-selection-container">
-      <UserMenu />
-      <button className="logout-btn" onClick={logout}>
-        Logga ut
-      </button>
-      <h1>{greeting}</h1> {/* Visa hälsning här */}
+      <div className="mood-selection-container" style={{height: "100vh"}}>
+      <div className="header">
+        <UserMenu />
+        <button className="logout-btn" onClick={logout}>
+          Logga ut
+        </button>
+      </div>
+      <h1>{greeting}</h1>  
       <div className="mood-buttons">
         <button onClick={() => handleMoodSelection("😊")}> 😊</button>
         <button onClick={() => handleMoodSelection("😢")}>😢</button>
