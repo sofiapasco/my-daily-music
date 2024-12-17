@@ -6,6 +6,7 @@ import SpotifyPlayer from "../components/SpotifyPlayer";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import ShareSong from "../components/ShareSong";
+import { useSwipeable } from "react-swipeable";
 import { moodAttributes } from "../components/MoodAttributes";
 import UserMenu from '../components/UserMenu';
 import "react-toastify/dist/ReactToastify.css";
@@ -53,7 +54,23 @@ const DailySong: React.FC = () => {
 
     return () => clearInterval(interval);
   }, [currentSong, duration]);
- 
+
+
+  const handlers = useSwipeable({
+    onSwipedLeft: () => {
+      console.log("Swiped Left: Exkluderar låten");
+      handleExcludeSong(); // Kör funktionen för att exkludera låten
+    },
+    onSwipedRight: () => {
+      console.log("Swiped Right: Gillar låten");
+      if (currentSong) {
+        handleLike(currentSong); 
+      }
+    },
+    preventScrollOnSwipe: true, 
+    trackMouse: false, 
+  });
+
   useEffect(() => {
     if (!userId) return;
   
@@ -461,7 +478,7 @@ const handleLike = (song: Track) => {
 
   return (
     <>
-    <div className="daily-song-container" style={{height: "100vh"}}>
+    <div  {...handlers} className="daily-song-container" style={{height: "100vh"}}>
       <div className="header">
         <UserMenu />
         <button className="logout-btn" onClick={logout}>

@@ -117,7 +117,7 @@ const MusicDiary: React.FC = () => {
   };
 
   return (
-    <div className="music-diary-container" style={{ height: "100vh" }}>
+    <div className="music-diary-container" style={{width:"100%", height:"100%"}}>
       <div className="header">
         <UserMenu />
         <button className="logout-btn" onClick={logout}>

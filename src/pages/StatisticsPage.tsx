@@ -7,15 +7,15 @@ import TopArtists from "../components/TopArtist";
 const StatisticsPage: React.FC = () => {
   const [selectedPeriod, setSelectedPeriod] = useState<"week" | "month">("week");
   const [likesCount, setLikesCount] = useState(0);
-  const { logout, userId } = useAuth(); 
+  const [commentCount, setCommentCount] = useState(0);
+  const [activeDaysCount, setActiveDaysCount] = useState<number>(0);
+  const { logout, userId } = useAuth();
 
+  // Funktion för att hämta gillade låtar
   const getLikesThisPeriod = () => {
-    if (!userId) {
-      console.warn("Ingen användare inloggad. Kan inte hämta gillade låtar.");
-      return 0;
-    }
+    if (!userId) return 0;
 
-    const storageKey = `likedSongs_${userId}`; 
+    const storageKey = `likedSongs_${userId}`;
     const likes = JSON.parse(localStorage.getItem(storageKey) || "[]");
 
     const today = new Date();
@@ -33,14 +33,47 @@ const StatisticsPage: React.FC = () => {
     }).length;
   };
 
+  // Funktion för att hämta dagboksdata
+  const getDiaryData = () => {
+    if (!userId) return;
+
+    const storageKey = `musicDiary_${userId}`;
+    const diaryEntries = JSON.parse(localStorage.getItem(storageKey) || "[]");
+
+    const today = new Date();
+    let startDate = new Date(today);
+
+    if (selectedPeriod === "week") {
+      startDate.setDate(today.getDate() - 7);
+    } else if (selectedPeriod === "month") {
+      startDate.setMonth(today.getMonth() - 1);
+    }
+
+    // Filtrera inlägg inom perioden
+    const filteredEntries = diaryEntries.filter((entry: { date: string }) => {
+      const entryDate = new Date(entry.date);
+      return entryDate >= startDate && entryDate <= today;
+    });
+
+    // Räkna unika aktiva dagar
+    const uniqueDays = new Set(filteredEntries.map((entry: { date: string }) => entry.date));
+    setActiveDaysCount(uniqueDays.size);
+
+    // Räkna totalt antal kommentarer
+    setCommentCount(filteredEntries.length);
+  };
+
   useEffect(() => {
     const count = getLikesThisPeriod();
     setLikesCount(count);
-  }, [selectedPeriod, userId]); 
+  }, [selectedPeriod, userId]);
 
+  useEffect(() => {
+    getDiaryData();
+  }, [selectedPeriod, userId]);
 
   return (
-  <div className="statistics-container" >
+    <div className="statistics-container">
       <div className="header">
         <UserMenu />
         <button className="logout-btn" onClick={logout}>
@@ -48,6 +81,8 @@ const StatisticsPage: React.FC = () => {
         </button>
       </div>
       <h1>Statistik</h1>
+
+      {/* Välj period för statistik */}
       <div className="statistics-period">
         <select
           id="period-select"
@@ -58,11 +93,36 @@ const StatisticsPage: React.FC = () => {
           <option value="month">Senaste månaden</option>
         </select>
       </div>
-      <p>Du har gillat <strong>{likesCount} låtar</strong> under den här {selectedPeriod === "week" ? "veckan" : "månaden"}.</p>
 
-      {/* Lägg till TopArtists-komponenten */}
+      {/* Gillade låtar */}
+      <p>
+        Du har gillat <strong>{likesCount} låtar</strong> under den här{" "}
+        {selectedPeriod === "week" ? "veckan" : "månaden"}.
+      </p>
+
+      {/* Top Artists */}
       <TopArtists selectedPeriod={selectedPeriod} />
-      <MoodStatistics />
+
+      {/* Aktiva dagar */}
+      <p>
+        Du har varit aktiv <strong>{activeDaysCount} dagar</strong> under den här{" "}
+        {selectedPeriod === "week" ? "veckan" : "månaden"}.
+      </p>
+
+      {/* Kommentarantal */}
+      <p>
+        Du har skrivit <strong>{commentCount} kommentarer</strong> under den senaste{" "}
+        {selectedPeriod === "week" ? "veckan" : "månaden"}.
+      </p>
+
+      {/* Mood Statistics */}
+      {selectedPeriod === "week" ? (
+        <MoodStatistics />
+      ) : (
+        <p style={{ textAlign: "center", marginTop: "20px", color: "#555" }}>
+          Grafen är endast tillgänglig för veckostatistik.
+        </p>
+      )}
     </div>
   );
 };

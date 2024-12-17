@@ -68,6 +68,7 @@ const MoodStatistics: React.FC = () => {
       case "💪": return 2;
       case "😴": return 1;
       case "😢": return 0;
+      case "hoppa över": return -1; 
       default: return -1;
     }
   });  
@@ -108,13 +109,14 @@ const MoodStatistics: React.FC = () => {
                 case 2: return "Stark 💪";
                 case 1: return "Trött 😴";
                 case 0: return "Ledsen 😢";
+                case -1: return "Hoppa över";
                 default: return "Okänt";
               }
             }
             return tickValue;
           },
         },
-        min: 0,
+        min: -1,
         max: 5,
       },
     },
