@@ -121,7 +121,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   );
 };
 
-// Hook för att använda AuthContext
 export const useAuth = (): AuthContextType => {
   const context = useContext(AuthContext);
   if (!context) {

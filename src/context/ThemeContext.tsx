@@ -16,17 +16,14 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   };
 
   useEffect(() => {
-    console.log("Applying theme:", theme); // Debugging
-    document.body.className = theme; // Uppdaterar body-klassen
+    document.body.className = theme; 
 
     const updateIcons = () => {
-      console.log("Tema ändrat till:", theme);
       const facebookIcon = document.getElementById("fbicon") as HTMLImageElement;
       const copyIcon = document.getElementById("copyicon") as HTMLImageElement;
       const shareIcon = document.getElementById("phoneicon") as HTMLImageElement;
       const userIcon = document.getElementById("usericon") as HTMLImageElement;
 
-      // Uppdatera ikonens källor baserat på tema
       if (facebookIcon) {
         facebookIcon.src = theme === "dark" ? "/FB.png" : "/facebook.png";
       } 
@@ -44,7 +41,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       }
     };
 
-    setTimeout(updateIcons, 500); // Uppdatera ikoner när temat ändras
+    setTimeout(updateIcons, 500); 
   }, [theme]);
 
   return (

@@ -17,7 +17,6 @@ const TopArtists: React.FC<TopArtistsProps> = ({ selectedPeriod }) => {
       return;
     }
 
-    // Hämta gillade låtar från localStorage baserat på userId
     const storageKey = `likedSongs_${userId}`;
     const storedLikedSongs = JSON.parse(localStorage.getItem(storageKey) || "[]");
     setLikedSongs(storedLikedSongs);

@@ -8,13 +8,13 @@ interface SpotifyPlayerProps {
     uri?: string;
     id: string;
   } | null;
-  onReady?: (deviceId: string) => void; // Lägg till onReady här
+  onReady?: (deviceId: string) => void; 
 }
 
 const SpotifyPlayer: React.FC<SpotifyPlayerProps> = ({
   accessToken,
   currentSong,
-  onReady, // Lägg till denna parameter
+  onReady, 
 }) => {
   const [player, setPlayer] = useState<Spotify.Player | null>(null);
   const [deviceId, setDeviceId] = useState<string | null>(null);
@@ -85,7 +85,6 @@ const SpotifyPlayer: React.FC<SpotifyPlayerProps> = ({
   
     return () => {
       if (player) {
-        console.log("Kopplar från Spotify-spelaren...");
         player.disconnect();
       }
     };
@@ -101,7 +100,6 @@ const SpotifyPlayer: React.FC<SpotifyPlayerProps> = ({
     console.log("Försöker spela dagens låt med URI:", trackUri);
   
     try {
-      // Sätt din app som den aktiva enheten och börja spela
       const transferResponse = await fetch("https://api.spotify.com/v1/me/player", {
         method: "PUT",
         headers: {
@@ -109,8 +107,8 @@ const SpotifyPlayer: React.FC<SpotifyPlayerProps> = ({
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          device_ids: [deviceId], // Byt till din spelare
-          play: true, // Börja spela direkt
+          device_ids: [deviceId], 
+          play: true, 
         }),
       });
   
@@ -120,7 +118,6 @@ const SpotifyPlayer: React.FC<SpotifyPlayerProps> = ({
         return;
       }
   
-      // Starta uppspelning av dagens låt
       const playResponse = await fetch("https://api.spotify.com/v1/me/player/play", {
         method: "PUT",
         headers: {
@@ -128,7 +125,7 @@ const SpotifyPlayer: React.FC<SpotifyPlayerProps> = ({
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          uris: [trackUri], // Spela den specifika låten
+          uris: [trackUri], 
         }),
       });
   
@@ -155,7 +152,7 @@ const SpotifyPlayer: React.FC<SpotifyPlayerProps> = ({
     if (!state) {
       console.error("Ingen aktiv uppspelningsstatus hittades. Initierar uppspelning av dagens låt...");
       if (currentSong) {
-        await playTrack(); // Tvinga över till din app och spela dagens låt
+        await playTrack(); 
       }
       return;
     }

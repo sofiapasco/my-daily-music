@@ -46,35 +46,27 @@ const Callback: React.FC = () => {
     
        
         if (token) {
-          console.log("Extracted Token:", token);
-
-          // Hämta användar-ID från Spotify
           const response = await fetch("https://api.spotify.com/v1/me", {
             headers: { Authorization: `Bearer ${token}` },
           });
 
           if (response.ok) {
             const userData = await response.json();
-            const userId = userData.id; // Hämta användar-ID
-            console.log("User ID:", userId);
+            const userId = userData.id; 
 
-            // Spara token och användar-ID via AuthContext
             setAccessToken(token, userId);
-
-            // Spara till localStorage för framtida sessioner
             localStorage.setItem(`spotifyAccessToken_${userId}`, token);
             localStorage.setItem("currentUserId", userId);
             localStorage.setItem("spotifyTokenExpiry", (Date.now() + expiresIn * 1000).toString());
             setTokenHandled(true);
 
-            // Navigera till nästa sida
             navigate("/mood-selection");
           } else {
             console.error("Kunde inte hämta användar-ID.");
             navigate("/");
           }
 
-          window.location.hash = ""; // Rensa hash
+          window.location.hash = "";
         } else {
           console.error("Token kunde inte extraheras.");
           navigate("/");

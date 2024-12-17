@@ -48,7 +48,7 @@ const UserProfile: React.FC = () => {
     } else {
       console.error("Ingen token hittades.");
     }
-  }, [fallbackAvatar]); // Lägg fallbackAvatar som beroende
+  }, [fallbackAvatar]); 
 
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files && event.target.files[0]) {

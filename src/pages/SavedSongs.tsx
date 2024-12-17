@@ -39,9 +39,7 @@ const SavedSongs: React.FC = () => {
     localStorage.setItem("currentPage", page.toString());
     navigate(`?page=${page}`);
   };
-  console.log(`Hämtar sparade låtar för userId: ${userId}`);
-  console.log("Lagrade likedSongs:", localStorage.getItem(`likedSongs_${userId}`));
-  
+ 
   useEffect(() => {
     if (!userId) return; // Om användaren inte är inloggad, gör inget
     
@@ -163,8 +161,6 @@ useEffect(() => {
   
     // Uppdatera localStorage
     localStorage.setItem(storageKey, JSON.stringify(updatedPlaylists));
-    console.log("Uppdaterade spellistor sparade i localStorage:", updatedPlaylists);
-  
     toast.success(`"${song.name}" har lagts till i spellistan "${selectedPlaylist.name}"`);
   };  
 

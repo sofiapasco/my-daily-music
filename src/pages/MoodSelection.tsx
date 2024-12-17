@@ -46,7 +46,6 @@ const MoodSelection: React.FC = () => {
       const parsedMood = JSON.parse(storedMood);
 
       if (parsedMood.date === today) {
-        console.log("Humör redan valt idag:", parsedMood.mood);
         navigate("/daily-song"); 
       }
     }
@@ -54,7 +53,6 @@ const MoodSelection: React.FC = () => {
 
   const saveMood = (selectedMood: string) => {
     if (!userId) {
-      console.error("Ingen användare inloggad.");
       return;
     }
 
@@ -74,22 +72,18 @@ const MoodSelection: React.FC = () => {
         selectedMoodKey,
         JSON.stringify({ mood: selectedMood, date: today })
       );
-
-      console.log(`Humördata sparat: ${selectedMood} för ${userId}`, updatedMoodData);
     } catch (error) {
       console.error("Fel vid sparande av humördata:", error);
     }
   };
 
   const handleMoodSelection = (selectedMood: string) => {
-    console.log(`Valt humör: ${selectedMood}`);
     saveMood(selectedMood);
     setMood(selectedMood);
     navigate("/daily-song");
   };
 
   const handleSkip = () => {
-    console.log("Användaren hoppade över val av humör.");
     saveMood("neutral");
     navigate("/daily-song");
   };

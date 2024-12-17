@@ -58,11 +58,9 @@ const DailySong: React.FC = () => {
 
   const handlers = useSwipeable({
     onSwipedLeft: () => {
-      console.log("Swiped Left: Exkluderar låten");
-      handleExcludeSong(); // Kör funktionen för att exkludera låten
+      handleExcludeSong(); 
     },
     onSwipedRight: () => {
-      console.log("Swiped Right: Gillar låten");
       if (currentSong) {
         handleLike(currentSong); 
       }
@@ -78,16 +76,13 @@ const DailySong: React.FC = () => {
     const storedMoodData = localStorage.getItem(selectedMoodKey);
   
     if (!storedMoodData) {
-      console.log("Inget humör valt för idag. Navigerar till MoodSelection.");
       navigate("/mood-selection");
     } else {
       const { mood, date } = JSON.parse(storedMoodData);
       const today = new Date().toISOString().split("T")[0];
       if (date !== today) {
-        console.log("Humöret är från en tidigare dag. Navigerar till MoodSelection.");
         navigate("/mood-selection");
       } else {
-        console.log("Valt humör från localStorage:", mood);
         setSelectedMood(mood);
       }
     }
@@ -95,9 +90,6 @@ const DailySong: React.FC = () => {
   
   
   const filterTracksByMood = (tracks: Track[], mood: string): Track[] => {
-    console.log("Tillgängliga humör i moodAttributes:", Object.keys(moodAttributes));
-    console.log("Inkommande humör:", mood);
-  
     const moodMapping: Record<string, string> = {
       "😊": "happy",
       "😢": "low",
@@ -108,12 +100,9 @@ const DailySong: React.FC = () => {
       "neutral": "neutral",
     };
   
-    const mappedMood = mood.trim() === "neutral" ? "neutral" : moodMapping[mood.trim()] || "neutral";
-    console.log("Mappat humör:", mappedMood);
-  
+    const mappedMood = mood.trim() === "neutral" ? "neutral" : moodMapping[mood.trim()] || "neutral";  
     const filters = moodAttributes[mappedMood];
     if (!filters) {
-      console.error(`Humöret "${mappedMood}" hittades inte i moodAttributes`);
       return [];
     }
   
@@ -126,10 +115,8 @@ const DailySong: React.FC = () => {
               track.genres!.map((g) => g.toLowerCase()).includes(genre.toLowerCase())
             ) ?? false
           : true; 
-  
-      console.log(`Låt: ${track.name}, Genrer: ${track.genres?.join(", ") || "Inga genrer"}, Matchar genrer: ${matchesGenre}`);
+
       if (!matchesGenre && hasGenres) {
-        console.log(`Utesluten p.g.a. genrer: ${track.name}`);
       }
   
       const popularityInRange =
@@ -174,30 +161,25 @@ const DailySong: React.FC = () => {
       });
   
       if (!response.ok) {
-        console.error("Kunde inte hämta artistdata:", await response.text());
-        return { ...track, genres: [] }; // Fallback till tom genre vid fel
+        return { ...track, genres: [] }; 
       }
   
       const data = await response.json();
       artistGenreCache[artistId] = data.genres;
       return { ...track, genres: data.genres }; 
     } catch (error) {
-      console.error("Fel vid enrichTrackWithGenres:", error);
-      return { ...track, genres: [] }; // Fallback till tom genre vid fel
+      return { ...track, genres: [] };
     }
   };
   
 
 const fetchDailySong = async (excludedSongs: string[], selectedMood: string) => {
-  console.log("Exkluderade låtar:", excludedSongs);
-
   const today = new Date();
   const dateKey = `${today.getFullYear()}-${today.getMonth() + 1}-${today.getDate()}`;
   const dailySongKey = `dailySong_${userId}_${dateKey}`;
 
   const storedDailySong = localStorage.getItem(dailySongKey);
   if (storedDailySong) {
-    console.log("Dagens låt laddad från localStorage:", JSON.parse(storedDailySong));
     setCurrentSong(JSON.parse(storedDailySong));
     return;
   }
@@ -218,22 +200,14 @@ const fetchDailySong = async (excludedSongs: string[], selectedMood: string) => 
   };
   
   const sanitizedMood = selectedMood.trim();
-  console.log("Valt humör (selectedMood):", selectedMood);
   
   if (!moodMapping[sanitizedMood]) {
-    console.error(`Okänd emoji: ${sanitizedMood}`);
-    console.log("Tillgängliga emojier i moodMapping:", Object.keys(moodMapping));
     toast.error(`Humöret ${sanitizedMood} stöds inte.`);
     return;
   }
   
   const mappedMood = moodMapping[sanitizedMood];
-  console.log("Mappat humör:", mappedMood);
-  console.log("Valt humör (selectedMood):", selectedMood);
-  
-
   try {
-    console.log("Hämtar låtar från Spotify API...");
     const [topTracks, recentlyPlayed] = await Promise.all([
       fetch("https://api.spotify.com/v1/me/top/tracks?limit=50", {
         headers: { Authorization: `Bearer ${accessToken}` },
@@ -248,12 +222,8 @@ const fetchDailySong = async (excludedSongs: string[], selectedMood: string) => 
       ...recentlyPlayed.items.map((item: { track: Track }) => item.track),
     ];
 
-    console.log("Hämtade låtar:", combinedTracks);
-
     const filters = moodAttributes[mappedMood];
     if (!filters) {
-      console.error(`Inga filter definierade för humör: ${mappedMood}`);
-      console.log("Tillgängliga humör i moodAttributes:", Object.keys(moodAttributes));
       return;
     }
 
@@ -263,22 +233,14 @@ const fetchDailySong = async (excludedSongs: string[], selectedMood: string) => 
       )
     );
     const tracksToFilter = tracksWithGenres.filter((track) => !excludedSongs.includes(track.id));
-    console.log("Låtar att filtrera:", tracksToFilter);
 
     const filteredTracks = filterTracksByMood(tracksToFilter, selectedMood);
-    console.log("Filtrerade låtar:", filteredTracks);
 
     if (!filteredTracks.length) {
       toast.info("Inga låtar tillgängliga för det valda humöret.");
       return;
     }
     const randomSong = filteredTracks[Math.floor(Math.random() * filteredTracks.length)];
-    console.log("Slumpad låt:", randomSong);
-
-    console.log(`Dagens låt: ${randomSong.name}`);
-    console.log(`Dagens låt genrer: ${randomSong.genres?.join(", ") || "Ingen genre tillgänglig"}`);
-
-
     localStorage.setItem(dailySongKey, JSON.stringify(randomSong));
     setCurrentSong(randomSong);
   } catch (error) {
@@ -289,7 +251,6 @@ const fetchDailySong = async (excludedSongs: string[], selectedMood: string) => 
 useEffect(() => {
   if (!accessToken || !selectedMood) return;
   const storedExcludedSongs = JSON.parse(localStorage.getItem("excludedSongs") || "[]");
-  console.log("Anropar fetchDailySong med:", storedExcludedSongs, selectedMood);
   fetchDailySong(storedExcludedSongs, selectedMood);
 }, [accessToken, selectedMood]);
 
@@ -309,8 +270,6 @@ const handleExcludeSong = () => {
 
       setExcludedSongs(updatedExcludedSongs);
       localStorage.setItem(excludedStorageKey, JSON.stringify(updatedExcludedSongs));
-
-      console.log("Låten exkluderades:", currentSong.id);
     } else {
       console.log("Låten är redan exkluderad:", currentSong.id);
     }
@@ -322,7 +281,6 @@ const handleExcludeSong = () => {
 useEffect(() => {
   if (!userId) return;
 
-  // Hantera likedSongs
   const likedStorageKey = `likedSongs_${userId}`;
   const storedLikedSongs = localStorage.getItem(likedStorageKey);
   if (storedLikedSongs) {
@@ -331,7 +289,6 @@ useEffect(() => {
     setLikedSongs([]);
   }
 
-  // Hantera excludedSongs
   const excludedStorageKey = `excludedSongs_${userId}`;
   const storedExcludedSongs = localStorage.getItem(excludedStorageKey);
   if (storedExcludedSongs) {
