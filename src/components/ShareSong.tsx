@@ -49,23 +49,27 @@ const ShareSong: React.FC<ShareSongProps> = ({ song }) => {
   };
 
   const handleCommentChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setComment(e.target.value); // Uppdatera kommentaren i state
+    setComment(e.target.value); 
   };
   
   const handleSaveComment = () => {
     if (!comment.trim()) {
-      toast.error("Kommentaren kan inte vara tom."); // Felmeddelande om kommentaren är tom
+      toast.error("Kommentaren kan inte vara tom."); 
       return;
     }
   
-    const today = new Date().toISOString().split("T")[0]; 
+    const now = new Date(); 
+    const today = now.toISOString().split("T")[0]; 
+    const time = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }); // Tid i HH:MM-format
+
     const songTitle = title || "Okänd låt"; 
     const newComment = {
-      date: today,
-      songTitle,
-      comment,
-    };
-  
+    date: today,    
+    time: time,        
+    songTitle,         
+    comment,           
+  };
+
     const storedComments = JSON.parse(localStorage.getItem(`musicDiary_${userId}`) || "[]");
     const updatedComments = [...storedComments, newComment];
   
