@@ -439,6 +439,7 @@
 .saved-songs-container {
   padding: 20px;
   margin: 0 auto;
+  height: 100vh;
 
   h1 {
     margin-bottom: 20px;
@@ -453,7 +454,6 @@
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
     gap: 20px;
-
     justify-items: center;
   }
 
@@ -513,10 +513,12 @@
   width: 100%; 
   top: 0;
   left: 0;
+  pointer-events: none; 
 }
 
 .profile-menu {
   position: relative;
+  display: block;
 
   .user-button {
     margin-top: 5px;
@@ -676,6 +678,7 @@
 body.dark {
   background: linear-gradient(135deg, #1e1e2f, #3e3e5e);
   color: #fff !important; 
+  height: 100%; 
 
   h1, h3, a, p {
     font-family: 'Roboto', sans-serif;
@@ -732,6 +735,7 @@ body.dark {
 body.light {
   background: linear-gradient(135deg, #f3d4f3, #e2cdc4);
   color: #000 !important;
+  height: 100%; 
 
   h1, h3, p, h2 {
     font-family: 'Roboto', sans-serif;

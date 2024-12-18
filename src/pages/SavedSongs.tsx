@@ -272,14 +272,13 @@ const songsToRender = searchQuery
           Logga ut
         </button>
       </div>
-
+      <div className="create-playlist-container">
+        <button title="Skapa ny spellista" onClick={() => setShowModal(true)}>+</button>
+      </div>
       <SearchBar
         searchQuery={searchQuery} 
         setSearchQuery={setSearchQuery} 
         onSearch={handleSearch} />
-      <div className="create-playlist-container">
-        <button title="Skapa ny spellista" onClick={() => setShowModal(true)}>+</button>
-      </div>
         <h1>Alla sparade låtar:</h1>
       <div className="gallery-container">       
       {songsToRender.map((song, index) => (
