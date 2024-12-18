@@ -110,7 +110,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const handleLogout = async () => {
+  const handleLogout = () => {
     if (userId) {
       localStorage.removeItem(`spotifyAccessToken_${userId}`);
       localStorage.removeItem("currentUserId");
@@ -119,16 +119,26 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setUserId(null);
     setUserInfo(null);
   
-    // Gör ett anrop för att logga ut från Spotify
-    try {
-      await fetch("https://accounts.spotify.com/api/logout", { method: "GET", credentials: "include" });
-    } catch (error) {
-      console.error("Kunde inte logga ut från Spotify:", error);
-    }
+
+    const spotifyLogoutUrl = "https://accounts.spotify.com/logout";
+    const redirectUrl = "http://localhost:5173/"; 
   
-    // Navigera tillbaka till inloggningssidan
-    navigate("/"); // Förutsatt att '/' är din inloggningssida
+    const logoutAndRedirect = () => {
+      window.location.href = `${spotifyLogoutUrl}?continue=${encodeURIComponent(redirectUrl)}`;
+    };
+  
+    const logoutWindow = window.open(spotifyLogoutUrl, "_blank");
+    if (logoutWindow) {
+
+      setTimeout(() => {
+        logoutWindow.close();
+        window.location.href = redirectUrl;
+      }, 1000); 
+    } else {
+      logoutAndRedirect();
+    }
   };
+  
   
 
   useEffect(() => {
