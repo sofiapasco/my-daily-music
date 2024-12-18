@@ -3,10 +3,13 @@ import UserMenu from "./UserMenu";
 import Pagination from "./Pagination";
 import { useAuth } from "../context/AuthContext";
 import { toast } from "react-toastify";
+import { v4 as uuidv4 } from "uuid";
+
 
 interface DiaryEntry {
+    id: string,
     date: string;
-    time: string; // Ny fält för tid
+    time: string; 
     songTitle: string;
     comment: string;
   }
@@ -17,7 +20,7 @@ const MusicDiary: React.FC = () => {
   const [diaryEntries, setDiaryEntries] = useState<DiaryEntry[]>([]);
   const [newComment, setNewComment] = useState<string>("");
   const [dailySong, setDailySong] = useState<string>("Okänd låt");
-  const [editingIndex, setEditingIndex] = useState<number | null>(null); 
+  const [editingIndex, setEditingIndex] = useState<string | null>(null);
   const [editComment, setEditComment] = useState<string>(""); 
 
   const [currentPage, setCurrentPage] = useState<number>(1);
@@ -60,8 +63,9 @@ const MusicDiary: React.FC = () => {
     const time = today.toTimeString().split(" ")[0].slice(0, 5); 
   
     const newEntry: DiaryEntry = { 
+      id: uuidv4(), 
       date, 
-      time,
+      time: time || "00:00",
       songTitle: dailySong, 
       comment: newComment 
     };
@@ -74,7 +78,7 @@ const MusicDiary: React.FC = () => {
     setNewComment("");
     toast.success("Dagens kommentar har sparats!");
   };
-
+  
   const sortedEntries = diaryEntries
   .slice()
   .sort((a, b) => {
@@ -99,24 +103,27 @@ const MusicDiary: React.FC = () => {
     setCurrentPage(page);
   };
 
-  
-
-  const handleDeleteEntry = (index: number) => {
-    const updatedEntries = diaryEntries.filter((_, i) => i !== index);
+  const handleDeleteEntry = (id: string) => {
+    const updatedEntries = diaryEntries.filter(entry => entry.id !== id);
     setDiaryEntries(updatedEntries);
     localStorage.setItem(`musicDiary_${userId}`, JSON.stringify(updatedEntries));
     toast.info("Inlägget har raderats.");
   };
+  
 
-  const handleEditEntry = (index: number) => {
-    setEditingIndex(index);
-    setEditComment(diaryEntries[index].comment);
+  const handleEditEntry = (id: string) => {
+    const entryToEdit = diaryEntries.find(entry => entry.id === id);
+    if (entryToEdit) {
+      setEditingIndex(id);
+      setEditComment(entryToEdit.comment);
+    }
   };
-
+  
   const handleSaveEdit = () => {
     if (editingIndex !== null) {
-      const updatedEntries = [...diaryEntries];
-      updatedEntries[editingIndex].comment = editComment;
+      const updatedEntries = diaryEntries.map(entry =>
+        entry.id === editingIndex ? { ...entry, comment: editComment } : entry
+      );
       setDiaryEntries(updatedEntries);
       localStorage.setItem(`musicDiary_${userId}`, JSON.stringify(updatedEntries));
       setEditingIndex(null);
@@ -124,6 +131,7 @@ const MusicDiary: React.FC = () => {
       toast.success("Inlägget har uppdaterats.");
     }
   };
+  
 
   return (
     <div className="music-diary-container" style={{width:"100%", height:"100%"}}>
@@ -152,46 +160,46 @@ const MusicDiary: React.FC = () => {
         <h2>📅 Tidigare dagboksinlägg:</h2>
         {sortedEntries.length > 0 ? (
             <ul>
-            {currentEntries.map((entry, index) => (
-            <li key={index} className="diary-item">
-                <div className="diary-item-content">
-                <span className="song-title">{entry.songTitle} </span>
-                <br/>
-                <strong>{entry.date}</strong>
-                <br/>
-                <span className="time-stamp">kl. {entry.time} </span>
-                {editingIndex === index ? (
+              {currentEntries.map((entry) => (
+                <li key={entry.id} className="diary-item">
+                  <div className="diary-item-content">
+                    <span className="song-title">{entry.songTitle} </span>
+                    <br />
+                    <strong>{entry.date}</strong>
+                    <br />
+                    <span className="time-stamp">kl. {entry.time} </span>
+                    {editingIndex === entry.id ? (
                     <div className="editing-area">
-                    <textarea
+                      <textarea
                         value={editComment}
                         onChange={(e) => setEditComment(e.target.value)}
                         rows={3}
-                    ></textarea>
-                    <div>
-                        <button onClick={handleSaveEdit} >Spara Ändring</button>
+                      ></textarea>
+                      <div>
+                        <button onClick={handleSaveEdit}>Spara Ändring</button>
                         <button onClick={() => setEditingIndex(null)}>Avbryt</button>
+                      </div>
                     </div>
-                    </div>
-                ) : (
+                  ) : (
                     <p className="comment">📝 {entry.comment}</p>
-                )}
-                </div>
+                  )}
+                  </div>
+                  <div className="diary-buttons">
+                    {editingIndex !== entry.id && (
+                      <>
+                        <button onClick={() => handleEditEntry(entry.id)}>✏️</button>
+                        <button
+                          onClick={() => handleDeleteEntry(entry.id)}
+                          className="delete-btn"
+                        >
+                          🗑️
+                        </button>
+                      </>
+                    )}
+                  </div>
+                </li>
+              ))}
 
-                <div className="diary-buttons">
-                {editingIndex !== index && (
-                    <>
-                    <button onClick={() => handleEditEntry(index)}>✏️</button>
-                    <button
-                        onClick={() => handleDeleteEntry(index)}
-                        className="delete-btn"
-                    >
-                        🗑️ 
-                    </button>
-                    </>
-                )}
-                </div>
-            </li>
-            ))}
             </ul>
                 
         ) : (
