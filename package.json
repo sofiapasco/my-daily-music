@@ -22,7 +22,7 @@
     "react-router-dom": "^7.0.1",
     "react-swipeable": "^7.0.2",
     "react-toastify": "^10.0.6",
-    "sass": "^1.81.0",
+    "sass": "^1.83.0",
     "spotify-web-api-js": "^1.5.2"
   },
   "devDependencies": {

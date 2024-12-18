@@ -1,4 +1,5 @@
 import React, { createContext, useState, useContext, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 
 type UserProfileProps = {
   name: string;
@@ -23,18 +24,31 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     userId ? localStorage.getItem(`spotifyAccessToken_${userId}`) : null
   );
   const [userInfo, setUserInfo] = useState<UserProfileProps | null>(null);
+  const [redirectTo, setRedirectTo] = useState<string | null>(null);
+  const navigate = useNavigate();
 
-  const setAccessToken = (token: string | null, id: string) => {
+  const setAccessToken = (token: string | null, id: string, redirectUrl?: string) => {
     if (token && id) {
       localStorage.setItem(`spotifyAccessToken_${id}`, token);
       localStorage.setItem("currentUserId", id);
       setAccessTokenState(token);
       setUserId(id);
+      if (redirectUrl) {
+        setRedirectTo(redirectUrl); 
+      }
       fetchUserInfo(token, id); 
     } else {
       handleLogout();
     }
   };
+
+  useEffect(() => {
+    if (redirectTo && accessToken && userId) {
+      navigate(redirectTo); 
+      setRedirectTo(null); 
+    }
+  }, [redirectTo, accessToken, userId, navigate]);
+  
 
   const generateColorFromText = (text: string): string => {
     let hash = 0;
@@ -96,7 +110,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
     if (userId) {
       localStorage.removeItem(`spotifyAccessToken_${userId}`);
       localStorage.removeItem("currentUserId");
@@ -105,14 +119,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setUserId(null);
     setUserInfo(null);
   
-    // Omdirigera användaren till Spotify logout-sidan
-    const spotifyLogoutUrl = "https://accounts.spotify.com/logout";
-    const redirectUrl = "http://localhost:5173/"; // Din startsida efter logout
+    // Gör ett anrop för att logga ut från Spotify
+    try {
+      await fetch("https://accounts.spotify.com/api/logout", { method: "GET", credentials: "include" });
+    } catch (error) {
+      console.error("Kunde inte logga ut från Spotify:", error);
+    }
   
-    // Försök att logga ut från Spotify och omdirigera användaren tillbaka
-    window.location.href = `${spotifyLogoutUrl}?continue=${encodeURIComponent(redirectUrl)}`;
+    // Navigera tillbaka till inloggningssidan
+    navigate("/"); // Förutsatt att '/' är din inloggningssida
   };
-
+  
 
   useEffect(() => {
     if (accessToken && userId) { 

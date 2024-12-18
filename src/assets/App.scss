@@ -1,9 +1,7 @@
 @import "bootstrap/scss/bootstrap";
 @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap');
 
-
 @media (max-width: 768px) {
-
   .song-name {
     font-size: 1.2rem; 
   }
@@ -17,9 +15,7 @@
       width: 100px; 
       height: 400px;
     }
-  }
 
-  .album-and-like {
     .like-heart,
     .close-button {
       display: none !important; 
@@ -27,23 +23,23 @@
   }
 
   .song-info {
-    transition: transform 0.5s ease-out, opacity 0.5s ease-out;
-  
-    &.swipe-left {
-      transform: translateX(-120%) rotate(-10deg);
-      opacity: 0.5;
-    }
-  
-    &.swipe-right {
-      transform: translateX(120%) rotate(10deg); 
-      opacity: 0.5;
+    transition: transform 0.5s ease-out, opacity 0.5s ease-out; 
+
+    & {
+      &.swipe-left {
+        transform: translateX(-120%) rotate(-10deg);
+        opacity: 0.5;
+      }
+
+      &.swipe-right {
+        transform: translateX(120%) rotate(10deg); 
+        opacity: 0.5;
+      }
     }
   }  
-  
 }
 
 @media (max-width: 480px) {
-
   .song-name {
     font-size: 1rem;
   }
@@ -57,9 +53,7 @@
       width: 200px;
       max-height: 350px;
     }
-  }
 
-  .album-and-like {
     .like-heart,
     .close-button {
       display: none !important; 
@@ -67,18 +61,20 @@
   }
 
   .song-info {
-    transition: transform 0.5s ease-out, opacity 0.5s ease-out;
-  
-    &.swipe-left {
-      transform: translateX(-120%) rotate(-10deg); 
-      opacity: 0.5;
+    transition: transform 0.5s ease-out, opacity 0.5s ease-out; 
+
+    & {
+      &.swipe-left {
+        transform: translateX(-120%) rotate(-10deg); 
+        opacity: 0.5;
+      }
+
+      &.swipe-right {
+        transform: translateX(120%) rotate(10deg); 
+        opacity: 0.5;
+      }
     }
-  
-    &.swipe-right {
-      transform: translateX(120%) rotate(10deg); 
-      opacity: 0.5;
-    }
-  }  
+  }
 }
 
 .daily-song-container {

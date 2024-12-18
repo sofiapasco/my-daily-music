@@ -9,7 +9,6 @@ import SearchBar from "../components/SearchSongs";
 import Pagination from "../components/Pagination";
 
 const SavedSongs: React.FC = () => {
-  const [visibleMenu, setVisibleMenu] = useState<number | null>(null);
   const [showSelect, setShowSelect] = useState(false);
   const [timeoutId, setTimeoutId] = useState<number | null>(null);
   const [savedSongs, setSavedSongs] = useState<Track[]>([]);
@@ -223,15 +222,15 @@ useEffect(() => {
     toast.success("Låten har tagits bort från spellistan!");
   };
 
-const closeMenu = () => {
-  setVisibleMenu(null);
-};
+  const closeMenu = () => {
+    setOpenMenuId(null); 
+  };
 
 useEffect(() => {
   const handleClickOutside = (event: MouseEvent) => {
     const target = event.target as HTMLElement;
     if (!target.closest(".menu-container")) {
-      setOpenMenuId(null); // Stäng menyn
+      setOpenMenuId(null); 
     }
   };
 

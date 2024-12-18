@@ -31,6 +31,7 @@ const MoodSelection: React.FC = () => {
     }    
   }, [userId]);
 
+
   useEffect(() => {
     if (!userId) {
       console.error("Ingen användare inloggad.");
@@ -46,6 +47,8 @@ const MoodSelection: React.FC = () => {
       const parsedMood = JSON.parse(storedMood);
 
       if (parsedMood.date === today) {
+          setMood(parsedMood.mood); 
+        
         navigate("/daily-song"); 
       }
     }
@@ -87,6 +90,7 @@ const MoodSelection: React.FC = () => {
     saveMood("neutral");
     navigate("/daily-song");
   };
+  console.log("Användarens valda humör är:", mood);
 
   return (
       <div className="mood-selection-container" style={{height: "100vh"}}>

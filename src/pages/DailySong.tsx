@@ -21,7 +21,7 @@ const DailySong: React.FC = () => {
   const [likedSongs, setLikedSongs] = useState<Track[]>([]); 
   const [playlists, setPlaylists] = useState<{ name: string; songs: Track[] }[]>([]);
   const [excludedSongs, setExcludedSongs] = useState<string[]>([]);
-  const [isThrowing, setIsThrowing] = useState(false);
+  const [isThrowing] = useState(false);
   const [swipeDirection, setSwipeDirection] = useState<string | null>(null);
   const [selectedMood, setSelectedMood] = useState<string | null>(null);
   const navigate = useNavigate();
@@ -191,7 +191,7 @@ const fetchDailySong = async (excludedSongs: string[], selectedMood: string) => 
   if (storedDailySong) {
     const cachedSong: Track = JSON.parse(storedDailySong);
     if (!excludedSongs.includes(cachedSong.id)) {
-      setCurrentSong(cachedSong); // Använd cachad låt om den inte är exkluderad
+      setCurrentSong(cachedSong); 
       return;
     } else {
       console.log("Cachad låt är exkluderad, hämtar ny låt...");
@@ -267,7 +267,7 @@ useEffect(() => {
   if (!accessToken || !selectedMood) return;
   const storedExcludedSongs = JSON.parse(localStorage.getItem("excludedSongs") || "[]");
   fetchDailySong(storedExcludedSongs, selectedMood);
-}, [accessToken, selectedMood]);
+}, [accessToken, selectedMood, excludedSongs]);
 
 
 const handleExcludeSong = async () => {
@@ -282,16 +282,14 @@ const handleExcludeSong = async () => {
 
     if (storedExcludedSongs.includes(currentSong.id)) {
       toast.info("Låten är redan i exkluderade låtar.");
-      return; // Avsluta här för att undvika ytterligare exekvering
+      return; 
     }
 
-    // Lägg till låten i exkluderade listan
     const updatedExcludedSongs = [...storedExcludedSongs, currentSong.id];
     setExcludedSongs(updatedExcludedSongs);
     localStorage.setItem(excludedStorageKey, JSON.stringify(updatedExcludedSongs));
     toast.success("Låten har lagts till i exkluderade låtar!");
 
-    // Sätt dagens låt till null för att indikera att en ny låt behövs
     setCurrentSong(null);
     console.log("Exkluderad låt:", currentSong);
 
