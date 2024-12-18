@@ -116,7 +116,8 @@ const DailySong: React.FC = () => {
       return [];
     }
   
-    return tracks.filter((track) => {
+    // Filtrering av låtar baserat på genre, popularitet, och längd
+    const filteredTracks = tracks.filter((track) => {
       const hasGenres = track.genres && track.genres.length > 0;
       
       const matchesGenre =
@@ -124,35 +125,32 @@ const DailySong: React.FC = () => {
           ? filters.genres?.some((genre) =>
               track.genres!.map((g) => g.toLowerCase()).includes(genre.toLowerCase())
             ) ?? false
-          : true; 
-
-      if (!matchesGenre && hasGenres) {
-      }
+          : true;
   
       const popularityInRange =
         !filters.popularity ||
         (track.popularity >= filters.popularity[0] && track.popularity <= filters.popularity[1]);
   
-      if (!popularityInRange) {
-        console.log(`Utesluten p.g.a. popularitet: ${track.name}`);
-      }
-  
       const durationInRange =
         !filters.duration_ms ||
         (track.duration_ms >= filters.duration_ms[0] && track.duration_ms <= filters.duration_ms[1]);
   
-      if (!durationInRange) {
-        console.log(`Utesluten p.g.a. längd: ${track.name}`);
-      }
-
       if (!hasGenres) {
         return popularityInRange && durationInRange;
       }
-
+  
       return matchesGenre && popularityInRange && durationInRange;
     });
+  
+    // Om ingen låt återstår efter filtreringen, använd fallback till "neutral"
+    if (filteredTracks.length === 0) {
+      console.log("Inga låtar för det valda humöret, fallback till neutral...");
+      return filterTracksByMood(tracks, "neutral"); // Fallback till "neutral"
+    }
+  
+    return filteredTracks;
   };
-
+  
   const enrichTrackWithGenres = async (track: Track, accessToken: string): Promise<Track> => {
     try {
       const artistId = track.artists[0]?.id;
@@ -238,6 +236,9 @@ const fetchDailySong = async (excludedSongs: string[], selectedMood: string) => 
 
     const filters = moodAttributes[mappedMood];
     if (!filters) {
+      console.error("Inga låtar matchar humöret");
+      toast.info("Inga låtar tillgängliga för det valda humöret.");
+      await fetchDailySong(excludedSongs, "neutral"); 
       return;
     }
 
@@ -282,17 +283,16 @@ const handleExcludeSong = async () => {
 
     if (storedExcludedSongs.includes(currentSong.id)) {
       toast.info("Låten är redan i exkluderade låtar.");
+      await fetchDailySong(storedExcludedSongs, selectedMood || "neutral");
       return; 
     }
 
     const updatedExcludedSongs = [...storedExcludedSongs, currentSong.id];
-    setExcludedSongs(updatedExcludedSongs);
-    localStorage.setItem(excludedStorageKey, JSON.stringify(updatedExcludedSongs));
+    setExcludedSongs(updatedExcludedSongs); // Uppdatera state för de exkluderade låtarna
+    localStorage.setItem(excludedStorageKey, JSON.stringify(updatedExcludedSongs)); // Spara exkluderade låtar i localStorage
     toast.success("Låten har lagts till i exkluderade låtar!");
 
     setCurrentSong(null);
-    console.log("Exkluderad låt:", currentSong);
-
     await fetchDailySong(updatedExcludedSongs, selectedMood || "neutral");
   } else {
     toast.warn("Ingen låt att exkludera.");
