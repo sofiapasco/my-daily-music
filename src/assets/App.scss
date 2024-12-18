@@ -1,14 +1,86 @@
 @import "bootstrap/scss/bootstrap";
 @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap');
 
+
 @media (max-width: 768px) {
+
+  .song-name {
+    font-size: 1.2rem; 
+  }
+
+  .song-artist {
+    font-size: 1rem; 
+  }
+
+  .album-and-like {
+    img.album-art {
+      width: 100px; 
+      height: 400px;
+    }
+  }
+
   .album-and-like {
     .like-heart,
     .close-button {
       display: none !important; 
     }
   }
+
+  .song-info {
+    transition: transform 0.5s ease-out, opacity 0.5s ease-out;
+  
+    &.swipe-left {
+      transform: translateX(-120%) rotate(-10deg);
+      opacity: 0.5;
+    }
+  
+    &.swipe-right {
+      transform: translateX(120%) rotate(10deg); 
+      opacity: 0.5;
+    }
+  }  
+  
 }
+
+@media (max-width: 480px) {
+
+  .song-name {
+    font-size: 1rem;
+  }
+
+  .song-artist {
+    font-size: 0.9rem;
+  }
+
+  .album-and-like {
+    img.album-art {
+      width: 200px;
+      max-height: 350px;
+    }
+  }
+
+  .album-and-like {
+    .like-heart,
+    .close-button {
+      display: none !important; 
+    }
+  }
+
+  .song-info {
+    transition: transform 0.5s ease-out, opacity 0.5s ease-out;
+  
+    &.swipe-left {
+      transform: translateX(-120%) rotate(-10deg); 
+      opacity: 0.5;
+    }
+  
+    &.swipe-right {
+      transform: translateX(120%) rotate(10deg); 
+      opacity: 0.5;
+    }
+  }  
+}
+
 .daily-song-container {
   display: flex;
   flex-direction: column;
@@ -34,7 +106,7 @@
     font-family: 'Roboto', sans-serif;
     letter-spacing: 1px;
     font-weight:500;
-    max-width: 400px;
+    max-width: 300px;
   }
   .song-name{
     font-family: 'Roboto', sans-serif;
@@ -463,7 +535,6 @@
 
     &:hover {
       transform: scale(1.1);
-      box-shadow: 0px 6px 8px rgba(0, 0, 0, 0.3);
     }
   }
 
@@ -1210,16 +1281,4 @@ textarea {
   color: #fff;
   margin-left: 5px;
   font-weight: normal;
-}
-
-.song-info {
-  transition: transform 0.3s ease-out;
-
-  &.swipe-left {
-    transform: translateX(-100%);
-  }
-
-  &.swipe-right {
-    transform: translateX(100%);
-  }
 }

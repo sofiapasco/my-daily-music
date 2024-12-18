@@ -51,23 +51,7 @@ const MusicDiary: React.FC = () => {
     }
   }, [userId]);
 
-    const sortedEntries = diaryEntries
-    .slice()
-    .sort((a, b) => {
-    const dateTimeA = new Date(`${a.date}T${a.time}`);
-    const dateTimeB = new Date(`${b.date}T${b.time}`);
-    return dateTimeB.getTime() - dateTimeA.getTime(); 
-    });
-
-    const indexOfLastEntry = currentPage * entriesPerPage;
-    const indexOfFirstEntry = indexOfLastEntry - entriesPerPage;
-    const currentEntries = sortedEntries.slice(indexOfFirstEntry, indexOfLastEntry);
-
-
-  const handlePageChange = (page: number) => {
-    setCurrentPage(page);
-  };
-
+ 
   const handleSaveEntry = () => {
     if (!newComment.trim()) return;
   
@@ -90,6 +74,31 @@ const MusicDiary: React.FC = () => {
     setNewComment("");
     toast.success("Dagens kommentar har sparats!");
   };
+
+  const sortedEntries = diaryEntries
+  .slice()
+  .sort((a, b) => {
+    const dateTimeA = a.date && a.time ? new Date(`${a.date}T${a.time}`).getTime() : 0;
+    const dateTimeB = b.date && b.time ? new Date(`${b.date}T${b.time}`).getTime() : 0;
+
+    // Kontrollera om datumen är giltiga
+    if (!dateTimeA || !dateTimeB) {
+      console.warn("Ogiltigt datum eller tid:", a, b);
+    }
+
+    return dateTimeB - dateTimeA; 
+  });
+
+
+  const indexOfLastEntry = currentPage * entriesPerPage; // Sista index för sidan
+  const indexOfFirstEntry = indexOfLastEntry - entriesPerPage; // Första index för sidan
+  const currentEntries = sortedEntries.slice(indexOfFirstEntry, indexOfLastEntry);
+
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
+
   
 
   const handleDeleteEntry = (index: number) => {
@@ -141,7 +150,7 @@ const MusicDiary: React.FC = () => {
 
       <div className="diary-history">
         <h2>📅 Tidigare dagboksinlägg:</h2>
-        {diaryEntries.length > 0 ? (
+        {sortedEntries.length > 0 ? (
             <ul>
             {currentEntries.map((entry, index) => (
             <li key={index} className="diary-item">

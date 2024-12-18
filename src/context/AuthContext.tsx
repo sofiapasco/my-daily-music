@@ -24,61 +24,39 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   );
   const [userInfo, setUserInfo] = useState<UserProfileProps | null>(null);
 
-  // **1. Validera token**
-  const validateAccessToken = async () => {
-    if (!accessToken || !userId) {
-      handleLogout(); // Token saknas, logga ut
-      return false;
-    }
-
-    try {
-      const response = await fetch("https://api.spotify.com/v1/me", {
-        headers: { Authorization: `Bearer ${accessToken}` },
-      });
-
-      if (!response.ok) {
-        console.warn("Token är ogiltig eller utgången.");
-        handleLogout();
-        return false;
-      }
-      return true; // Token är giltig
-    } catch (error) {
-      console.error("Fel vid validering av token:", error);
-      handleLogout();
-      return false;
-    }
-  };
-
-  // **2. Logga ut funktion**
-  const handleLogout = () => {
-    if (userId) {
-      localStorage.removeItem(`spotifyAccessToken_${userId}`);
-      localStorage.removeItem("currentUserId");
-    }
-    setAccessTokenState(null);
-    setUserId(null);
-    setUserInfo(null);
-
-    // Omdirigera användaren till Spotify logout-sidan
-    const spotifyLogoutUrl = "https://accounts.spotify.com/logout";
-    const redirectUrl = "http://localhost:5173/"; // Din startsida efter logout
-    window.location.href = `${spotifyLogoutUrl}?continue=${encodeURIComponent(redirectUrl)}`;
-  };
-
-  // **3. Sätt accessToken och användarinformation**
   const setAccessToken = (token: string | null, id: string) => {
     if (token && id) {
       localStorage.setItem(`spotifyAccessToken_${id}`, token);
       localStorage.setItem("currentUserId", id);
       setAccessTokenState(token);
       setUserId(id);
-      fetchUserInfo(token, id);
+      fetchUserInfo(token, id); 
     } else {
       handleLogout();
     }
   };
 
-  // **4. Hämta användarinformation**
+  const generateColorFromText = (text: string): string => {
+    let hash = 0;
+    for (let i = 0; i < text.length; i++) {
+      hash = text.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    const color = `hsl(${hash % 360}, 70%, 50%)`; 
+    return color.replace("#", ""); 
+  };
+
+  useEffect(() => {
+    const tokenExpiryTime = localStorage.getItem(`tokenExpiry_${userId}`);
+    if (accessToken && tokenExpiryTime) {
+      if (Date.now() > Number(tokenExpiryTime)) {
+        console.log("Token har gått ut. Loggar ut användaren.");
+        handleLogout(); // Token har gått ut
+      } else {
+        fetchUserInfo(accessToken, userId!);
+      }
+    }
+  }, [accessToken, userId]);
+  
   const fetchUserInfo = async (token: string, id: string) => {
     try {
       const response = await fetch("https://api.spotify.com/v1/me", {
@@ -89,33 +67,61 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setUserInfo({
           name: data.display_name || id || "Anonym",
           email: data.email || "example@example.com",
-          avatarUrl: data.images?.[0]?.url || `https://via.placeholder.com/150/cccccc/FFFFFF?text=${id.charAt(0).toUpperCase()}`,
+          avatarUrl:
+            data.images?.[0]?.url ||
+            `https://via.placeholder.com/150/${generateColorFromText(id)}/FFFFFF?text=${id
+              .charAt(0)
+              .toUpperCase()}`, // Dynamisk färg baserat på id
           product: data.product || "Free",
         });
       } else {
-        handleLogout();
+        console.error("Kunde inte hämta användarinformation.");
+        setUserInfo({
+          name: id,
+          email: "example@example.com",
+          avatarUrl: `https://via.placeholder.com/150/${generateColorFromText(id)}/FFFFFF?text=${id
+            .charAt(0)
+            .toUpperCase()}`,
+        });
       }
     } catch (error) {
       console.error("Ett fel uppstod vid hämtning av användarinformation:", error);
-      handleLogout();
+      setUserInfo({
+        name: id,
+        email: "example@example.com",
+        avatarUrl: `https://via.placeholder.com/150/${generateColorFromText(id)}/FFFFFF?text=${id
+          .charAt(0)
+          .toUpperCase()}`,
+      });
     }
   };
 
-  // **5. Kontrollera och validera token vid start**
-  useEffect(() => {
-    const checkToken = async () => {
-      const isValid = await validateAccessToken();
-      if (!isValid) console.warn("Användaren har loggats ut pga ogiltig token.");
-    };
+  const handleLogout = () => {
+    if (userId) {
+      localStorage.removeItem(`spotifyAccessToken_${userId}`);
+      localStorage.removeItem("currentUserId");
+    }
+    setAccessTokenState(null);
+    setUserId(null);
+    setUserInfo(null);
+  
+    // Omdirigera användaren till Spotify logout-sidan
+    const spotifyLogoutUrl = "https://accounts.spotify.com/logout";
+    const redirectUrl = "http://localhost:5173/"; // Din startsida efter logout
+  
+    // Försök att logga ut från Spotify och omdirigera användaren tillbaka
+    window.location.href = `${spotifyLogoutUrl}?continue=${encodeURIComponent(redirectUrl)}`;
+  };
 
-    if (accessToken && userId) {
-      checkToken();
+
+  useEffect(() => {
+    if (accessToken && userId) { 
+      fetchUserInfo(accessToken, userId);
     }
   }, [accessToken, userId]);
 
-  // **6. Skapa kontext och exportera**
   return (
-    <AuthContext.Provider value={{ accessToken, userId, userInfo, setAccessToken, logout: handleLogout }}>
+    <AuthContext.Provider value={{ accessToken, userId, userInfo, setAccessToken, logout:handleLogout }}>
       {children}
     </AuthContext.Provider>
   );

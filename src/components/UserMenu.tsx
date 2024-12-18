@@ -9,7 +9,8 @@ const UserMenu: React.FC = () => {
     setIsDropdownOpen(!isDropdownOpen);
   };
 
-  const fallbackAvatar =  "/User1.png";
+  const fallbackAvatar = `https://via.placeholder.com/150/922692/FFFFFF?text=${userInfo?.name?.charAt(0).toUpperCase()}`;
+
 
   return (
     <div className="profile-menu" style={{ position: "relative", display: "inline-block" }}>
@@ -22,44 +23,33 @@ const UserMenu: React.FC = () => {
           padding: 0,
           cursor: "pointer",
           outline: "none",
-          boxShadow: "none",
         }}
       >
-        {/* Profilbild */}
         <div
           style={{
             width: "50px",
             height: "50px",
             borderRadius: "50%",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
+            background: "none",
             overflow: "hidden",
+            outline: "none",
             boxShadow: "0 4px 6px rgba(0, 0, 0, 0.2)",
           }}
         >
-          {userInfo?.avatarUrl ? (
-            <img
-              src={userInfo.avatarUrl}
-              alt="User Avatar"
-              style={{ width: "100%", height: "100%", objectFit: "cover" }}
-              onError={(e) => {
-                (e.target as HTMLImageElement).src = fallbackAvatar;
-              }}
-            />
-          ) : (
-            <span style={{ color: "white", fontSize: "20px" }}>
-              {userInfo?.name?.charAt(0).toUpperCase() || "U"}
-            </span>
-          )}
+          <img
+            src={userInfo?.avatarUrl || fallbackAvatar}
+            alt="User Avatar"
+            style={{ width: "100%", height: "100%", objectFit: "cover" }}
+            onError={(e) => {
+              (e.target as HTMLImageElement).src = fallbackAvatar;
+            }}
+          />
         </div>
       </button>
 
       {/* Dropdown-menyn */}
       {isDropdownOpen && (
-        <div
-          className="user-dropdown"
-        >
+        <div className="user-dropdown" style={{ position: "absolute", top: "100%", right:" 30px", }}>
           <a href="/profile" style={{ display: "block", padding: "10px" }}>
             Profil
           </a>

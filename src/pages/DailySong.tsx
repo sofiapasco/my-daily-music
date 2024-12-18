@@ -22,6 +22,7 @@ const DailySong: React.FC = () => {
   const [playlists, setPlaylists] = useState<{ name: string; songs: Track[] }[]>([]);
   const [excludedSongs, setExcludedSongs] = useState<string[]>([]);
   const [isThrowing, setIsThrowing] = useState(false);
+  const [swipeDirection, setSwipeDirection] = useState<string | null>(null);
   const [selectedMood, setSelectedMood] = useState<string | null>(null);
   const navigate = useNavigate();
   const duration = currentSong ? currentSong.duration_ms / 1000 : 0; 
@@ -29,7 +30,7 @@ const DailySong: React.FC = () => {
   const limit = pLimit(5);
 
   const updateLocalStorage = (key: string, value: any, userId: string, setState: React.Dispatch<any>) => {
-    const storageKey = `${key}_${userId}`; // Lägg till userId i nyckeln
+    const storageKey = `${key}_${userId}`; 
     const existingData = JSON.parse(localStorage.getItem(storageKey) || "[]");
     const updatedData = Array.isArray(existingData) ? [...existingData, ...value] : value;
     localStorage.setItem(storageKey, JSON.stringify(updatedData));
@@ -58,16 +59,25 @@ const DailySong: React.FC = () => {
 
   const handlers = useSwipeable({
     onSwipedLeft: () => {
+      setSwipeDirection("swipe-left"); 
       handleExcludeSong(); 
+      resetSwipe();
     },
     onSwipedRight: () => {
+      setSwipeDirection("swipe-right"); 
       if (currentSong) {
         handleLike(currentSong); 
       }
+      resetSwipe();
     },
-    preventScrollOnSwipe: true, 
-    trackMouse: false, 
+    preventScrollOnSwipe: true,
+    trackMouse: false,
   });
+  
+  const resetSwipe = () => {
+    setTimeout(() => setSwipeDirection(null), 500); 
+  };
+  
 
   useEffect(() => {
     if (!userId) return;
@@ -134,13 +144,11 @@ const DailySong: React.FC = () => {
       if (!durationInRange) {
         console.log(`Utesluten p.g.a. längd: ${track.name}`);
       }
-  
-      // Om genrer saknas, filtrera endast baserat på popularitet och duration
+
       if (!hasGenres) {
         return popularityInRange && durationInRange;
       }
-  
-      // Annars använd alla filter
+
       return matchesGenre && popularityInRange && durationInRange;
     });
   };
@@ -149,11 +157,11 @@ const DailySong: React.FC = () => {
     try {
       const artistId = track.artists[0]?.id;
       if (!artistId) {
-        return { ...track, genres: [] }; // Fallback till tom genre
+        return { ...track, genres: [] }; 
       }
   
       if (artistGenreCache[artistId]) {
-        return { ...track, genres: artistGenreCache[artistId] }; // Använd cache
+        return { ...track, genres: artistGenreCache[artistId] };
       }
   
       const response = await fetch(`https://api.spotify.com/v1/artists/${artistId}`, {
@@ -179,9 +187,15 @@ const fetchDailySong = async (excludedSongs: string[], selectedMood: string) => 
   const dailySongKey = `dailySong_${userId}_${dateKey}`;
 
   const storedDailySong = localStorage.getItem(dailySongKey);
+  
   if (storedDailySong) {
-    setCurrentSong(JSON.parse(storedDailySong));
-    return;
+    const cachedSong: Track = JSON.parse(storedDailySong);
+    if (!excludedSongs.includes(cachedSong.id)) {
+      setCurrentSong(cachedSong); // Använd cachad låt om den inte är exkluderad
+      return;
+    } else {
+      console.log("Cachad låt är exkluderad, hämtar ny låt...");
+    }
   }
 
   if (!accessToken) {
@@ -243,6 +257,7 @@ const fetchDailySong = async (excludedSongs: string[], selectedMood: string) => 
     const randomSong = filteredTracks[Math.floor(Math.random() * filteredTracks.length)];
     localStorage.setItem(dailySongKey, JSON.stringify(randomSong));
     setCurrentSong(randomSong);
+    console.log("Ny vald låt:", randomSong);
   } catch (error) {
     console.error("Ett fel uppstod vid hämtning av låtar:", error);
   }
@@ -255,26 +270,34 @@ useEffect(() => {
 }, [accessToken, selectedMood]);
 
 
-const handleExcludeSong = () => {
+const handleExcludeSong = async () => {
   if (!userId) {
-    console.warn("Ingen användare inloggad. Kan inte exkludera låtar.");
+    toast.warn("Ingen användare inloggad. Kan inte exkludera låtar.");
     return;
   }
 
-  if (currentSong) {
+  if (currentSong && currentSong.id) {
     const excludedStorageKey = `excludedSongs_${userId}`;
     const storedExcludedSongs = JSON.parse(localStorage.getItem(excludedStorageKey) || "[]");
 
-    if (!storedExcludedSongs.includes(currentSong.id)) {
-      const updatedExcludedSongs = [...storedExcludedSongs, currentSong.id];
-
-      setExcludedSongs(updatedExcludedSongs);
-      localStorage.setItem(excludedStorageKey, JSON.stringify(updatedExcludedSongs));
-    } else {
-      console.log("Låten är redan exkluderad:", currentSong.id);
+    if (storedExcludedSongs.includes(currentSong.id)) {
+      toast.info("Låten är redan i exkluderade låtar.");
+      return; // Avsluta här för att undvika ytterligare exekvering
     }
+
+    // Lägg till låten i exkluderade listan
+    const updatedExcludedSongs = [...storedExcludedSongs, currentSong.id];
+    setExcludedSongs(updatedExcludedSongs);
+    localStorage.setItem(excludedStorageKey, JSON.stringify(updatedExcludedSongs));
+    toast.success("Låten har lagts till i exkluderade låtar!");
+
+    // Sätt dagens låt till null för att indikera att en ny låt behövs
+    setCurrentSong(null);
+    console.log("Exkluderad låt:", currentSong);
+
+    await fetchDailySong(updatedExcludedSongs, selectedMood || "neutral");
   } else {
-    console.warn("Ingen låt att exkludera.");
+    toast.warn("Ingen låt att exkludera.");
   }
 };
 
@@ -444,7 +467,7 @@ const handleLike = (song: Track) => {
       </div>
         <h1 className="daily-song-title">DAGENS LÅT</h1>
         {currentSong ? (
-          <div className="song-info">
+         <div className={`song-info ${swipeDirection}`}>
             <p className="song-name" >{currentSong.name}</p>
             <p className="song-artist" id="songartist"style={{ color: "#922692" }}>
               {currentSong.artists[0].name}
