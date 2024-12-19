@@ -513,7 +513,7 @@
   width: 100%; 
   top: 0;
   left: 0;
-  pointer-events: none; 
+
 }
 
 .profile-menu {
@@ -529,6 +529,7 @@
     cursor: pointer;
     outline: none;
     box-shadow: none;
+
 
     &:hover {
       transform: scale(1.1);
@@ -848,17 +849,19 @@ body.light {
 .create-playlist-container button{
   color: #922692;
   font-size: 25px;
-  z-index: 30;
+
   font-weight: bold;
   border: none;
   border-radius: 6px;
   cursor: pointer;
   background: none;
   margin:10px;
+  margin-top: 60px;
 }
 
 .menu-container {
   position: relative;
+
 
   .menu-button {
     background: none;

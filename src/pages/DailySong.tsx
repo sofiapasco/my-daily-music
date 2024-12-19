@@ -282,14 +282,13 @@ const handleExcludeSong = async () => {
     const storedExcludedSongs = JSON.parse(localStorage.getItem(excludedStorageKey) || "[]");
 
     if (storedExcludedSongs.includes(currentSong.id)) {
-      toast.info("Låten är redan i exkluderade låtar.");
       await fetchDailySong(storedExcludedSongs, selectedMood || "neutral");
       return; 
     }
 
     const updatedExcludedSongs = [...storedExcludedSongs, currentSong.id];
-    setExcludedSongs(updatedExcludedSongs); // Uppdatera state för de exkluderade låtarna
-    localStorage.setItem(excludedStorageKey, JSON.stringify(updatedExcludedSongs)); // Spara exkluderade låtar i localStorage
+    setExcludedSongs(updatedExcludedSongs); 
+    localStorage.setItem(excludedStorageKey, JSON.stringify(updatedExcludedSongs)); 
     toast.success("Låten har lagts till i exkluderade låtar!");
 
     setCurrentSong(null);
@@ -367,7 +366,6 @@ const handleLike = (song: Track) => {
         animationElement.style.opacity = "0.5";
       }, 0);
   
-      // Ta bort den animerade bilden efter animationen
       setTimeout(() => {
         document.body.removeChild(animationElement);
       }, 800);
@@ -376,7 +374,6 @@ const handleLike = (song: Track) => {
   
   const handleToggleMenu = (menuId: string): void => {
     if (openMenuId === menuId) {
-      // Om menyn redan är öppen, stäng den
       setOpenMenuId(null);
       if (timeoutId !== null) {
         clearTimeout(timeoutId); 
@@ -430,7 +427,6 @@ const handleLike = (song: Track) => {
   
     const selectedPlaylist = playlists[playlistIndex];
   
-    // Kontrollera om låten redan finns i spellistan
     const isSongInPlaylist = selectedPlaylist.songs.some(
       (playlistSong) => playlistSong.id === song.id
     );
@@ -445,14 +441,15 @@ const handleLike = (song: Track) => {
       index === playlistIndex ? updatedPlaylist : playlist
     );
     setPlaylists(updatedPlaylists);
-    localStorage.setItem("playlists", JSON.stringify(updatedPlaylists));
+    localStorage.setItem(`playlists_${userId}`, JSON.stringify(updatedPlaylists));
     toast.success(`"${song.name}" har lagts till i spellistan "${selectedPlaylist.name}"!`);
   };
   
   useEffect(() => {
-    const storedPlaylists = JSON.parse(localStorage.getItem("playlists") || "[]");
+    if (!userId) return; 
+    const storedPlaylists = JSON.parse(localStorage.getItem(`playlists_${userId}`) || "[]");
     setPlaylists(storedPlaylists);
-  }, []);
+  }, [userId]);
 
   return (
     <>
