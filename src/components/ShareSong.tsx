@@ -1,6 +1,4 @@
 import React, { useState } from 'react';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faPencil } from '@fortawesome/free-solid-svg-icons';
 import { toast } from "react-toastify";
 import { useAuth } from '../context/AuthContext';
 
@@ -94,7 +92,6 @@ const ShareSong: React.FC<ShareSongProps> = ({ song }) => {
           target="_blank"
           rel="noopener noreferrer"
           className="facebook-button"
-          style={{marginTop: "10px"}}
         >
           <img src="/facebook.png" alt="Dela på Facebook" className="icon" id="fbicon" />
         </a>
@@ -117,13 +114,13 @@ const ShareSong: React.FC<ShareSongProps> = ({ song }) => {
           onClick={toggleCommentBox}
           className="add-comment-btn"
           style={{
-            marginBottom: "10px",
             cursor: "pointer",
             background: "none",
             border: "none",
           }}
         >
-          <FontAwesomeIcon icon={faPencil} style={{ fontSize: "24px", color: "#333" }} />
+          <img src="/comment.png" alt="Kommentera" className="icon"  id="commenticon"/>
+      
         </button>
 
         {showCommentBox && (

@@ -23,6 +23,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       const copyIcon = document.getElementById("copyicon") as HTMLImageElement;
       const shareIcon = document.getElementById("phoneicon") as HTMLImageElement;
       const userIcon = document.getElementById("usericon") as HTMLImageElement;
+      const commentIcon = document.getElementById("commenticon") as HTMLImageElement;
 
       if (facebookIcon) {
         facebookIcon.src = theme === "dark" ? "/FB.png" : "/facebook.png";
@@ -38,6 +39,10 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
       if (userIcon) {
         userIcon.src = theme === "dark" ? "/User1.png" : "/User1.png";
+      }
+
+      if (commentIcon) {
+        commentIcon.src = theme === "dark" ? "/comment1.png" : "/comment.png";
       }
     };
 

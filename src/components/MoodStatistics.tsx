@@ -41,7 +41,7 @@ const MoodStatistics: React.FC = () => {
   }, [userId]);
 
 
-  // Filtrera data till senaste veckan
+
   const now = new Date();
   const oneWeekAgo = new Date();
   oneWeekAgo.setDate(now.getDate() - 7);

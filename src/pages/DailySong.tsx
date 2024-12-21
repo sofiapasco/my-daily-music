@@ -470,16 +470,15 @@ const handleLike = (song: Track) => {
             <p>Humör: <span>{selectedMood}</span></p>
             <div className="album-and-like">
             <button
-                  onClick={handleExcludeSong}
-                  className={`close-button ${isThrowing ? "throwing" : ""}`}
-                  style={{ border: "none", background: "none" }}
-                >
-                <img 
-                  src="/close1.png" 
-                  alt="Radera låt"
-                  className="close"
-                />
-              </button>
+              onClick={handleExcludeSong}
+              className={`close-button ${isThrowing ? "throwing" : ""}`}
+            >
+              <img 
+                src="/close1.png" 
+                alt="Radera låt"
+                className="close"
+              />
+            </button>
               <div className="album-art-container">
               <a href={currentSong.external_urls.spotify} target="_blank" rel="noopener noreferrer">
                 <img

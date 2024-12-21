@@ -1,6 +1,13 @@
 @import "bootstrap/scss/bootstrap";
 @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap');
 
+@media (min-width: 378px) {
+  .chart-container {
+    width: 80%; 
+    height: 300px; 
+  }
+}
+
 @media (max-width: 768px) {
   .song-name {
     font-size: 1.2rem; 
@@ -20,6 +27,11 @@
     .close-button {
       display: none !important; 
     }
+  }
+
+  .chart-container {
+    width: 70%;
+    height: 500px; 
   }
 
   .song-info {
@@ -59,7 +71,11 @@
       display: none !important; 
     }
   }
-
+  .chart-container {
+    width: 80%; 
+    height: 300px; 
+  }
+  
   .song-info {
     transition: transform 0.5s ease-out, opacity 0.5s ease-out; 
 
@@ -74,6 +90,13 @@
         opacity: 0.5;
       }
     }
+  }
+}
+
+@media (min-width: 1200px) {
+  .chart-container {
+    width: 50%; 
+    height: 600px; 
   }
 }
 
@@ -182,12 +205,12 @@
     opacity: 1;
   }
   50% {
-    transform: scale(0.7) translate(-200px, 50px); /* Mellansteg: flyger till vänster (-100px) och ner (+100px) */
+    transform: scale(0.7) translate(-200px, 50px); 
     opacity: 0.8;
   }
   100% {
-    transform: scale(0.4) translate(-600px, 150px); /* Slutposition: flyger längre till vänster (-300px) och längre ner (+300px) */
-    opacity: 0; /* Försvinner gradvis */
+    transform: scale(0.4) translate(-600px, 150px); 
+    opacity: 0; 
   }
 }
 
@@ -197,25 +220,19 @@
   left: -15%; 
   width: 60px;
   height: 60px;
-  border-radius: 50%;
+  border-radius: 50%; 
+  backdrop-filter: blur(10px); 
   background: linear-gradient(135deg, #1e1e2f, #3e3e5e);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.5);
+  border: none; 
   box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-
-.close-button:hover {
-  transform: scale(1.1);
-  background: rgba(255, 255, 255, 0.3);
+  transition: transform 0.3s ease, box-shadow 0.3s ease; 
 }
 
 .close-button img {
-  width: 50%;
+  width: 50%; 
   height: 50%;
-  object-fit: contain;
-  background: linear-gradient(135deg, #1e1e2f, #3e3e5e);
-  transition: transform 0.3s ease;
+  object-fit: contain; 
+  transition: transform 0.3s ease; 
 }
 
 .delete{
@@ -343,30 +360,6 @@
       color: #b3b3b3;
       margin-bottom: 5px;
     }
-  }
-}
-
-/* Anpassning för små skärmar (telefoner) */
-@media (min-width: 378px) {
-  .chart-container {
-    width: 80%; /* Grafen tar 80% av skärmbredden */
-    height: 300px; /* Fixerad höjd */
-  }
-}
-
-/* Anpassning för mellanstora skärmar (surfplattor) */
-@media (min-width: 768px) {
-  .chart-container {
-    width: 70%; /* Grafen tar 70% av skärmbredden */
-    height: 500px; /* Ökad höjd */
-  }
-}
-
-/* Anpassning för stora skärmar (datorer) */
-@media (min-width: 1200px) {
-  .chart-container {
-    width: 50%; /* Grafen tar 50% av skärmbredden */
-    height: 600px; /* Högsta höjden */
   }
 }
 
@@ -703,7 +696,7 @@ body.dark {
     background-color: #fff;
   }
 
-  .like-heart, .close {
+  .like-heart, .close-button {
     background-color: #1d1c1c !important; 
     color: #fff; 
   }
@@ -755,7 +748,7 @@ body.light {
     background: linear-gradient(135deg, #e4bae4, #e2cdc4);
   }
 
-  .like-heart, .close {
+  .like-heart, .close-button {
     background: linear-gradient(135deg, #f3d4f3, #e2cdc4);
     color: #000;
   }
