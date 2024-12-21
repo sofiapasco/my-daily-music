@@ -258,7 +258,7 @@ const fetchDailySong = async (excludedSongs: string[], selectedMood: string) => 
     const randomSong = filteredTracks[Math.floor(Math.random() * filteredTracks.length)];
     localStorage.setItem(dailySongKey, JSON.stringify(randomSong));
     setCurrentSong(randomSong);
-    console.log("Ny vald låt:", randomSong);
+   
   } catch (error) {
     console.error("Ett fel uppstod vid hämtning av låtar:", error);
   }

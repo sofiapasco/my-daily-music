@@ -265,7 +265,7 @@ const songsToRender = searchQuery
 
 
   return (
-  <div className="saved-songs-container" style={{height: "100vh"}}>
+  <div className="saved-songs-container" style={{height: "100%"}}>
       <div className="header">
         <UserMenu />
         <button className="logout-btn" onClick={logout}>

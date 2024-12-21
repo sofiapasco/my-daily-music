@@ -432,7 +432,7 @@
 .saved-songs-container {
   padding: 20px;
   margin: 0 auto;
-  height: 100vh;
+  height: 100%;
 
   h1 {
     margin-bottom: 20px;
@@ -672,7 +672,6 @@
 body.dark {
   background: linear-gradient(135deg, #1e1e2f, #3e3e5e);
   color: #fff !important; 
-  height: 100%; 
 
   h1, h3, a, p {
     font-family: 'Roboto', sans-serif;
