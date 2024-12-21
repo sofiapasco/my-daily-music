@@ -59,11 +59,11 @@ const UserMenu: React.FC = () => {
           <a href="/saved-songs" style={{ display: "block", padding: "10px" }}>
             Sparade låtar
           </a>
-          <a href="/statistics" style={{ display: "block", padding: "10px" }}>
-            Statistik
-          </a>
           <a href="/music-diary" style={{ display: "block", padding: "10px" }}>
             Musikdagbok
+          </a>
+          <a href="/statistics" style={{ display: "block", padding: "10px" }}>
+            Statistik
           </a>
         </div>
       )}
