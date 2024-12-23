@@ -1,11 +1,16 @@
 @import "bootstrap/scss/bootstrap";
 @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap');
 
-@media (min-width: 378px) {
+@media (min-width: 390px) {
   .chart-container {
     width: 80%; 
-    height: 300px; 
+    height: 800px; 
   }
+
+  .album-art-container{
+    margin-left: 20px;
+  }
+
 }
 
 @media (max-width: 768px) {
@@ -16,6 +21,7 @@
   .song-artist {
     font-size: 1rem; 
   }
+
 
   .album-and-like {
     img.album-art {
@@ -71,9 +77,17 @@
       display: none !important; 
     }
   }
-  .chart-container {
-    width: 80%; 
-    height: 300px; 
+ 
+
+  .mood-buttons button {
+    font-size: 14px;
+    padding: 6px 10px;
+    border-radius: 5px;
+  }
+
+  .skip-btn {
+    padding: 4px 5px;
+    font-size: 10px;
   }
   
   .song-info {
@@ -93,11 +107,11 @@
   }
 }
 
-@media (min-width: 1200px) {
-  .chart-container {
-    width: 50%; 
-    height: 600px; 
-  }
+.chart-container {
+  width: 100%;  
+  max-width: 735px; 
+  height: auto; 
+  margin: 0 auto; 
 }
 
 .daily-song-container {
@@ -506,7 +520,7 @@
   width: 100%; 
   top: 0;
   left: 0;
-
+  z-index: 10;
 }
 
 .profile-menu {

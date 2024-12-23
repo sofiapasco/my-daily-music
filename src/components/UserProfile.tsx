@@ -10,14 +10,13 @@ interface UserProfileProps {
 }
 
 const UserProfile: React.FC = () => {
-  const { userId } = useAuth(); // Hämta userId från AuthContext
+  const { userId} = useAuth();
   const [userInfo, setUserInfo] = useState<UserProfileProps | null>(null);
   const { theme, toggleTheme } = useTheme();
   const [customAvatar, setCustomAvatar] = useState<string | null>(
     localStorage.getItem("customUserAvatar") || null
   );
 
-  // Dynamisk fallback-avatar med första bokstaven i userId
   const fallbackAvatar = userId
     ?  "/User1.png"
     :  "/User1.png";

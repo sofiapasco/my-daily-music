@@ -123,7 +123,7 @@ const MoodStatistics: React.FC = () => {
   };
 
   return (
-    <div style={{ width: "80%", height: "400px", margin: "auto", marginLeft: "16%"}}>
+    <div className="chart-container">
       {recentMoodData.length > 0 ? (
         <Line data={data} options={options} />
       ) : (
