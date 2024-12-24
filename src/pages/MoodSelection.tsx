@@ -102,7 +102,7 @@ const MoodSelection: React.FC = () => {
       </div>
       <h1>{greeting}</h1>  
       <div className="mood-buttons">
-        <button onClick={() => handleMoodSelection("😊")}> 😊</button>
+        <button onClick={() => handleMoodSelection("😊")}>😊</button>
         <button onClick={() => handleMoodSelection("😢")}>😢</button>
         <button onClick={() => handleMoodSelection("😌")}>😌</button>
         <button onClick={() => handleMoodSelection("😴")}>😴</button>

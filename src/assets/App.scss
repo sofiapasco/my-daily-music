@@ -1,18 +1,6 @@
 @import "bootstrap/scss/bootstrap";
 @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap');
 
-@media (min-width: 390px) {
-  .chart-container {
-    width: 80%; 
-    height: 800px; 
-  }
-
-  .album-art-container{
-    margin-left: 20px;
-  }
-
-}
-
 @media (max-width: 768px) {
   .song-name {
     font-size: 1.2rem; 
@@ -74,36 +62,53 @@
 
     .like-heart,
     .close-button {
-      display: none !important; 
+      display: none !important;
     }
   }
- 
 
-  .mood-buttons button {
-    font-size: 14px;
-    padding: 6px 10px;
-    border-radius: 5px;
+  .song-info {
+    transition: transform 0.5s ease-out, opacity 0.5s ease-out;
+
+    &.swipe-left {
+      transform: translateX(-120%) rotate(-10deg);
+      opacity: 0.5;
+    }
+
+    &.swipe-right {
+      transform: translateX(120%) rotate(10deg);
+      opacity: 0.5;
+    }
+  }
+
+  h1 {
+    font-size: 16px;
+    letter-spacing: 2px;
+  }
+
+  .mood-buttons {
+    gap: 8px;
+
+    button {
+      font-size: 11px;
+      padding: 6px 10px;
+      border-radius: 5px;
+      transition: transform 0.3s, background-color 0.3s;
+
+    }
   }
 
   .skip-btn {
-    padding: 4px 5px;
-    font-size: 10px;
+    font-size: 19px;
+    padding: 6px 14px;
   }
-  
-  .song-info {
-    transition: transform 0.5s ease-out, opacity 0.5s ease-out; 
 
-    & {
-      &.swipe-left {
-        transform: translateX(-120%) rotate(-10deg); 
-        opacity: 0.5;
-      }
+  .chart-container {
+    width: 80%;
+    height: 800px;
+  }
 
-      &.swipe-right {
-        transform: translateX(120%) rotate(10deg); 
-        opacity: 0.5;
-      }
-    }
+  .album-art-container {
+    margin-left: 20px;
   }
 }
 
@@ -333,16 +338,21 @@
 
   .mood-buttons {
     display: flex;
-    gap: 10px;
-    margin: 4rem;
+    flex-wrap: wrap; 
+    justify-content: center; 
+    gap: 10px; 
+    margin: 20px 0;
 
     button {
-      padding: 10px 20px;
-      font-size: 35px;
+      width: 60px;
+      height: 60px;
+      font-size: 24px; 
+      background-color: white;
       border: none;
-      border-radius: 40px;
+      border-radius: 50%; 
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); 
       cursor: pointer;
-      transition: transform 0.3s;
+      transition: transform 0.3s ease, background-color 0.3s ease;
 
       &:hover {
         transform: scale(1.1);
