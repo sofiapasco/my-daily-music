@@ -1305,3 +1305,54 @@ textarea {
   margin-left: 5px;
   font-weight: normal;
 }
+
+.swipe-instructions {
+  position: fixed;
+  top: 20%;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: rgba(0, 0, 0, 0.8);
+  color: #fff;
+  padding: 10px 20px;
+  border-radius: 5px;
+  z-index: 1000;
+  animation: fadeInOut 7s ease-in-out;
+}
+
+@keyframes fadeInOut {
+  0% { opacity: 0; }
+  10% { opacity: 1; }
+  90% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+.swipe-icon-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 10px;
+}
+
+.swipe-icon {
+  width: 50px;
+  height: 50px;
+  animation: swipeAnimation 2s infinite;
+}
+
+@keyframes swipeAnimation {
+  0% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(70px);
+  }
+  50% {
+    transform: translateX(0);
+  }
+  75% {
+    transform: translateX(-60px);
+  }
+  100% {
+    transform: translateX(0);
+  }
+}

@@ -22,6 +22,7 @@ const DailySong: React.FC = () => {
   const [playlists, setPlaylists] = useState<{ name: string; songs: Track[] }[]>([]);
   const [excludedSongs, setExcludedSongs] = useState<string[]>([]);
   const [isThrowing] = useState(false);
+  const [showSwipeInstructions, setShowSwipeInstructions] = useState(false);
   const [swipeDirection, setSwipeDirection] = useState<string | null>(null);
   const [selectedMood, setSelectedMood] = useState<string | null>(null);
   const navigate = useNavigate();
@@ -56,6 +57,31 @@ const DailySong: React.FC = () => {
     return () => clearInterval(interval);
   }, [currentSong, duration]);
 
+  useEffect(() => {
+    const isMobile = window.innerWidth <= 768;
+  
+    if (isMobile) {
+      setShowSwipeInstructions(true);
+  
+      const timer = setTimeout(() => {
+        setShowSwipeInstructions(false);
+      }, 5000);
+  
+      return () => clearTimeout(timer);
+    }
+  }, []);
+  
+  useEffect(() => {
+    const handleUserInteraction = () => {
+      setShowSwipeInstructions(false);
+    };
+  
+    window.addEventListener('click', handleUserInteraction);
+  
+    return () => {
+      window.removeEventListener('click', handleUserInteraction);
+    };
+  }, []);
 
   const handlers = useSwipeable({
     onSwipedLeft: () => {
@@ -346,7 +372,6 @@ const handleLike = (song: Track) => {
       const startRect = imageElement.getBoundingClientRect();
       const targetRect = targetElement.getBoundingClientRect();
   
-      // Skapa en flygande kopia av bilden
       const animationElement = imageElement.cloneNode(true) as HTMLElement;
       animationElement.style.position = "absolute";
       animationElement.style.top = `${startRect.top}px`;
@@ -357,7 +382,6 @@ const handleLike = (song: Track) => {
       animationElement.style.zIndex = "1000";
       document.body.appendChild(animationElement);
   
-      // Flytta bilden mot målsektionen
       setTimeout(() => {
         animationElement.style.top = `${targetRect.top + 50}px`;
         animationElement.style.left = `${targetRect.left + 10}px`;
@@ -451,9 +475,18 @@ const handleLike = (song: Track) => {
     setPlaylists(storedPlaylists);
   }, [userId]);
 
+
   return (
     <>
     <div  {...handlers} className="daily-song-container" style={{height: "100vh",paddingTop: "3rem"}}>
+    {showSwipeInstructions && (
+      <div className="swipe-instructions">
+         <p>
+        <span className="animate-text">👉 Svep höger för att gilla , </span><br></br>
+        <span className="animate-text">👈 vänster för att ta bort.</span>
+      </p>
+      </div>
+    )}
       <div className="header">
         <UserMenu />
         <button className="logout-btn" onClick={logout}>
