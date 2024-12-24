@@ -103,8 +103,12 @@
   }
 
   .chart-container {
-    width: 80%;
-    height: 800px;
+    width: 100%;
+    height: 800px; 
+  }
+
+  .chart-container canvas {
+    height: 800px; 
   }
 
   .album-art-container {
