@@ -379,8 +379,8 @@ const songsToRender = searchQuery
         </button>
         {/* Visa låtar i spellistan */}
         <div className="gallery-container">
-          {playlist.songs.map((song) => (
-          <div className="gallery-item" key={song.id}>
+          {playlist.songs.slice(0, 7).map((song) => (
+          <div className="gallery-item" style={{width: "200px",height: "300px"}} key={song.id}>
           <div className="image-container">
             <a
               href={song?.external_urls?.spotify || "#"}
@@ -433,8 +433,8 @@ const songsToRender = searchQuery
             </div>
           </div>
 
-          <p className="song-name">{song.name}</p>
-          <p className="song-artist">{song?.artists?.[0]?.name || "Okänd artist"}</p>
+          <p className="song-name" style={{fontSize: "11px"}}>{song.name}</p>
+          <p className="song-artist"style={{fontSize: "10px"}}>{song?.artists?.[0]?.name || "Okänd artist"}</p>
         </div>
 
           ))}

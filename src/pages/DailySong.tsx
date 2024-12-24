@@ -289,7 +289,7 @@ const handleExcludeSong = async () => {
     const updatedExcludedSongs = [...storedExcludedSongs, currentSong.id];
     setExcludedSongs(updatedExcludedSongs); 
     localStorage.setItem(excludedStorageKey, JSON.stringify(updatedExcludedSongs)); 
-    toast.success("Låten har lagts till i exkluderade låtar!");
+    toast.error("Låten har lagts till i exkluderade låtar!");
 
     setCurrentSong(null);
     await fetchDailySong(updatedExcludedSongs, selectedMood || "neutral");
@@ -453,7 +453,7 @@ const handleLike = (song: Track) => {
 
   return (
     <>
-    <div  {...handlers} className="daily-song-container" style={{height: "100vh"}}>
+    <div  {...handlers} className="daily-song-container" style={{height: "100vh",paddingTop: "3rem"}}>
       <div className="header">
         <UserMenu />
         <button className="logout-btn" onClick={logout}>
@@ -517,7 +517,7 @@ const handleLike = (song: Track) => {
       </div>
 
       <div className="liked-songs-section">
-        <h2 className="likedSong">Senaste sparade låtar:</h2>
+        <h2 className="likedSong" style={{paddingTop: "3rem"}}>Senaste sparade låtar:</h2>
         <div id="saved-songs-section" className="gallery-container">
         <div className="gallery-scroll">
         {likedSongs?.slice(-10).reverse().map((song,index) => (
