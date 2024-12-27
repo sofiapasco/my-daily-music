@@ -121,7 +121,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   
 
     const spotifyLogoutUrl = "https://accounts.spotify.com/logout";
-    const redirectUrl = "http://localhost:5173/"; 
+    const redirectUrl = "https://mydailymusic.netlify.app/"; 
   
     const logoutAndRedirect = () => {
       window.location.href = `${spotifyLogoutUrl}?continue=${encodeURIComponent(redirectUrl)}`;
