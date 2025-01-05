@@ -28,9 +28,14 @@ const MusicDiary: React.FC = () => {
 
   useEffect(() => {
     if (userId) {
-      const today = new Date().toISOString().split("T")[0]; 
-      const storedDailySong = localStorage.getItem(`dailySong_${userId}_${today}`);
-  
+      const today = `${new Date().getFullYear()}-${new Date().getMonth() + 1}-${new Date().getDate()}`;
+      const altToday = new Date().toISOString().split("T")[0];
+      
+      let storedDailySong = localStorage.getItem(`dailySong_${userId}_${today}`);
+      if (!storedDailySong) {
+        storedDailySong = localStorage.getItem(`dailySong_${userId}_${altToday}`);
+      }
+
       if (storedDailySong) {
         try {
           const parsedSong = JSON.parse(storedDailySong);
