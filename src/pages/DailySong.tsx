@@ -285,10 +285,15 @@ const fetchDailySong = async (excludedSongs: string[], selectedMood: string) => 
       toast.info("Inga låtar tillgängliga för det valda humöret.");
       return;
     }
-    const randomSong = filteredTracks[Math.floor(Math.random() * filteredTracks.length)];
-    localStorage.setItem(dailySongKey, JSON.stringify(randomSong));
-    setCurrentSong(randomSong);
-   
+    const shuffledTracks = filteredTracks.sort(() => Math.random() - 0.5);
+
+    const randomSong = shuffledTracks.find((track) => !excludedSongs.includes(track.id));
+    if (randomSong) {
+      localStorage.setItem(dailySongKey, JSON.stringify(randomSong));
+      setCurrentSong(randomSong);
+    } else {
+      console.error("Ingen giltig låt hittades efter blandning och filtrering.");
+    }
   } catch (error) {
     console.error("Ett fel uppstod vid hämtning av låtar:", error);
   }
