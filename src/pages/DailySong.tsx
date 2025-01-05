@@ -125,7 +125,7 @@ const DailySong: React.FC = () => {
   }, [userId, navigate]);
   
   
-  const filterTracksByMood = (tracks: Track[], mood: string): Track[] => {
+  const filterTracksByMood = (tracks: Track[], mood: string, isFallback = false): Track[] => {
     const moodMapping: Record<string, string> = {
       "😊": "happy",
       "😢": "low",
@@ -168,10 +168,14 @@ const DailySong: React.FC = () => {
       return matchesGenre && popularityInRange && durationInRange;
     });
   
-    // Om ingen låt återstår efter filtreringen, använd fallback till "neutral"
     if (filteredTracks.length === 0) {
+      if (isFallback) {
+        console.log("Ingen låt matchar, returnerar hela listan som sista utväg.");
+        return tracks; 
+      }
+  
       console.log("Inga låtar för det valda humöret, fallback till neutral...");
-      return filterTracksByMood(tracks, "neutral"); // Fallback till "neutral"
+      return filterTracksByMood(tracks, "neutral", true); 
     }
   
     return filteredTracks;
