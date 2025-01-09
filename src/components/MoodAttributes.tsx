@@ -76,33 +76,22 @@ const baseMoodGenres: Record<string, string[]> = {
   // moodAttributes genererat från baseMoodGenres
   export const moodAttributes: Record<string, MoodFilters & { genres?: string[] }> = {
     happy: {
-      popularity: [50, 100],
-      duration_ms: [120000, 300000],
       genres: baseMoodGenres.happy,
     },
     low: {
-      popularity: [0, 60],
-      duration_ms: [200000, 600000],
       genres: baseMoodGenres.low,
     },
     energetic: {
-      popularity: [50, 110],
-      duration_ms: [100000, 240000],
       genres: baseMoodGenres.energetic,
     },
     relaxed: {
-      popularity: [30, 90],
-      duration_ms: [200000, 450000],
       genres: baseMoodGenres.relaxed,
     },
     love: {
-      popularity: [40, 100],
-      duration_ms: [150000, 400000],
       genres: baseMoodGenres.love,
     },
     neutral: {
-      popularity: [0, 100], 
-      duration_ms: [0, 600000],
+      genres: [],
     },
   };
   
