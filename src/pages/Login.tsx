@@ -1,6 +1,38 @@
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useEffect } from "react";
+import { doc, setDoc } from "firebase/firestore"; // Importera Firestore-funktioner
+import { db } from "../service/firebaseConfig"; // Importera din Firestore-instans
+
+const saveSpotifyUser = async (accessToken: string) => {
+  console.log("Sparar användardata i Firestore...");
+  try {
+    const response = await fetch("https://api.spotify.com/v1/me", {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    });
+    const spotifyUser = await response.json();
+
+    const userId = spotifyUser.id; // Unikt Spotify-ID
+    const displayName = spotifyUser.display_name;
+    const email = spotifyUser.email;
+
+    // Spara användaren i Firestore
+    const userDoc = doc(db, "users", userId);
+    await setDoc(
+      userDoc,
+      {
+        displayName,
+        email,
+        spotifyId: userId,
+      },
+      { merge: true }
+    );
+
+    console.log("Användarens data har sparats i Firestore!");
+  } catch (error) {
+    console.error("Fel vid sparning av användardata i Firestore:", error);
+  }
+};
 
 const Login = () => {
   const navigate = useNavigate();
@@ -36,17 +68,25 @@ const Login = () => {
     const accessToken = params.get("access_token");
 
     if (accessToken) {
+      console.log("Access Token mottagen:", accessToken);
       fetch("https://api.spotify.com/v1/me", {
         headers: { Authorization: `Bearer ${accessToken}` },
       })
         .then((response) => response.json())
-        .then((data) => {
+        .then(async (data) => {
           if (data.id) {
             setAccessToken(accessToken, data.id);
+
+            // Spara användarens data i Firestore
+            await saveSpotifyUser(accessToken);
+
+            // Navigera till nästa sida
             navigate("/mood-selection");
           }
         })
-        .catch((error) => console.error("Fel vid hämtning av användarinfo:", error));
+        .catch((error) =>
+          console.error("Fel vid hämtning av användarinfo:", error)
+        );
     }
   }, [setAccessToken, navigate]);
 
