@@ -2,6 +2,12 @@ import { useEffect, useState } from "react";
 import { Track } from "../types/song";
 import { useAuth } from "../context/AuthContext";
 import { toast } from "react-toastify";
+import { createPlaylistInFirestore,
+  updateLikedSongsInFirestore,
+  updatePlaylistsInFirestore,
+  fetchLikedSongs,
+  fetchAppPlaylists
+} from "../service/firestoreService"; 
 import { useLocation, useNavigate, Link } from "react-router-dom"; 
 import UserMenu from "../components/UserMenu";
 import "react-toastify/dist/ReactToastify.css";
@@ -41,36 +47,34 @@ const SavedSongs: React.FC = () => {
  
   useEffect(() => {
     if (!userId) return; // Om användaren inte är inloggad, gör inget
-    
-    const storageKey = `likedSongs_${userId}`;
-    const storedLikedSongs = localStorage.getItem(storageKey);
-
-    // Kontrollera om datan är en sträng innan JSON.parse
-    if (storedLikedSongs) {
-        try {
-            const parsedSongs = JSON.parse(storedLikedSongs);
-            setSavedSongs(parsedSongs); // Sätt bara om parsing lyckas
-        } catch (error) {
-            console.error("Fel vid parsing av sparade låtar:", error);
-        }
-    }
-}, [userId]);
-
-useEffect(() => {
-  if (!userId) return; // Säkerställ att användaren är inloggad
   
-  const storageKey = `playlists_${userId}`;
-  const storedPlaylists = localStorage.getItem(storageKey);
+    const fetchLikedSongsData = async () => {
+      try {
+        const likedSongs = await fetchLikedSongs(userId); // Hämta låtar från Firestore
+        setSavedSongs(likedSongs); // Uppdatera React-state med hämtade låtar
+      } catch (error) {
+        console.error("Fel vid hämtning av gillade låtar från Firestore:", error);
+      }
+    };
+  
+    fetchLikedSongsData();
+  }, [userId]);  
 
-  if (storedPlaylists) {
-    try {
-      const parsedPlaylists = JSON.parse(storedPlaylists); 
-      setPlaylists(parsedPlaylists); 
-    } catch (error) {
-      console.error("Fel vid laddning av spellistor:", error);
-    }
-  }
-}, [userId]); 
+  useEffect(() => {
+    if (!userId) return; // Säkerställ att användaren är inloggad
+  
+    const fetchPlaylistsData = async () => {
+      try {
+        const playlists = await fetchAppPlaylists(userId); 
+        setPlaylists(playlists); 
+      } catch (error) {
+        console.error("Fel vid hämtning av spellistor från Firestore:", error);
+      }
+    };
+  
+    fetchPlaylistsData();
+  }, [userId]);
+  
 
 
   const handleSearch = () => {
@@ -98,21 +102,28 @@ useEffect(() => {
     setCurrentPage(1);
   }, [filteredSongs]);
 
-  const handleRemoveFromSavedSongs = (songId: string) => {
+  const handleRemoveFromSavedSongs = async (songId: string) => {
     if (!userId) {
       toast.error("Ingen användare inloggad.");
       return;
     }
   
-    const storageKey = `likedSongs_${userId}`;
-    const updatedSongs = savedSongs.filter((song) => song.id !== songId);
-    setSavedSongs(updatedSongs);
-    localStorage.setItem(storageKey, JSON.stringify(updatedSongs));
-    toast.success("Låten har tagits bort!");
+    try {
+      // Filtrera bort låten från React-state
+      const updatedSongs = savedSongs.filter((song) => song.id !== songId);
+      setSavedSongs(updatedSongs);
+  
+      // Uppdatera Firestore med de nya gillade låtarna
+      await updateLikedSongsInFirestore(userId, updatedSongs);
+  
+      toast.success("Låten har tagits bort!");
+    } catch (error) {
+      console.error("Fel vid borttagning av låt från Firestore:", error);
+      toast.error("Ett fel uppstod vid borttagning av låten.");
+    }
   };
   
-
-  const handleCreatePlaylist = () => {
+  const handleCreatePlaylist = async () => {
     if (!userId) {
       toast.error("Ingen användare inloggad.");
       return;
@@ -123,19 +134,26 @@ useEffect(() => {
       return;
     }
   
-    const storageKey = `playlists_${userId}`;
-    const storedPlaylists = JSON.parse(localStorage.getItem(storageKey) || "[]");
-    const newPlaylist = { name: newPlaylistName, songs: [] };
-    const updatedPlaylists = [...storedPlaylists, newPlaylist];
+    const newPlaylist = { name: newPlaylistName, songs: [] }; // Ny spellista
   
-    localStorage.setItem(storageKey, JSON.stringify(updatedPlaylists));
-    setPlaylists(updatedPlaylists);
-    toast.success(`Spellistan "${newPlaylistName}" har skapats!`);
-    setNewPlaylistName("");
-    setShowModal(false);
-  };  
+    try {
+      const updatedPlaylists = await createPlaylistInFirestore(userId, newPlaylist);
+      setPlaylists(updatedPlaylists); // Uppdatera React-state med de nya spellistorna
+      toast.success(`Spellistan "${newPlaylistName}" har skapats!`);
+      setNewPlaylistName("");
+      setShowModal(false);
+    } catch (error) {
+      console.error("Fel vid skapandet av spellista:", error);
+      toast.error("Ett fel uppstod vid skapandet av spellistan.");
+    }
+  };
 
-  const handleAddSongToPlaylist = (playlistIndex: number, song: Track) => {
+  const handleAddSongToPlaylist = async (playlistIndex: number, song: Track) => {
+    if (!userId) {
+      toast.error("Ingen användare inloggad.");
+      return;
+    }
+  
     const selectedPlaylist = playlists[playlistIndex];
   
     // Kontrollera att spellistan existerar
@@ -144,24 +162,36 @@ useEffect(() => {
       return;
     }
   
+    // Kontrollera om låten redan finns i spellistan
+    const isSongInPlaylist = selectedPlaylist.songs.some(
+      (playlistSong) => playlistSong.id === song.id
+    );
+  
+    if (isSongInPlaylist) {
+      toast.info(`"${song.name}" finns redan i spellistan "${selectedPlaylist.name}"`);
+      return;
+    }
+  
+    // Uppdatera spellistan med den nya låten
     const updatedSongs = [...selectedPlaylist.songs, song];
     const updatedPlaylist = { ...selectedPlaylist, songs: updatedSongs };
     const updatedPlaylists = playlists.map((playlist, index) =>
       index === playlistIndex ? updatedPlaylist : playlist
     );
   
+    // Uppdatera React-state
     setPlaylists(updatedPlaylists);
   
-    const storageKey = `playlists_${userId}`;
-    if (!userId) {
-      console.error("UserId saknas, kan inte uppdatera localStorage.");
-      return;
-    }
+    try {
+      // Uppdatera Firestore med de nya spellistorna
+      await updatePlaylistsInFirestore(userId, updatedPlaylists);
   
-    // Uppdatera localStorage
-    localStorage.setItem(storageKey, JSON.stringify(updatedPlaylists));
-    toast.success(`"${song.name}" har lagts till i spellistan "${selectedPlaylist.name}"`);
-  };  
+      toast.success(`"${song.name}" har lagts till i spellistan "${selectedPlaylist.name}"`);
+    } catch (error) {
+      console.error("Fel vid uppdatering av spellista i Firestore:", error);
+      toast.error("Ett fel uppstod vid uppdatering av spellistan.");
+    }
+  };
 
   const handleShareSong = (song: Track) => {
     const shareText = `Lyssna på "${song.name}" av ${song.artists[0].name}: ${song.external_urls.spotify}`;
@@ -184,44 +214,65 @@ useEffect(() => {
     }
   };
 
-  const handleDeletePlaylist = (playlistIndex: number) => {
+  const handleDeletePlaylist = async (playlistIndex: number) => {
     if (!userId) {
       toast.error("Ingen användare inloggad.");
       return;
     }
   
-    const storageKey = `playlists_${userId}`;
-    const updatedPlaylists = playlists.filter((_, index) => index !== playlistIndex);
-    setPlaylists(updatedPlaylists);
-    localStorage.setItem(storageKey, JSON.stringify(updatedPlaylists));
-    toast.success("Spellistan har tagits bort!");
+    // Kontrollera att indexet är giltigt
+    if (playlistIndex < 0 || playlistIndex >= playlists.length) {
+      console.error("Ogiltigt spellisteindex:", playlistIndex);
+      return;
+    }
+  
+    try {
+      // Skapa en ny lista utan den spellista som ska raderas
+      const updatedPlaylists = playlists.filter((_, index) => index !== playlistIndex);
+  
+      // Uppdatera spellistor i Firestore
+      await updatePlaylistsInFirestore(userId, updatedPlaylists);
+  
+      // Uppdatera React-state
+      setPlaylists(updatedPlaylists);
+  
+      toast.success("Spellistan har tagits bort!");
+    } catch (error) {
+      console.error("Fel vid borttagning av spellista i Firestore:", error);
+      toast.error("Ett fel uppstod vid borttagning av spellistan.");
+    }
   };
+  
 
-  const handleRemoveFromPlaylist = (playlistIndex: number, songId: string) => {
+  const handleRemoveFromPlaylist = async (playlistIndex: number, songId: string) => {
     if (!userId) {
       toast.error("Ingen användare inloggad.");
       return;
     }
-  
-    const storageKey = `playlists_${userId}`;
+
     const selectedPlaylist = playlists[playlistIndex];
     if (!selectedPlaylist) {
       toast.error("Spellistan hittades inte.");
       return;
     }
   
-    const updatedSongs = selectedPlaylist.songs.filter((song) => song.id !== songId);
-    const updatedPlaylist = { ...selectedPlaylist, songs: updatedSongs };
+    try {
+      const updatedSongs = selectedPlaylist.songs.filter((song) => song.id !== songId);
+      const updatedPlaylist = { ...selectedPlaylist, songs: updatedSongs };
   
-    const updatedPlaylists = playlists.map((playlist, index) =>
-      index === playlistIndex ? updatedPlaylist : playlist
-    );
-  
-    setPlaylists(updatedPlaylists);
-    localStorage.setItem(storageKey, JSON.stringify(updatedPlaylists));
-    toast.success("Låten har tagits bort från spellistan!");
-  };
+      const updatedPlaylists = playlists.map((playlist, index) =>
+        index === playlistIndex ? updatedPlaylist : playlist
+      );
+      await updatePlaylistsInFirestore(userId, updatedPlaylists);
 
+      setPlaylists(updatedPlaylists);
+      toast.success("Låten har tagits bort från spellistan!");
+    } catch (error) {
+      console.error("Fel vid borttagning av låt från spellista i Firestore:", error);
+      toast.error("Ett fel uppstod vid borttagning av låten från spellistan.");
+    }
+  };
+  
   const closeMenu = () => {
     setOpenMenuId(null); 
   };

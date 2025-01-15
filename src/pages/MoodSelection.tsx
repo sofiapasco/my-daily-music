@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import UserMenu from "../components/UserMenu";
+import { saveMoodToFirestore, fetchMoodFromFirestore } from "../service/firestoreService";
 
 const MoodSelection: React.FC = () => {
   const [mood, setMood] = useState<string | null>(null);
@@ -31,69 +32,52 @@ const MoodSelection: React.FC = () => {
     }    
   }, [userId]);
 
-
   useEffect(() => {
     if (!userId) {
       console.error("Ingen användare inloggad.");
       return;
     }
 
-    const today = new Date().toISOString().split("T")[0];
-    const selectedMoodKey = `selectedMood_${userId}`;
+    const fetchMood = async () => {
+      const moodData = await fetchMoodFromFirestore(userId);
+      const today = new Date().toISOString().split("T")[0];
 
-    const storedMood = localStorage.getItem(selectedMoodKey);
-
-    if (storedMood) {
-      const parsedMood = JSON.parse(storedMood);
-
-      if (parsedMood.date === today) {
-          setMood(parsedMood.mood); 
-        
-        navigate("/daily-song"); 
+      if (moodData && moodData.date === today) {
+        setMood(moodData.mood);
+        navigate("/daily-song");
       }
-    }
+    };
+
+    fetchMood();
   }, [userId, navigate]);
 
-  const saveMood = (selectedMood: string) => {
-    if (!userId) {
-      return;
-    }
-
-    const today = new Date().toISOString().split("T")[0];
-    const moodHistoryKey = `moodData_${userId}`;
-    const selectedMoodKey = `selectedMood_${userId}`;
+  const handleMoodSelection = async (selectedMood: string) => {
+    if (!userId) return;
 
     try {
-      const moodHistory = JSON.parse(localStorage.getItem(moodHistoryKey) || "[]");
-      const updatedMoodData = [
-        ...moodHistory.filter((entry: { date: string }) => entry.date !== today),
-        { date: today, mood: selectedMood },
-      ];
-
-      localStorage.setItem(moodHistoryKey, JSON.stringify(updatedMoodData));
-      localStorage.setItem(
-        selectedMoodKey,
-        JSON.stringify({ mood: selectedMood, date: today })
-      );
+      await saveMoodToFirestore(userId, selectedMood); // Spara humör i Firestore
+      setMood(selectedMood);
+      navigate("/daily-song");
     } catch (error) {
-      console.error("Fel vid sparande av humördata:", error);
+      console.error("Fel vid sparande av humör:", error);
     }
   };
 
-  const handleMoodSelection = (selectedMood: string) => {
-    saveMood(selectedMood);
-    setMood(selectedMood);
-    navigate("/daily-song");
+  const handleSkip = async () => {
+    if (!userId) return;
+
+    try {
+      await saveMoodToFirestore(userId, "neutral"); // Spara neutralt humör i Firestore
+      navigate("/daily-song");
+    } catch (error) {
+      console.error("Fel vid sparande av neutralt humör:", error);
+    }
   };
 
-  const handleSkip = () => {
-    saveMood("neutral");
-    navigate("/daily-song");
-  };
   console.log("Användarens valda humör är:", mood);
 
   return (
-      <div className="mood-selection-container" style={{height: "100vh"}}>
+    <div className="mood-selection-container" style={{ height: "100vh" }}>
       <div className="header">
         <UserMenu />
         <button className="logout-btn" onClick={logout}>
@@ -129,3 +113,4 @@ const MoodSelection: React.FC = () => {
 };
 
 export default MoodSelection;
+

@@ -1,6 +1,35 @@
 import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { doc, setDoc } from "firebase/firestore"; // Firestore-funktioner
+import { db } from "../service/firebaseConfig"; // Firestore-instans
+
+const saveSpotifyUser = async (accessToken: string) => {
+  console.log("Sparar användardata i Firestore...");
+  try {
+    const response = await fetch("https://api.spotify.com/v1/me", {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    });
+
+    if (!response.ok) {
+      throw new Error(`Spotify API-svar misslyckades: ${response.status}`);
+    }
+
+    const spotifyUser = await response.json();
+    console.log("Spotify användardata:", spotifyUser);
+
+    const userId = spotifyUser.id;
+    const displayName = spotifyUser.display_name;
+    const email = spotifyUser.email;
+
+    const userDoc = doc(db, "users", userId);
+    await setDoc(userDoc, { displayName, email, spotifyId: userId }, { merge: true });
+
+    console.log("Användardata har sparats i Firestore!");
+  } catch (error) {
+    console.error("Fel vid sparning av användardata:", error);
+  }
+};
 
 const Callback: React.FC = () => {
   const navigate = useNavigate();
@@ -59,6 +88,8 @@ const Callback: React.FC = () => {
             localStorage.setItem("currentUserId", userId);
             localStorage.setItem("spotifyTokenExpiry", (Date.now() + expiresIn * 1000).toString());
             setTokenHandled(true);
+
+            await saveSpotifyUser(token);
 
             navigate("/mood-selection");
           } else {

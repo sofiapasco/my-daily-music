@@ -35,7 +35,7 @@ export interface Song {
     duration_ms: number;
     popularity: number;
     currentTime?: number;
-    date: number;
+    date: string;
     genres?: string[];
     comment?: string;
   }

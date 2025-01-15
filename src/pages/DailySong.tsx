@@ -6,6 +6,12 @@ import SpotifyPlayer from "../components/SpotifyPlayer";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import ShareSong from "../components/ShareSong";
+import { saveToFirestore, 
+          fetchLikedSongs, 
+          fetchExcludedSongs, 
+          fetchAppPlaylists,
+          fetchMoodFromFirestore
+         } from "../service/firestoreService";
 import { useSwipeable } from "react-swipeable";
 import { moodAttributes } from "../components/MoodAttributes";
 import UserMenu from '../components/UserMenu';
@@ -108,20 +114,29 @@ const DailySong: React.FC = () => {
   useEffect(() => {
     if (!userId) return;
   
-    const selectedMoodKey = `selectedMood_${userId}`;
-    const storedMoodData = localStorage.getItem(selectedMoodKey);
+    const getMoodFromFirestore = async () => {
+      try {
+        const moodData = await fetchMoodFromFirestore(userId); // Hämta humör från Firestore
+        if (!moodData) {
+          navigate("/mood-selection"); // Om inget humör hittas, navigera till humörval
+          return;
+        }
   
-    if (!storedMoodData) {
-      navigate("/mood-selection");
-    } else {
-      const { mood, date } = JSON.parse(storedMoodData);
-      const today = new Date().toISOString().split("T")[0];
-      if (date !== today) {
-        navigate("/mood-selection");
-      } else {
-        setSelectedMood(mood);
+        const { mood, date } = moodData;
+        const today = new Date().toISOString().split("T")[0];
+  
+        if (date !== today) {
+          navigate("/mood-selection"); // Om datumet inte matchar, navigera till humörval
+        } else {
+          setSelectedMood(mood); // Uppdatera React-state med humöret
+        }
+      } catch (error) {
+        console.error("Fel vid hämtning av humördata:", error);
+        navigate("/mood-selection"); // Navigera till humörval vid fel
       }
-    }
+    };
+  
+    getMoodFromFirestore();
   }, [userId, navigate]);
   
   
@@ -313,19 +328,29 @@ const handleExcludeSong = async () => {
   }
 
   if (currentSong && currentSong.id) {
-    const excludedStorageKey = `excludedSongs_${userId}`;
-    const storedExcludedSongs = JSON.parse(localStorage.getItem(excludedStorageKey) || "[]");
+    const collectionPath = `users/${userId}/data`;
+    const documentId = "excludedSongs";
 
-    if (storedExcludedSongs.includes(currentSong.id)) {
-      await fetchDailySong(storedExcludedSongs, selectedMood || "neutral");
-      return; 
+    // Kontrollera om låten redan är exkluderad
+    if (excludedSongs.includes(currentSong.id)) {
+      await fetchDailySong(excludedSongs, selectedMood || "neutral");
+      return;
     }
 
-    const updatedExcludedSongs = [...storedExcludedSongs, currentSong.id];
-    setExcludedSongs(updatedExcludedSongs); 
-    localStorage.setItem(excludedStorageKey, JSON.stringify(updatedExcludedSongs)); 
-    toast.error("Låten har lagts till i exkluderade låtar!");
+    // Uppdatera exkluderade låtar i state
+    const updatedExcludedSongs = [...excludedSongs, currentSong.id];
+    setExcludedSongs(updatedExcludedSongs);
 
+    // Spara i Firestore
+    try {
+      await saveToFirestore(collectionPath, documentId, { songs: updatedExcludedSongs });
+      toast.success("Låten har lagts till i exkluderade låtar!");
+    } catch (error) {
+      console.error("Fel vid sparning av exkluderade låtar:", error);
+      toast.error("Kunde inte spara exkluderade låtar i Firestore.");
+    }
+
+    // Hämta en ny låt
     setCurrentSong(null);
     await fetchDailySong(updatedExcludedSongs, selectedMood || "neutral");
   } else {
@@ -353,23 +378,27 @@ useEffect(() => {
   }
 }, [userId]);
 
-const handleLike = (song: Track) => {
+const handleLike = async (song: Track) => {
   if (!userId) {
     toast.error("Ingen användare inloggad.");
     return;
   }
 
-  const storageKey = `likedSongs_${userId}`;
-  const storedLikedSongs = JSON.parse(localStorage.getItem(storageKey) || "[]");
+  const collectionPath = `users/${userId}/data`;
+  const documentId = "likedSongs";
 
-  if (storedLikedSongs.find((likedSong: Track) => likedSong.id === song.id)) {
+  const storedLikedSongs = likedSongs || []; // React-state
+  const isAlreadyLiked = storedLikedSongs.find((likedSong) => likedSong.id === song.id);
+
+  if (isAlreadyLiked) {
     toast.info("Låten är redan sparad i dina gillade låtar!");
     return;
   }
 
   const updatedLikedSongs = [...storedLikedSongs, { ...song, date: new Date().toISOString() }];
-  localStorage.setItem(storageKey, JSON.stringify(updatedLikedSongs));
   setLikedSongs(updatedLikedSongs); // Uppdatera React-state
+
+  await saveToFirestore(collectionPath, documentId, { songs: updatedLikedSongs });
   toast.success("Låten har lagts till i dina gillade låtar!");
 
     const imageElement = currentSong
@@ -451,7 +480,13 @@ const handleLike = (song: Track) => {
       console.log("Länk kopierad till urklipp!");
     }
   };
-  const handleAddSongToPlaylist = (playlistIndex: number, song: Track) => {
+
+  const handleAddSongToPlaylist = async (playlistIndex: number, song: Track) => {
+    if (!userId) {
+      toast.error("Ingen användare inloggad.");
+      return;
+    }
+  
     // Kontrollera om spellistan finns
     if (playlistIndex < 0 || playlistIndex >= playlists.length) {
       console.error("Ogiltigt spellisteindex:", playlistIndex);
@@ -460,6 +495,7 @@ const handleLike = (song: Track) => {
   
     const selectedPlaylist = playlists[playlistIndex];
   
+    // Kontrollera om låten redan finns i spellistan
     const isSongInPlaylist = selectedPlaylist.songs.some(
       (playlistSong) => playlistSong.id === song.id
     );
@@ -467,23 +503,59 @@ const handleLike = (song: Track) => {
       toast.info(`Låten "${song.name}" finns redan i spellistan "${selectedPlaylist.name}"!`);
       return;
     }
-
+  
+    // Uppdatera spellistan
     const updatedSongs = [...selectedPlaylist.songs, song];
     const updatedPlaylist = { ...selectedPlaylist, songs: updatedSongs };
     const updatedPlaylists = playlists.map((playlist, index) =>
       index === playlistIndex ? updatedPlaylist : playlist
     );
     setPlaylists(updatedPlaylists);
-    localStorage.setItem(`playlists_${userId}`, JSON.stringify(updatedPlaylists));
-    toast.success(`"${song.name}" har lagts till i spellistan "${selectedPlaylist.name}"!`);
-  };
+  
+    // Spara i Firestore
+    const collectionPath = `users/${userId}/data`;
+    const documentId = "playlists";
+    try {
+      await saveToFirestore(collectionPath, documentId, { playlists: updatedPlaylists });
+      toast.success(`"${song.name}" har lagts till i spellistan "${selectedPlaylist.name}"!`);
+    } catch (error) {
+      toast.error("Ett fel uppstod vid sparning av spellistan.");
+    }
+  }; 
+
+  useEffect(() => {
+    if (!userId) return;
+  
+    const getAppPlaylists = async () => {
+      const appPlaylistsFromFirestore = await fetchAppPlaylists(userId);
+      setPlaylists(appPlaylistsFromFirestore); // Uppdatera React-state med användarens app-spellistor
+    };
+  
+    getAppPlaylists();
+  }, [userId]);  
   
   useEffect(() => {
-    if (!userId) return; 
-    const storedPlaylists = JSON.parse(localStorage.getItem(`playlists_${userId}`) || "[]");
-    setPlaylists(storedPlaylists);
-  }, [userId]);
+    if (!userId) return;
+  
+    const getLikedSongs = async () => {
+      const likedSongsFromFirestore = await fetchLikedSongs(userId);
+      setLikedSongs(likedSongsFromFirestore); 
+    };
+  
+    getLikedSongs();
+  }, [userId]); 
 
+  useEffect(() => {
+    if (!userId) return;
+  
+    const getExcludedSongs = async () => {
+      const excludedSongsFromFirestore = await fetchExcludedSongs(userId);
+      setExcludedSongs(excludedSongsFromFirestore); 
+    };
+  
+    getExcludedSongs();
+  }, [userId]);
+  
 
   return (
     <>
