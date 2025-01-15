@@ -83,14 +83,11 @@ export const fetchLikedSongs = async (userId: string) => {
       const docSnap = await getDoc(docRef);
   
       if (docSnap.exists()) {
-        console.log("App-spellistor hämtade:", docSnap.data());
         return docSnap.data().playlists || [];
       } else {
-        console.log("Inga app-spellistor hittades.");
         return [];
       }
     } catch (error) {
-      console.error("Fel vid hämtning av app-spellistor:", error);
       return [];
     }
   };
@@ -107,11 +104,9 @@ export const fetchLikedSongs = async (userId: string) => {
       const updatedPlaylists = [...existingPlaylists, newPlaylist];
   
       await setDoc(docRef, { playlists: updatedPlaylists }, { merge: true });
-      console.log("Spellista skapades eller uppdaterades i Firestore.");
       return updatedPlaylists;
     } catch (error) {
-      console.error("Fel vid skapandet av spellista i Firestore:", error);
-      throw error; // Kasta felet vidare så det kan hanteras
+      throw error;
     }
   };
 

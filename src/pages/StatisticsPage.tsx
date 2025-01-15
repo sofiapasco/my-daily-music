@@ -33,7 +33,6 @@ const StatisticsPage: React.FC = () => {
     }).length;
   };
 
-  // Funktion för att hämta dagboksdata
   const getDiaryData = () => {
     if (!userId) return;
 
@@ -49,17 +48,13 @@ const StatisticsPage: React.FC = () => {
       startDate.setMonth(today.getMonth() - 1);
     }
 
-    // Filtrera inlägg inom perioden
     const filteredEntries = diaryEntries.filter((entry: { date: string }) => {
       const entryDate = new Date(entry.date);
       return entryDate >= startDate && entryDate <= today;
     });
 
-    // Räkna unika aktiva dagar
     const uniqueDays = new Set(filteredEntries.map((entry: { date: string }) => entry.date));
     setActiveDaysCount(uniqueDays.size);
-
-    // Räkna totalt antal kommentarer
     setCommentCount(filteredEntries.length);
   };
 

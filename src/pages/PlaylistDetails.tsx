@@ -4,6 +4,7 @@ import { Track } from "../types/song";
 import Pagination from "../components/Pagination";
 import { toast } from "react-toastify";
 import { useAuth } from "../context/AuthContext";
+import { fetchAppPlaylists, updatePlaylistsInFirestore } from "../service/firestoreService";
 import UserMenu from "../components/UserMenu";
 
 const PlaylistDetails: React.FC = () => {
@@ -17,24 +18,28 @@ const PlaylistDetails: React.FC = () => {
   const { userId, logout } = useAuth();
 
   useEffect(() => {
-    // Kontrollera om userId är tillgängligt
-    if (!userId) {
-      console.error("Ingen användare inloggad.");
-      return;
-    }
+    const fetchPlaylistsFromFirebase = async () => {
+      if (!userId) {
+        console.error("Ingen användare inloggad.");
+        return;
+      }
   
-    // Bygg nyckeln för att hämta spellistor kopplade till användaren
-    const storageKey = `playlists_${userId}`;
-    const storedPlaylists = localStorage.getItem(storageKey);
+      try {
+        const fetchedPlaylists = await fetchAppPlaylists(userId);
+        if (fetchedPlaylists.length > 0) {
+          setPlaylists(fetchedPlaylists);
+          console.log("Spellistor hämtade från Firestore:", fetchedPlaylists);
+        } else {
+          console.warn(`Inga spellistor hittades för användare: ${userId}`);
+          setPlaylists([]); 
+        }
+      } catch (error) {
+        console.error("Fel vid hämtning av spellistor från Firestore:", error);
+      }
+    };
   
-    // Kontrollera om det finns sparade spellistor för användaren
-    if (storedPlaylists) {
-      setPlaylists(JSON.parse(storedPlaylists));
-    } else {
-      console.warn(`Inga spellistor hittades för användare: ${userId}`);
-      setPlaylists([]); // Om det inte finns några spellistor, sätt till en tom array
-    }
-  }, [userId]); // Kör denna `useEffect` igen om `userId` ändras
+    fetchPlaylistsFromFirebase();
+  }, [userId]);
   
 
   // Hitta spellistan baserat på `name`
@@ -66,47 +71,74 @@ const PlaylistDetails: React.FC = () => {
     toast.success("Länk kopierad till urklipp!");
   };
 
-  // Lägg till låt i en annan spellista
-  const handleAddSongToPlaylist = (targetPlaylistName: string, song: Track) => {
+  const handleAddSongToPlaylist = async (targetPlaylistName: string, song: Track) => {
+    if (!userId) {
+      toast.error("Ingen användare inloggad.");
+      return;
+    }
+  
     const targetPlaylist = playlists.find((p) => p.name === targetPlaylistName);
     if (!targetPlaylist) {
       toast.error("Målspellistan hittades inte.");
       return;
     }
-
+  
     const updatedSongs = [...targetPlaylist.songs, song];
     const updatedPlaylists = playlists.map((p) =>
       p.name === targetPlaylistName ? { ...p, songs: updatedSongs } : p
     );
-
-    setPlaylists(updatedPlaylists);
-    localStorage.setItem("playlists", JSON.stringify(updatedPlaylists));
-    toast.success(`"${song.name}" har lagts till i spellistan "${targetPlaylistName}"`);
+  
+    try {
+      await updatePlaylistsInFirestore(userId, updatedPlaylists);
+      setPlaylists(updatedPlaylists); // Uppdatera state lokalt
+      toast.success(`"${song.name}" har lagts till i spellistan "${targetPlaylistName}"`);
+    } catch (error) {
+      console.error("Fel vid uppdatering av spellista i Firestore:", error);
+      toast.error("Ett fel uppstod vid uppdatering av spellistan.");
+    }
   };
 
-  // Ta bort låt från spellistan
-  const handleRemoveFromSavedSongs = (songId: string) => {
+  const handleRemoveFromSavedSongs = async (songId: string) => {
+    if (!userId) {
+      toast.error("Ingen användare inloggad.");
+      return;
+    }
+  
     const updatedSongs = playlist.songs.filter((song) => song.id !== songId);
     const updatedPlaylist = { ...playlist, songs: updatedSongs };
     const updatedPlaylists = playlists.map((p) =>
       p.name === playlist.name ? updatedPlaylist : p
     );
-
-    setPlaylists(updatedPlaylists);
-    localStorage.setItem("playlists", JSON.stringify(updatedPlaylists));
-    toast.success("Låten har tagits bort från spellistan!");
+  
+    try {
+      // Uppdatera spellistor i Firebase
+      await updatePlaylistsInFirestore(userId, updatedPlaylists);
+      setPlaylists(updatedPlaylists); // Uppdatera state lokalt
+      toast.success("Låten har tagits bort från spellistan!");
+    } catch (error) {
+      console.error("Fel vid uppdatering av spellistor i Firestore:", error);
+      toast.error("Ett fel uppstod vid borttagning av låten.");
+    }
   };
 
-  // Radera spellista
-  const handleDeletePlaylist = () => {
+  const handleDeletePlaylist = async () => {
+    if (!userId) {
+      toast.error("Ingen användare inloggad.");
+      return;
+    }
     const updatedPlaylists = playlists.filter((p) => p.name !== playlist.name);
-    setPlaylists(updatedPlaylists);
-    localStorage.setItem("playlists", JSON.stringify(updatedPlaylists));
-    toast.success("Spellistan har tagits bort!");
-    navigate("/"); // Navigera tillbaka till startsidan eller annan sida
+  
+    try {
+      await updatePlaylistsInFirestore(userId, updatedPlaylists);
+      setPlaylists(updatedPlaylists); 
+      toast.success("Spellistan har tagits bort!");
+      navigate("/"); 
+    } catch (error) {
+      console.error("Fel vid radering av spellista i Firestore:", error);
+      toast.error("Ett fel uppstod vid radering av spellistan.");
+    }
   };
 
-  // Hantera menyöppning
   const handleToggleMenu = (menuId: string) => {
     setOpenMenuId(openMenuId === menuId ? null : menuId);
   };

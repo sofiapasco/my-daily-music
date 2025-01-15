@@ -10,7 +10,8 @@ import { saveToFirestore,
           fetchLikedSongs, 
           fetchExcludedSongs, 
           fetchAppPlaylists,
-          fetchMoodFromFirestore
+          fetchMoodFromFirestore,
+          updateLikedSongsInFirestore
          } from "../service/firestoreService";
 import { useSwipeable } from "react-swipeable";
 import { moodAttributes } from "../components/MoodAttributes";
@@ -36,14 +37,6 @@ const DailySong: React.FC = () => {
   const artistGenreCache: Record<string, string[]> = {};
   const limit = pLimit(5);
 
-  const updateLocalStorage = (key: string, value: any, userId: string, setState: React.Dispatch<any>) => {
-    const storageKey = `${key}_${userId}`; 
-    const existingData = JSON.parse(localStorage.getItem(storageKey) || "[]");
-    const updatedData = Array.isArray(existingData) ? [...existingData, ...value] : value;
-    localStorage.setItem(storageKey, JSON.stringify(updatedData));
-    setState(updatedData);
-  };  
-  
   useEffect(() => {
     if (!currentSong) return;
 
@@ -116,9 +109,9 @@ const DailySong: React.FC = () => {
   
     const getMoodFromFirestore = async () => {
       try {
-        const moodData = await fetchMoodFromFirestore(userId); // Hämta humör från Firestore
+        const moodData = await fetchMoodFromFirestore(userId); 
         if (!moodData) {
-          navigate("/mood-selection"); // Om inget humör hittas, navigera till humörval
+          navigate("/mood-selection"); 
           return;
         }
   
@@ -126,13 +119,13 @@ const DailySong: React.FC = () => {
         const today = new Date().toISOString().split("T")[0];
   
         if (date !== today) {
-          navigate("/mood-selection"); // Om datumet inte matchar, navigera till humörval
+          navigate("/mood-selection"); 
         } else {
-          setSelectedMood(mood); // Uppdatera React-state med humöret
+          setSelectedMood(mood); 
         }
       } catch (error) {
         console.error("Fel vid hämtning av humördata:", error);
-        navigate("/mood-selection"); // Navigera till humörval vid fel
+        navigate("/mood-selection"); 
       }
     };
   
@@ -157,7 +150,6 @@ const DailySong: React.FC = () => {
       return [];
     }
   
-    // Filtrering av låtar baserat på genre, popularitet, och längd
     const filteredTracks = tracks.filter((track) => {
       const hasGenres = track.genres && track.genres.length > 0;
       
@@ -228,6 +220,8 @@ const fetchDailySong = async (excludedSongs: string[], selectedMood: string) => 
   const today = new Date();
   const dateKey = `${today.getFullYear()}-${today.getMonth() + 1}-${today.getDate()}`;
   const dailySongKey = `dailySong_${userId}_${dateKey}`;
+  const collectionPath = `users/${userId}/data`;
+  const documentId = "dailySong";
 
   const storedDailySong = localStorage.getItem(dailySongKey);
   
@@ -293,7 +287,6 @@ const fetchDailySong = async (excludedSongs: string[], selectedMood: string) => 
       )
     );
     const tracksToFilter = tracksWithGenres.filter((track) => !excludedSongs.includes(track.id));
-
     const filteredTracks = filterTracksByMood(tracksToFilter, selectedMood);
 
     if (!filteredTracks.length) {
@@ -303,9 +296,15 @@ const fetchDailySong = async (excludedSongs: string[], selectedMood: string) => 
     const shuffledTracks = filteredTracks.sort(() => Math.random() - 0.5);
 
     const randomSong = shuffledTracks.find((track) => !excludedSongs.includes(track.id));
+
     if (randomSong) {
-      localStorage.setItem(dailySongKey, JSON.stringify(randomSong));
+      // Spara dagens låt i Firebase
+      await saveToFirestore(collectionPath, documentId, {
+        song: randomSong,
+        date: today,
+      });
       setCurrentSong(randomSong);
+      toast.success("Dagens låt har hämtats och sparats!");
     } else {
       console.error("Ingen giltig låt hittades efter blandning och filtrering.");
     }
@@ -315,10 +314,17 @@ const fetchDailySong = async (excludedSongs: string[], selectedMood: string) => 
 };
 
 useEffect(() => {
-  if (!accessToken || !selectedMood) return;
-  const storedExcludedSongs = JSON.parse(localStorage.getItem("excludedSongs") || "[]");
-  fetchDailySong(storedExcludedSongs, selectedMood);
-}, [accessToken, selectedMood, excludedSongs]);
+  if (!accessToken || !selectedMood || !userId) return; 
+  const fetchExcludedSongsFromFirebase = async () => {
+    try {
+      const excludedSongsFromFirestore = await fetchExcludedSongs(userId); 
+      fetchDailySong(excludedSongsFromFirestore, selectedMood); 
+    } catch (error) {
+      console.error("Fel vid hämtning av exkluderade låtar från Firebase:", error);
+    }
+  };
+  fetchExcludedSongsFromFirebase();
+}, [accessToken, selectedMood, excludedSongs, userId]);
 
 
 const handleExcludeSong = async () => {
@@ -331,17 +337,14 @@ const handleExcludeSong = async () => {
     const collectionPath = `users/${userId}/data`;
     const documentId = "excludedSongs";
 
-    // Kontrollera om låten redan är exkluderad
     if (excludedSongs.includes(currentSong.id)) {
       await fetchDailySong(excludedSongs, selectedMood || "neutral");
       return;
     }
 
-    // Uppdatera exkluderade låtar i state
     const updatedExcludedSongs = [...excludedSongs, currentSong.id];
     setExcludedSongs(updatedExcludedSongs);
 
-    // Spara i Firestore
     try {
       await saveToFirestore(collectionPath, documentId, { songs: updatedExcludedSongs });
       toast.success("Låten har lagts till i exkluderade låtar!");
@@ -350,7 +353,6 @@ const handleExcludeSong = async () => {
       toast.error("Kunde inte spara exkluderade låtar i Firestore.");
     }
 
-    // Hämta en ny låt
     setCurrentSong(null);
     await fetchDailySong(updatedExcludedSongs, selectedMood || "neutral");
   } else {
@@ -361,21 +363,18 @@ const handleExcludeSong = async () => {
 useEffect(() => {
   if (!userId) return;
 
-  const likedStorageKey = `likedSongs_${userId}`;
-  const storedLikedSongs = localStorage.getItem(likedStorageKey);
-  if (storedLikedSongs) {
-    setLikedSongs(JSON.parse(storedLikedSongs));
-  } else {
-    setLikedSongs([]);
-  }
+  const fetchData = async () => {
+    try {
+      const likedSongs = await fetchLikedSongs(userId);
+      setLikedSongs(likedSongs);
+      const excludedSongs = await fetchExcludedSongs(userId);
+      setExcludedSongs(excludedSongs);
+    } catch (error) {
+      console.error("Fel vid hämtning av data från Firebase:", error);
+    }
+  };
 
-  const excludedStorageKey = `excludedSongs_${userId}`;
-  const storedExcludedSongs = localStorage.getItem(excludedStorageKey);
-  if (storedExcludedSongs) {
-    setExcludedSongs(JSON.parse(storedExcludedSongs));
-  } else {
-    setExcludedSongs([]);
-  }
+  fetchData();
 }, [userId]);
 
 const handleLike = async (song: Track) => {
@@ -451,20 +450,24 @@ const handleLike = async (song: Track) => {
     }
   };
   
-  const handleRemoveFromSavedSongs = (songId: string) => {
+  const handleRemoveFromSavedSongs = async (songId: string) => {
     if (!userId) {
       toast.error("Ingen användare inloggad.");
       return;
     }
   
-    const storageKey = `likedSongs_${userId}`;
-    const storedLikedSongs = JSON.parse(localStorage.getItem(storageKey) || "[]");
-    const updatedSongs = storedLikedSongs.filter((song: Track) => song.id !== songId);
+    try {
+      const updatedSongs = likedSongs.filter((song: Track) => song.id !== songId);
+      await updateLikedSongsInFirestore(userId, updatedSongs);
+      setLikedSongs(updatedSongs);
   
-    updateLocalStorage("likedSongs", updatedSongs, userId, setLikedSongs);
-    toast.success("Låten har tagits bort!");
+      toast.success("Låten har tagits bort!");
+    } catch (error) {
+      console.error("Fel vid borttagning av låten från Firestore:", error);
+      toast.error("Ett fel uppstod vid borttagning av låten.");
+    }
   };
-  
+
   const handleShareSong = (song: Track) => {
     const shareText = `Lyssna på "${song.name}" av ${song.artists[0].name}: ${song.external_urls.spotify}`;
     if (navigator.share) {
@@ -504,7 +507,6 @@ const handleLike = async (song: Track) => {
       return;
     }
   
-    // Uppdatera spellistan
     const updatedSongs = [...selectedPlaylist.songs, song];
     const updatedPlaylist = { ...selectedPlaylist, songs: updatedSongs };
     const updatedPlaylists = playlists.map((playlist, index) =>
@@ -512,7 +514,6 @@ const handleLike = async (song: Track) => {
     );
     setPlaylists(updatedPlaylists);
   
-    // Spara i Firestore
     const collectionPath = `users/${userId}/data`;
     const documentId = "playlists";
     try {
