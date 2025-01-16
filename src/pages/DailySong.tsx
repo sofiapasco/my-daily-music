@@ -10,8 +10,8 @@ import { saveToFirestore,
           fetchLikedSongs, 
           fetchExcludedSongs, 
           fetchAppPlaylists,
-          fetchMoodFromFirestore,
-          updateLikedSongsInFirestore
+          updateLikedSongsInFirestore,
+          fetchFromFirestore
          } from "../service/firestoreService";
 import { useSwipeable } from "react-swipeable";
 import { moodAttributes } from "../components/MoodAttributes";
@@ -107,31 +107,35 @@ const DailySong: React.FC = () => {
   useEffect(() => {
     if (!userId) return;
   
-    const getMoodFromFirestore = async () => {
+    const getMoodHistoryFromFirestore = async () => {
       try {
-        const moodData = await fetchMoodFromFirestore(userId); 
-        if (!moodData) {
-          navigate("/mood-selection"); 
+        // Hämta humörhistorik från Firestore
+        const moodHistoryDoc = await fetchFromFirestore(`users/${userId}/data`, "moodHistory");
+
+        if (!moodHistoryDoc || !Array.isArray(moodHistoryDoc.entries)) {
+          console.log("Ingen humörhistorik hittades. Navigerar till humörvalsidan.");
+          navigate("/mood-selection");
           return;
         }
   
-        const { mood, date } = moodData;
         const today = new Date().toISOString().split("T")[0];
+        const todayMood = moodHistoryDoc.entries.find((entry: { date: string }) => entry.date === today);
   
-        if (date !== today) {
-          navigate("/mood-selection"); 
+        if (!todayMood) {
+          console.log("Dagens humör saknas. Navigerar till humörvalsidan.");
+          navigate("/mood-selection");
         } else {
-          setSelectedMood(mood); 
+          console.log("Dagens humör hittades:", todayMood);
+          setSelectedMood(todayMood.mood); 
         }
       } catch (error) {
-        console.error("Fel vid hämtning av humördata:", error);
+        console.error("Fel vid hämtning av humörhistorik från Firestore:", error);
         navigate("/mood-selection"); 
       }
     };
   
-    getMoodFromFirestore();
-  }, [userId, navigate]);
-  
+    getMoodHistoryFromFirestore();
+  }, [userId, navigate]);  
   
   const filterTracksByMood = (tracks: Track[], mood: string, isFallback = false): Track[] => {
     const moodMapping: Record<string, string> = {

@@ -110,7 +110,6 @@ const StatisticsPage: React.FC = () => {
         {selectedPeriod === "week" ? "veckan" : "månaden"}.
       </p>
 
-      {/* Mood Statistics */}
       {selectedPeriod === "week" ? (
         <MoodStatistics />
       ) : (

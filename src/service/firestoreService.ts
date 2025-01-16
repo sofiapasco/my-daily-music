@@ -1,7 +1,6 @@
 import { doc, setDoc, getDoc } from "firebase/firestore";
-import { db } from "./firebaseConfig"; // Importera Firestore-instansen
+import { db } from "./firebaseConfig"; 
 
-// Generisk funktion för att spara data i Firestore
 export const saveToFirestore = async (
   collectionPath: string,
   documentId: string,
@@ -16,7 +15,6 @@ export const saveToFirestore = async (
   }
 };
 
-// Generisk funktion för att hämta data från Firestore
 export const fetchFromFirestore = async (
   collectionPath: string,
   documentId: string
@@ -110,36 +108,20 @@ export const fetchLikedSongs = async (userId: string) => {
     }
   };
 
-  export const fetchMoodFromFirestore = async (userId: string) => {
-    try {
-      const docRef = doc(db, `users/${userId}/data`, "mood");
-      const docSnap = await getDoc(docRef);
-  
-      if (docSnap.exists()) {
-        console.log("Humördata hämtad från Firestore:", docSnap.data());
-        return docSnap.data();
-      } else {
-        console.log("Ingen humördata hittades i Firestore.");
-        return null;
-      }
-    } catch (error) {
-      console.error("Fel vid hämtning av humördata från Firestore:", error);
-      return null;
+  export const saveMoodToFirestore = async (userId: string, moodHistory: { date: string; mood: string }[]) => {
+    if (!userId) {
+      console.warn("Ingen användare inloggad. Kan inte spara humördata.");
+      return;
     }
-  };
-
-  export const saveMoodToFirestore = async (userId: string, mood: string) => {
-    try {
-      const docRef = doc(db, `users/${userId}/data`, "mood");
-      const today = new Date().toISOString().split("T")[0];
-      await setDoc(docRef, { mood, date: today }, { merge: true });
-      console.log("Humördata har sparats i Firestore.");
-    } catch (error) {
-      console.error("Fel vid sparning av humördata i Firestore:", error);
-    }
-  };
   
-  // Uppdatera spellistor i Firestore
+    try {
+      await saveToFirestore(`users/${userId}/data`, "moodHistory", { entries: moodHistory });
+      console.log("Humörhistorik sparad i Firestore:", moodHistory);
+    } catch (error) {
+      console.error("Fel vid sparande av humörhistorik i Firestore:", error);
+    }
+  };  
+  
   export const updatePlaylistsInFirestore = async (userId: string, playlists: any[]) => {
     try {
       const docRef = doc(db, `users/${userId}/data`, "playlists");
@@ -150,7 +132,6 @@ export const fetchLikedSongs = async (userId: string) => {
     }
   };
   
-  // Uppdatera gillade låtar i Firestore
   export const updateLikedSongsInFirestore = async (userId: string, likedSongs: any[]) => {
     try {
       const docRef = doc(db, `users/${userId}/data`, "likedSongs");

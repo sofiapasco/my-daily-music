@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import UserMenu from "../components/UserMenu";
-import { saveMoodToFirestore, fetchMoodFromFirestore } from "../service/firestoreService";
+import { saveMoodToFirestore, fetchFromFirestore, } from "../service/firestoreService";
 
 const MoodSelection: React.FC = () => {
   const [mood, setMood] = useState<string | null>(null);
@@ -32,50 +32,86 @@ const MoodSelection: React.FC = () => {
     }    
   }, [userId]);
 
+  console.log("användarens", mood)
+
   useEffect(() => {
     if (!userId) {
       console.error("Ingen användare inloggad.");
       return;
     }
-
-    const fetchMood = async () => {
-      const moodData = await fetchMoodFromFirestore(userId);
-      const today = new Date().toISOString().split("T")[0];
-
-      if (moodData && moodData.date === today) {
-        setMood(moodData.mood);
-        navigate("/daily-song");
+  
+    const fetchMoodHistory = async () => {
+      try {
+        const moodHistoryDoc = await fetchFromFirestore(`users/${userId}/data`, "moodHistory");
+        if (moodHistoryDoc && Array.isArray(moodHistoryDoc.entries)) {
+          const today = new Date().toISOString().split("T")[0];
+          const todayMood = moodHistoryDoc.entries.find((entry: { date: string }) => entry.date === today);
+          if (todayMood) {
+            console.log("Dagens humör redan sparat:", todayMood);
+            setMood(todayMood.mood);
+            navigate("/daily-song");
+          }
+        }
+      } catch (error) {
+        console.error("Fel vid hämtning av humörhistorik från Firestore:", error);
       }
     };
-
-    fetchMood();
-  }, [userId, navigate]);
+  
+    fetchMoodHistory();
+  }, [userId, navigate]);  
+  
 
   const handleMoodSelection = async (selectedMood: string) => {
-    if (!userId) return;
-
-    try {
-      await saveMoodToFirestore(userId, selectedMood); // Spara humör i Firestore
-      setMood(selectedMood);
-      navigate("/daily-song");
-    } catch (error) {
-      console.error("Fel vid sparande av humör:", error);
+    if (!userId) {
+      console.warn("Ingen användare inloggad.");
+      return;
     }
-  };
-
-  const handleSkip = async () => {
-    if (!userId) return;
-
+  
     try {
-      await saveMoodToFirestore(userId, "neutral"); // Spara neutralt humör i Firestore
-      navigate("/daily-song");
+      const today = new Date().toISOString().split("T")[0];
+  
+      const moodHistoryDoc = await fetchFromFirestore(`users/${userId}/data`, "moodHistory");
+      const existingMoodHistory = moodHistoryDoc?.entries || [];
+
+      const updatedMoodHistory = [
+        ...existingMoodHistory.filter((entry: { date: string }) => entry.date !== today),
+        { date: today, mood: selectedMood },
+      ].slice(-7);
+  
+      await saveMoodToFirestore(userId, updatedMoodHistory);
+  
+      setMood(selectedMood); 
+      navigate("/daily-song"); 
+    } catch (error) {
+      console.error("Fel vid sparande av humör till historik:", error);
+    }
+  };  
+  
+  const handleSkip = async () => {
+    if (!userId) {
+      console.warn("Ingen användare inloggad.");
+      return;
+    }
+  
+    try {
+      const today = new Date().toISOString().split("T")[0];
+
+      const moodHistoryDoc = await fetchFromFirestore(`users/${userId}/data`, "moodHistory");
+      const existingMoodHistory = moodHistoryDoc?.entries || [];
+  
+      const updatedMoodHistory = [
+        ...existingMoodHistory.filter((entry: { date: string }) => entry.date !== today),
+        { date: today, mood: "neutral" },
+      ].slice(-7);
+  
+      await saveMoodToFirestore(userId, updatedMoodHistory);
+  
+      navigate("/daily-song"); 
     } catch (error) {
       console.error("Fel vid sparande av neutralt humör:", error);
     }
   };
-
-  console.log("Användarens valda humör är:", mood);
-
+  
   return (
     <div className="mood-selection-container" style={{ height: "100vh" }}>
       <div className="header">

@@ -12,6 +12,7 @@ import {
   Legend,
   ChartOptions,
 } from "chart.js";
+import { fetchFromFirestore } from "../service/firestoreService";
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
 
@@ -24,22 +25,24 @@ const MoodStatistics: React.FC = () => {
       console.warn("Ingen användare inloggad. Kan inte hämta humördata.");
       return;
     }
-    
-    try {
-      const moodHistoryKey = `moodData_${userId}`; // Nyckeln inkluderar userId
-      const moodHistory = JSON.parse(localStorage.getItem(moodHistoryKey) || "[]");
-      if (Array.isArray(moodHistory)) {
-        setMoodData(moodHistory);
-      } else {
-        console.warn("Felaktig data i localStorage, återställning av humördata.");
-        localStorage.setItem(moodHistoryKey, "[]");
+  
+    const fetchMoodHistory = async () => {
+      try {
+        const moodHistory = await fetchFromFirestore(`users/${userId}/data`, "moodHistory");
+        if (moodHistory && Array.isArray(moodHistory.entries)) {
+          setMoodData(moodHistory.entries); 
+        } else {
+          console.warn("Felaktig eller tom humördata från Firestore.");
+          setMoodData([]);
+        }
+      } catch (error) {
+        console.error("Fel vid hämtning av humördata från Firestore:", error);
+        setMoodData([]); 
       }
-    } catch (e) {
-      console.error("Fel vid hämtning av humördata:", e);
-      localStorage.setItem(`moodData_${userId}`, "[]");
-    }
-  }, [userId]);
-
+    };
+  
+    fetchMoodHistory();
+  }, [userId]);  
 
 
   const now = new Date();
@@ -52,13 +55,9 @@ const MoodStatistics: React.FC = () => {
   });
 
   const sortedRecentMoodData = recentMoodData
-  .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()) // Sortera datan efter datum
-  .slice(-7); // Begränsa till max 7 poster
+  .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()) 
+  .slice(-7); 
 
-
-  console.log("Filtrerad data för senaste veckan:", recentMoodData);
-
-  // Data för grafen
   const dates = sortedRecentMoodData.map((entry) => entry.date);
   const moods = sortedRecentMoodData.map((entry) => {
     switch (entry.mood) {
